@@ -1,0 +1,6 @@
+test
+.env
+.gitignore
+hardhat.config.ts
+# Do not ignore bin directory
+!bin
