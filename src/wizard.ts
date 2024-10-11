@@ -1,9 +1,6 @@
 import { terminal } from 'terminal-kit';
-import { outputFile, remove } from 'fs-extra';
-import { join } from 'path';
 import { execSync } from 'child_process';
-import VirtualTestNet, { VirtualTestNet as vtn } from './create-vnet'; // Import the VirtualTestNet class
-// import { network } from 'hardhat';
+import VirtualTestNet from './create-vnet'; // Import the VirtualTestNet class
 
 async function getTestnetList() {
     const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
@@ -26,9 +23,6 @@ async function getTestnetList() {
         const chainSelection = await terminal.singleColumnMenu(chains).promise;
 
         let chain = 1
-        // if (chainSelection.selectedIndex == 0) {
-        //     chain = 1
-        // }
         if (chainSelection.selectedIndex == 1) {
             chain = 8453
         } else if (chainSelection.selectedIndex == 2) {
@@ -39,7 +33,7 @@ async function getTestnetList() {
         testnet.selectedText = newTestnet as string;
 
         // set env variables
-        await vtn.addToEnvFile('TENDERLY_FORK_ID', chain.toString());
+        await VirtualTestNet.addToEnvFile('TENDERLY_FORK_ID', chain.toString());
         terminal.processExit(0);
     }
     return testnet;
@@ -54,16 +48,16 @@ export async function start() {
     });
 
     let testnet: any;
-    // starts: {
+
     testnet = await getTestnetList();
     const vnets = await VirtualTestNet.listVirtualTestnets();
     const vnet = vnets.find(vnet => vnet.displayName == testnet.selectedText);
-    // }
+
     terminal.reset();
     console.log(`VIRTUAL_MAINNET_RPC=${vnet?.admin_rpc}`);
     console.log(`TESTNET_UUID=${vnet?.vnet_id}`);
     console.log(`Select Action for ${testnet.selectedText}:`);
-    const action = await terminal.singleColumnMenu(["Fork", "Delete", "Snapshot", "Overwrite .env", "Deploy Safes", "Apply Whitelist", "Back"]).promise;
+    const action = await terminal.singleColumnMenu(["Fork", "Delete", "Snapshot", "Activate", "Deploy Safes", "Apply Whitelist", "Back"]).promise;
 
     if (action.selectedIndex == 0) {
         terminal.reset("Enter the name of the fork name: ");
@@ -83,17 +77,28 @@ export async function start() {
         goto: await start();
     }
     if (action.selectedIndex == 2) {
-        // get snapshot
-        // const snapshot = await network.provider.send("evm_snapshot", []);
-
-        // // Write snapshot to .env using VirtualTestNet.addToEnvFile function
-        // await vtn.addToEnvFile('TENDERLY_SNAPSHOT', snapshot);
-        // console.log(`Snapshot ${snapshot} written to .env file`);
+        // @note this function needs to be called from terminal in order to work (needs hardhat to fetch the snapshot)
+        const output = execSync('yarn hardhat run tenderly/save-vnet-snapshot.ts --network virtual_mainnet', { stdio: 'pipe' }).toString()
+        console.log(output)
     }
 
     //@todo overwrite .env
     if (action.selectedIndex == 3) {
+        // get vnet details
+        const testNet = await VirtualTestNet.getTestnet(testnet.selectedText)
 
+        // // overwrite RPC, Testnet UUID and Fork ID in .env
+        VirtualTestNet.addToEnvFile('VIRTUAL_MAINNET_RPC', testNet?.admin_rpc ?? '')
+        VirtualTestNet.addToEnvFile('TENDERLY_TESTNET_UUID', testNet?.vnet_id ?? '')
+        VirtualTestNet.addToEnvFile('TENDERLY_FORK_ID', testNet?.network_id?.toString() ?? '1')
+
+        // overwrite Snapshot in .env
+        const output = execSync('yarn hardhat run tenderly/save-vnet-snapshot.ts --network virtual_mainnet', { stdio: 'pipe' }).toString()
+
+        // log terminal output
+        console.log(output)
+
+        console.log(`Testnet ${testnet.selectedText} activated successfully`);
     }
 
     // deploy safes
@@ -102,11 +107,10 @@ export async function start() {
         const confirmDeploy = await terminal.yesOrNo().promise;
         if (confirmDeploy?.valueOf()) {
             console.log("\nDeploying default safes...");
-            execSync('npm run deploy:vnet')
+            const output = execSync('npm run deploy:vnet', { stdio: 'pipe' }).toString()
+            console.log(output)
             console.log("\nDeployed default safes successfully");
         }
-        // close app
-        terminal.processExit(0);
     }
 
     if (action.selectedIndex == 5) {
@@ -114,11 +118,10 @@ export async function start() {
         const confirmDeploy = await terminal.yesOrNo().promise;
         if (confirmDeploy?.valueOf()) {
             console.log("\nApplying whitelist...");
-            execSync('npm run deploy:whitelist')
+            const output = execSync('npm run deploy:whitelist', { stdio: 'pipe' }).toString()
+            console.log(output)
             console.log("\nApplied whitelist successfully");
         }
-        // close app
-        terminal.processExit(0);
     }
 
     if (action.selectedIndex == 6) {

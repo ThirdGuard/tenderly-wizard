@@ -37,7 +37,8 @@
         "ts-node": "10.8.0",
         "typechain": "8.0.0",
         "typescript": "^4.5.4",
-        "yargs": "^17.7.2"
+        "yargs": "^17.7.2",
+        "zodiac-roles-sdk": "^2.14.3"
     },
     "devDependencies": {
         "@ethersproject/abi": "^5.7.0",

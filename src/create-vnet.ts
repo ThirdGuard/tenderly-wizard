@@ -91,8 +91,8 @@ export class VirtualTestNet {
             // this.removeEnvKeys();
             const result: any = await response.json();
             console.log("virtual testnet created")
-            VirtualTestNet.addToEnvFile("VIRTUAL_MAINNET_RPC", result.rpcs[0].url)
-            VirtualTestNet.addToEnvFile("TENDERLY_TESTNET_UUID", result.id)
+            this.addToEnvFile("VIRTUAL_MAINNET_RPC", result.rpcs[0].url)
+            this.addToEnvFile("TENDERLY_TESTNET_UUID", result.id)
             return { admin_rpc: result.rpcs[0].url, vnet_id: result.id };
         } catch (error) {
             console.error("Error creating Virtual TestNet:", error);
@@ -139,8 +139,8 @@ export class VirtualTestNet {
             const result: any = await response.json();
             console.log(`Virtual TestNet forked successfully. New TestNet ID: ${result.id}`);
             // Update .env file with new testnet information
-            await VirtualTestNet.addToEnvFile("VIRTUAL_MAINNET_RPC", result.connectivityConfig.endpoints[0].uri);
-            await VirtualTestNet.addToEnvFile("TENDERLY_TESTNET_UUID", result.id);
+            await this.addToEnvFile("VIRTUAL_MAINNET_RPC", result.connectivityConfig.endpoints[0].uri);
+            await this.addToEnvFile("TENDERLY_TESTNET_UUID", result.id);
 
             return { admin_rpc: result.connectivityConfig.endpoints[0].uri, vnet_id: result.id };
         } catch (error) {
@@ -196,7 +196,7 @@ export class VirtualTestNet {
         return vnets.find(vnet => vnet?.displayName == name)
     }
 
-    static async addToEnvFile(key: string, value: string): Promise<void> {
+    async addToEnvFile(key: string, value: string): Promise<void> {
         const envPath = path.resolve(process.cwd(), ".env");
 
         let envContent = "";
