@@ -5,23 +5,19 @@ import path from "path";
 dotenv.config();
 
 export class VirtualTestNet {
-
     async deleteVirtualTestNet(testnetId: string): Promise<void> {
-        const {
-            TENDERLY_ACCESS_TOKEN,
-            TENDERLY_ACCOUNT,
-            TENDERLY_PROJECT_ID,
-        } = process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } =
+            process.env;
 
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
         }
 
         // const url = `https://api.tenderly.co/api/v1/account/${TENDERLY_ACCOUNT}/project/${TENDERLY_PROJECT_ID}/testnet/container/${testnetId}`;
-        const url = `https://api.tenderly.co/api/v1/account/${TENDERLY_ACCOUNT}/project/${TENDERLY_PROJECT_ID}/vnets/${testnetId}`
+        const url = `https://api.tenderly.co/api/v1/account/${TENDERLY_ACCOUNT}/project/${TENDERLY_PROJECT_ID}/vnets/${testnetId}`;
 
         const headers = {
-            "Accept": "application/json",
+            Accept: "application/json",
             "X-Access-Key": TENDERLY_ACCESS_TOKEN!,
         };
 
@@ -44,13 +40,13 @@ export class VirtualTestNet {
         }
     }
 
-    async createVirtualTestNet(testnetName: string, network_id: number = 1): Promise<{ admin_rpc: string, vnet_id: string } | void> {
+    async createVirtualTestNet(
+        testnetName: string,
+        network_id: number = 1
+    ): Promise<{ admin_rpc: string; vnet_id: string } | void> {
         //get envs
-        const {
-            TENDERLY_ACCESS_TOKEN,
-            TENDERLY_ACCOUNT,
-            TENDERLY_PROJECT_ID,
-        } = process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } =
+            process.env;
         const url = `https://api.tenderly.co/api/v1/account/${TENDERLY_ACCOUNT}/project/${TENDERLY_PROJECT_ID}/vnets`;
         const headers_ = {
             Accept: "application/json",
@@ -90,21 +86,21 @@ export class VirtualTestNet {
 
             // this.removeEnvKeys();
             const result: any = await response.json();
-            console.log("virtual testnet created")
-            this.addToEnvFile("VIRTUAL_MAINNET_RPC", result.rpcs[0].url)
-            this.addToEnvFile("TENDERLY_TESTNET_UUID", result.id)
+            console.log("virtual testnet created");
+            this.addToEnvFile("VIRTUAL_MAINNET_RPC", result.rpcs[0].url);
+            this.addToEnvFile("TENDERLY_TESTNET_UUID", result.id);
             return { admin_rpc: result.rpcs[0].url, vnet_id: result.id };
         } catch (error) {
             console.error("Error creating Virtual TestNet:", error);
         }
     }
 
-    async forkVirtualTestNet(sourceTestnetId: string, newTestnetName: string): Promise<{ admin_rpc: string, vnet_id: string }> {
-        const {
-            TENDERLY_ACCESS_TOKEN,
-            TENDERLY_ACCOUNT,
-            TENDERLY_PROJECT_ID,
-        } = process.env;
+    async forkVirtualTestNet(
+        sourceTestnetId: string,
+        newTestnetName: string
+    ): Promise<{ admin_rpc: string; vnet_id: string }> {
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } =
+            process.env;
 
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
@@ -113,7 +109,7 @@ export class VirtualTestNet {
         const url = `https://api.tenderly.co/api/v1/account/${TENDERLY_ACCOUNT}/project/${TENDERLY_PROJECT_ID}/testnet/clone`;
 
         const headers = {
-            "Accept": "application/json",
+            Accept: "application/json",
             "Content-Type": "application/json",
             "X-Access-Key": TENDERLY_ACCESS_TOKEN,
         };
@@ -137,25 +133,31 @@ export class VirtualTestNet {
             }
 
             const result: any = await response.json();
-            console.log(`Virtual TestNet forked successfully. New TestNet ID: ${result.id}`);
+            console.log(
+                `Virtual TestNet forked successfully. New TestNet ID: ${result.id}`
+            );
             // Update .env file with new testnet information
-            await this.addToEnvFile("VIRTUAL_MAINNET_RPC", result.connectivityConfig.endpoints[0].uri);
+            await this.addToEnvFile(
+                "VIRTUAL_MAINNET_RPC",
+                result.connectivityConfig.endpoints[0].uri
+            );
             await this.addToEnvFile("TENDERLY_TESTNET_UUID", result.id);
 
-            return { admin_rpc: result.connectivityConfig.endpoints[0].uri, vnet_id: result.id };
+            return {
+                admin_rpc: result.connectivityConfig.endpoints[0].uri,
+                vnet_id: result.id,
+            };
         } catch (error) {
             console.error("Error forking Virtual TestNet:", error);
             throw error;
         }
     }
 
-
-    async listVirtualTestnets(): Promise<{ admin_rpc: string, vnet_id: string, displayName: string }[]> {
-        const {
-            TENDERLY_ACCESS_TOKEN,
-            TENDERLY_ACCOUNT,
-            TENDERLY_PROJECT_ID,
-        } = process.env;
+    async listVirtualTestnets(): Promise<
+        { admin_rpc: string; vnet_id: string; displayName: string; network_id: number }[]
+    > {
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } =
+            process.env;
 
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
@@ -164,7 +166,7 @@ export class VirtualTestNet {
         const url = `https://api.tenderly.co/api/v1/account/${TENDERLY_ACCOUNT}/project/${TENDERLY_PROJECT_ID}/testnet/container?page=1&pageSize=20`;
 
         const headers = {
-            "Accept": "application/json",
+            Accept: "application/json",
             "Content-Type": "application/json",
             "X-Access-Key": TENDERLY_ACCESS_TOKEN,
         };
@@ -172,7 +174,7 @@ export class VirtualTestNet {
         try {
             const response = await fetch(url, {
                 method: "GET",
-                headers: headers
+                headers: headers,
             });
 
             if (!response.ok) {
@@ -182,9 +184,19 @@ export class VirtualTestNet {
             }
 
             const result: any = await response.json();
-            return result?.containers?.map((container: any) => {
-                return { vnet_id: container.id, displayName: container.displayName, admin_rpc: container.connectivityConfig.endpoints[0].uri, project: container.metadata.project_name, account: container.metadata.project_owner_name, fork_of: container.metadata.origin_container_display_name || null }
-            }) || []
+            return (
+                result?.containers?.map((container: any) => {
+                    return {
+                        vnet_id: container.id,
+                        displayName: container.displayName,
+                        admin_rpc: container.connectivityConfig.endpoints[0].uri,
+                        project: container.metadata.project_name,
+                        account: container.metadata.project_owner_name,
+                        fork_of: container.metadata.origin_container_display_name || null,
+                        network_id: container.networkConfig.networkId,
+                    };
+                }) || []
+            );
         } catch (error) {
             console.error("Error Getting Virtual TestNets:", error);
             throw error;
@@ -192,8 +204,8 @@ export class VirtualTestNet {
     }
 
     async getTestnet(name: string) {
-        const vnets = await this.listVirtualTestnets() || [];
-        return vnets.find(vnet => vnet?.displayName == name)
+        const vnets = (await this.listVirtualTestnets()) || [];
+        return vnets.find((vnet) => vnet?.displayName == name);
     }
 
     async addToEnvFile(key: string, value: string): Promise<void> {
@@ -213,7 +225,7 @@ export class VirtualTestNet {
 
         fs.writeFileSync(envPath, envContent.trim() + "\n");
         console.log(
-            `Environment variable ${key} has been added/updated in .env file.`,
+            `Environment variable ${key} has been added/updated in .env file.`
         );
     }
 

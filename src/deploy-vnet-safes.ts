@@ -1,17 +1,14 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { deployAccessControlSystemV2 } from "../src/scripts/deploy-rolesv2";
+import { deployAccessControlSystemV2 } from "./deploy-rolesv2";
 // @ts-ignore
 import { ethers, network } from "hardhat";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import  VirtualTestNet  from "./create-vnet";
+import VirtualTestNet from "./create-vnet";
 import { ChainId } from "zodiac-roles-sdk";
 
 const { VIRTUAL_MAINNET_RPC } = process.env;
 
-const hre: HardhatRuntimeEnvironment = require("hardhat");
-
-export async function deploySafesOnVnet(hre: any, chainId: ChainId) {
-    const [sysAdmins, securityEOAs, managerEOAs] = await hre.ethers.getSigners();
+export async function deploySafesOnVnet(chainId: ChainId) {
+    const [sysAdmins, securityEOAs, managerEOAs] = await ethers.getSigners();
 
     await setGas();
     let contractsAddr;
@@ -47,8 +44,7 @@ async function setGas() {
     let dummyOwnerTwo: SignerWithAddress;
     let dummyOwnerThree: SignerWithAddress;
     let security: SignerWithAddress;
-    [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] =
-        await ethers.getSigners();
+    [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
     const provider = new ethers.providers.JsonRpcProvider(VIRTUAL_MAINNET_RPC);
     await provider.send("tenderly_setBalance", [
         caller.address,
@@ -71,7 +67,7 @@ async function setGas() {
 async function main() {
     const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10)
     // @note tenderly fork ID defaults to 1 if not set in .env
-    await deploySafesOnVnet(hre, chainId as ChainId);
+    await deploySafesOnVnet(chainId as ChainId);
 }
 
 main();
