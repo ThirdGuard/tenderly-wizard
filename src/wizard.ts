@@ -55,7 +55,7 @@ export async function start() {
 
     terminal.reset();
     console.log(`VIRTUAL_MAINNET_RPC=${vnet?.admin_rpc}`);
-    console.log(`TESTNET_UUID=${vnet?.vnet_id}`);
+    console.log(`TENDERLY_TESTNET_UUID=${vnet?.vnet_id}`);
     console.log(`Select Action for ${testnet.selectedText}:`);
     const action = await terminal.singleColumnMenu(["Fork", "Delete", "Snapshot", "Activate", "Deploy Safes", "Apply Whitelist", "Back"]).promise;
 
