@@ -1,48 +1,45 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-
-
-import SAFE_MASTER_COPY_ABI from "../abi/SafeMasterCopy.json"
-import SAFE_PROXY_FACTORY_ABI from "../abi/SafeProxyFactory.json"
-import { createMultisendTx, getPreValidatedSignatures } from "./utils";
+import SAFE_MASTER_COPY_ABI from "../contracts/safe_master_copy_v1.json"
+import SAFE_PROXY_FACTORY_ABI from "../contracts/safe_proxy_factory_v1.json"
 import colors from 'colors';
-import { DEFAULT_FALLBACK_HANDLER_ADDRESS, MULTISEND_ADDR, SAFE_MASTER_COPY_ADDR, SAFE_OPERATION_DELEGATECALL, SAFE_PROXY_FACTORY_ADDR, tx } from "../utils/constants";
-
-const hre: HardhatRuntimeEnvironment = require("hardhat");
-
+// @ts-ignore
+import { ethers } from "hardhat";
+import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
+import { ChainConfig } from "../utils/types";
+import { SAFE_OPERATION_DELEGATECALL, tx } from "../utils/constants";
 
 // @todo update imports to use chain selector
-export async function deploySafe() {
-    const [caller] = await hre.ethers.getSigners()
-    const safeMaster = new hre.ethers.Contract(SAFE_MASTER_COPY_ADDR, SAFE_MASTER_COPY_ABI, caller)
+export async function deploySafe(chainConfig: ChainConfig["v1"]) {
+    const [caller] = await ethers.getSigners()
+    const safeMaster = new ethers.Contract(chainConfig.SAFE_MASTER_COPY_ADDR, SAFE_MASTER_COPY_ABI, caller)
     const initializer = await safeMaster.populateTransaction.setup(
         [caller.address],
         1, //threshold
-        hre.ethers.constants.AddressZero,
+        ethers.constants.AddressZero,
         "0x",
-        DEFAULT_FALLBACK_HANDLER_ADDRESS,
-        hre.ethers.constants.AddressZero,
+        chainConfig.DEFAULT_FALLBACK_HANDLER_ADDRESS,
+        ethers.constants.AddressZero,
         0,
-        hre.ethers.constants.AddressZero
+        ethers.constants.AddressZero
     )
     const saltNonce = Date.now();
-    const safeProxyFactory = new hre.ethers.Contract(SAFE_PROXY_FACTORY_ADDR, SAFE_PROXY_FACTORY_ABI, caller)
+    const safeProxyFactory = new ethers.Contract(chainConfig.SAFE_PROXY_FACTORY_ADDR, SAFE_PROXY_FACTORY_ABI, caller)
     const txResponse = await safeProxyFactory.createProxyWithNonce(
-        SAFE_MASTER_COPY_ADDR,
+        chainConfig.SAFE_MASTER_COPY_ADDR,
         initializer.data as string,
         saltNonce
     );
     const txReceipt = await txResponse.wait();
     const txData = txReceipt.events?.find((x: any) => x.event == "ProxyCreation")
 
-    const deployedSafeAddress = txData?.args?.proxy //?? hre.ethers.constants.AddressZero
+    const deployedSafeAddress = txData?.args?.proxy //?? ethers.constants.AddressZero
     console.info(colors.green(`✅ Safe was deployed to ${deployedSafeAddress}`))
     return deployedSafeAddress
 }
 
 // adds signers to a safe (only if they are uniquely new signers)
-export async function addSafeSigners(safeAddr: string, newOwners: string[]) {
-    const [caller] = await hre.ethers.getSigners();
-    const safe = new hre.ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller)
+export async function addSafeSigners(safeAddr: string, newOwners: string[], chainConfig: ChainConfig["v1"]) {
+    const [caller] = await ethers.getSigners();
+    const safe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller)
     //check the owners being added are not already owners
     const currentOwners: string[] = await safe.getOwners();
     // Check if any of the new owners are already in the current owners list
@@ -56,10 +53,10 @@ export async function addSafeSigners(safeAddr: string, newOwners: string[]) {
         const addOwnersTxs = await Promise.all(newOwners.map(async (owner) => {
             return await safe.populateTransaction.addOwnerWithThreshold(owner, 1)
         }))
-        const metaTxs = createMultisendTx(addOwnersTxs, MULTISEND_ADDR)
+        const metaTxs = createMultisendTx(addOwnersTxs, chainConfig.MULTISEND_ADDR)
         const signature = getPreValidatedSignatures(caller.address)
         const addSignersTx = await safe.connect(caller).execTransaction(
-            MULTISEND_ADDR,
+            chainConfig.MULTISEND_ADDR,
             tx.zeroValue,
             metaTxs.data,
             SAFE_OPERATION_DELEGATECALL,
@@ -81,8 +78,8 @@ export async function addSafeSigners(safeAddr: string, newOwners: string[]) {
 };
 
 export async function removeDeployerAsOwner(safeAddr: string, threshold: number) {
-    const [caller] = await hre.ethers.getSigners()
-    const safe = new hre.ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller)
+    const [caller] = await ethers.getSigners()
+    const safe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller)
     const owners: string[] = await safe.getOwners();
     const isDeployerStillOwner = owners.some(owner =>
         owner.toLowerCase() === caller.address.toLowerCase()

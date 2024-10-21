@@ -8,17 +8,21 @@ import {
   deploySafe,
   removeDeployerAsOwner,
 } from "./deploy-safe-v1";
-import { SAFE_MODULE_PROXY_FACTORY_ADDR, tx, MULTISEND_ADDR, SAFE_OPERATION_DELEGATECALL } from "../utils/constants";
+import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1 } from "../utils/constants";
 // @ts-ignore
-import { ethers } from "hardhat"
+import { ethers } from "hardhat";
 import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
+import { ChainConfig } from "../utils/types";
+import { getChainConfig } from "../utils/roles-chain-config";
+import { ChainId } from "zodiac-roles-sdk/.";
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 export async function deployRoles(
   owner: string,
   avatar: string,
   target: string,
-  proxied: boolean
+  proxied: boolean,
+  chainConfig: ChainConfig["v1"]
 ) {
   const [caller] = await ethers.getSigners();
   if (proxied) {
@@ -28,19 +32,19 @@ export async function deployRoles(
       [owner, avatar, target]
     );
     const rolesMaster = new ethers.Contract(
-      ROLES_V1_MASTER_COPY_ADDR,
+      chainConfig.ROLES_MASTER_COPY_ADDR,
       ROLES_V1_MASTER_COPY_ABI,
       caller
     );
     const initParams = await rolesMaster.populateTransaction.setUp(encoded);
     const tsSalt = new Date().getTime();
     const safeModuleProxyFactory = new ethers.Contract(
-      SAFE_MODULE_PROXY_FACTORY_ADDR,
+      chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR,
       SAFE_MODULE_PROXY_FACTORY_ABI,
       caller
     );
     const deployModTx = await safeModuleProxyFactory.deployModule(
-      ROLES_V1_MASTER_COPY_ADDR,
+      chainConfig.ROLES_MASTER_COPY_ADDR,
       initParams.data as string,
       tsSalt
     );
@@ -73,11 +77,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
   const [caller] = await ethers.getSigners();
   const signature = getPreValidatedSignatures(caller.address);
 
-  const invSafe = new ethers.Contract(
-    safeAddr,
-    SAFE_MASTER_COPY_ABI,
-    caller
-  );
+  const invSafe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
   const enabled = await invSafe.isModuleEnabled(rolesAddr);
   console.log(
     `ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr}? ${enabled}`
@@ -114,7 +114,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
 }
 
 // sets the address of the multisend contract
-export async function setRolesMultisend(safeAddr: string, rolesAddr: string) {
+export async function setRolesMultisend(safeAddr: string, rolesAddr: string, chainConfig: ChainConfig["v1"]) {
   const [caller] = await ethers.getSigners();
   const roles = new ethers.Contract(
     rolesAddr,
@@ -125,13 +125,9 @@ export async function setRolesMultisend(safeAddr: string, rolesAddr: string) {
   //If no MS on record, submit a tx to write one on record
   if (multisendOnRecord === ethers.constants.AddressZero) {
     const setMsPopTx = await roles.populateTransaction.setMultisend(
-      MULTISEND_ADDR
+      chainConfig.MULTISEND_ADDR
     );
-    const safe = new ethers.Contract(
-      safeAddr,
-      SAFE_MASTER_COPY_ABI,
-      caller
-    );
+    const safe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
     const signature = getPreValidatedSignatures(caller.address);
     await safe.execTransaction(
       rolesAddr,
@@ -146,7 +142,7 @@ export async function setRolesMultisend(safeAddr: string, rolesAddr: string) {
       signature
     );
     console.info(
-      colors.blue(`ℹ️  Multisend has been set to: ${MULTISEND_ADDR}`)
+      colors.blue(`ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`)
     );
   } else {
     console.info(
@@ -160,7 +156,8 @@ export async function assignRoles(
   safeAddr: string,
   rolesAddr: string,
   memberAddrs: string[],
-  roleId: number
+  roleId: number,
+  chainConfig: ChainConfig["v1"]
 ) {
   const [caller] = await ethers.getSigners();
   // assign manager a role (becomes a member of role:manager_role_id)
@@ -170,11 +167,7 @@ export async function assignRoles(
     caller
   );
   const signature = getPreValidatedSignatures(caller.address);
-  const acSafe = new ethers.Contract(
-    safeAddr,
-    SAFE_MASTER_COPY_ABI,
-    caller
-  );
+  const acSafe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
 
   const assignRolesPopTx = await Promise.all(
     memberAddrs.map(async (memberAddr) => {
@@ -185,9 +178,9 @@ export async function assignRoles(
       );
     })
   );
-  const metaTxs = createMultisendTx(assignRolesPopTx, MULTISEND_ADDR);
-  const assignRolesTx = await acSafe.execTransaction(
-    MULTISEND_ADDR,
+  const metaTxs = createMultisendTx(assignRolesPopTx, chainConfig.MULTISEND_ADDR);
+  await acSafe.execTransaction(
+    chainConfig.MULTISEND_ADDR,
     tx.zeroValue,
     metaTxs.data,
     SAFE_OPERATION_DELEGATECALL,
@@ -201,13 +194,14 @@ export async function assignRoles(
 
   console.info(
     colors.blue(
-      `Role member: ${memberAddrs.toString()} has been assigned role id: ${MANAGER_ROLE_ID}`
+      `Role member: ${memberAddrs.toString()} has been assigned role id: ${MANAGER_ROLE_ID_V1}`
     )
   );
 }
 
 // this will deploy the entire system from scratch, WITHOUT any investment manager permissions
-export const deployAccessControlSystem = async (
+export const deployAccessControlSystemV1 = async (
+  chainId: ChainId,
   options: {
     proxied: boolean;
     sysAdminAddresses: string[];
@@ -223,9 +217,12 @@ export const deployAccessControlSystem = async (
     acRolesAddr: string | null;
   }
 ) => {
+  // get chain config for multichain deploy
+  const chainConfig = getChainConfig(chainId, "v1");
+
   //Deploy both safes
-  const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafe());
-  const investmentSafeAddr = deployed?.invSafeAddr || (await deploySafe());
+  const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafe(chainConfig));
+  const investmentSafeAddr = deployed?.invSafeAddr || (await deploySafe(chainConfig));
 
   // //Deploy and enable a Roles modifier on the investment safe
   const invRolesAddr =
@@ -234,14 +231,15 @@ export const deployAccessControlSystem = async (
       accessControlSafeAddr,
       investmentSafeAddr,
       investmentSafeAddr,
-      options.proxied
+      options.proxied,
+      chainConfig
     ));
 
   console.log({ invRolesAddr });
 
   await enableRolesModifier(investmentSafeAddr, invRolesAddr);
   //Set the multisend address on roles so that manager can send multisend txs later on
-  await setRolesMultisend(accessControlSafeAddr, invRolesAddr);
+  await setRolesMultisend(accessControlSafeAddr, invRolesAddr, chainConfig);
 
   //Deploy and enable a Roles modifier on the access control safe
   const acRolesAddr =
@@ -250,19 +248,21 @@ export const deployAccessControlSystem = async (
       accessControlSafeAddr,
       accessControlSafeAddr,
       accessControlSafeAddr,
-      options.proxied
+      options.proxied,
+      chainConfig
     ));
   await enableRolesModifier(accessControlSafeAddr, acRolesAddr);
 
   //Set the multisend address on roles so that manager can send multisend txs later on
-  await setRolesMultisend(accessControlSafeAddr, acRolesAddr);
+  await setRolesMultisend(accessControlSafeAddr, acRolesAddr, chainConfig);
 
   //Grant an access controller role to Security EOA's
   await assignRoles(
     accessControlSafeAddr,
     acRolesAddr,
     options.securityEOAs,
-    SECURITY_ROLE_ID
+    SECURITY_ROLE_ID_V1,
+    chainConfig
   );
   // Populate this role for Security so they can call whitelisting related functions on investment roles
   const [caller] = await ethers.getSigners();
@@ -278,12 +278,13 @@ export const deployAccessControlSystem = async (
     accessControlSafeAddr,
     invRolesAddr,
     options.managerEOAs,
-    MANAGER_ROLE_ID
+    MANAGER_ROLE_ID_V1,
+    chainConfig
   );
 
   // Add signers
-  await addSafeSigners(investmentSafeAddr, options.sysAdminAddresses);
-  await addSafeSigners(accessControlSafeAddr, options.sysAdminAddresses);
+  await addSafeSigners(investmentSafeAddr, options.sysAdminAddresses, chainConfig);
+  await addSafeSigners(accessControlSafeAddr, options.sysAdminAddresses, chainConfig);
 
   //Remove the deployer address as owner and rewrite signing threshold
   await removeDeployerAsOwner(investmentSafeAddr, options.invSafeThreshold);

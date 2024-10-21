@@ -4,24 +4,41 @@ import { deployAccessControlSystemV2 } from "./deploy-roles-v2";
 import { ethers, network } from "hardhat";
 import VirtualTestNet from "./create-vnet";
 import { ChainId } from "zodiac-roles-sdk";
+import { deployAccessControlSystemV1 } from "./deploy-roles-v1";
+import { RolesVersion } from "../utils/types";
 
 const { VIRTUAL_MAINNET_RPC } = process.env;
 
-export async function deploySafesOnVnet(chainId: ChainId) {
+export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVersion) {
     const [sysAdmins, securityEOAs, managerEOAs] = await ethers.getSigners();
 
     await setGas();
     let contractsAddr;
     let deployedSnapshot;
 
-    const base = await deployAccessControlSystemV2(chainId, {
-        proxied: true,
-        managerEOAs: [managerEOAs.address],
-        securityEOAs: [securityEOAs.address],
-        invSafeThreshold: 1,
-        acSafeThreshold: 1,
-        sysAdminAddresses: [sysAdmins.address],
-    });
+    console.log(`Deploying with roles version: ${rolesVersion}`);
+
+    let base: any;
+
+    if (rolesVersion === 'v1') {
+        base = await deployAccessControlSystemV1(chainId, {
+            proxied: true,
+            managerEOAs: [managerEOAs.address],
+            securityEOAs: [securityEOAs.address],
+            invSafeThreshold: 1,
+            acSafeThreshold: 1,
+            sysAdminAddresses: [sysAdmins.address],
+        });
+    } else {
+        base = await deployAccessControlSystemV2(chainId, {
+            proxied: true,
+            managerEOAs: [managerEOAs.address],
+            securityEOAs: [securityEOAs.address],
+            invSafeThreshold: 1,
+            acSafeThreshold: 1,
+            sysAdminAddresses: [sysAdmins.address],
+        });
+    }
 
     deployedSnapshot = await network.provider.send("evm_snapshot", []);
     console.log("deployedSnapshot: ", deployedSnapshot);
@@ -67,7 +84,20 @@ async function setGas() {
 async function main() {
     const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10)
     // @note tenderly fork ID defaults to 1 if not set in .env
-    await deploySafesOnVnet(chainId as ChainId);
+
+
+    // @todo get roles version from node args
+    // Get roles version from node args
+    const rolesVersion = process.argv.find(arg => arg.startsWith('--roles-version=')).split('=')[1];
+
+    if (!rolesVersion || (rolesVersion !== 'v1' && rolesVersion !== 'v2')) {
+        console.error('Invalid or missing roles version. Please specify --roles-version=v1 or --roles-version=v2');
+        process.exit(1);
+    }
+
+    console.log(`Deploying with roles version: ${rolesVersion}`);
+
+    // await deploySafesOnVnet(chainId as ChainId, rolesVersion);
 }
 
 main();

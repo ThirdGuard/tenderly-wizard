@@ -11,10 +11,11 @@ import {
 // @ts-ignore
 import { ethers } from "hardhat";
 import { ChainId } from "zodiac-roles-sdk";
-import { ChainConfig, getChainConfig } from "../utils/roles-chain-config";
 import { deployViaFactory } from "./EIP2470";
 import { MANAGER_ROLE_ID_V2, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from "../utils/constants";
 import { AccessControllerWhitelist } from "../whitelist/acs/scope-access-controller";
+import { ChainConfig, RolesVersion } from "../utils/types";
+import { getChainConfig } from "../utils/roles-chain-config";
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 
@@ -30,7 +31,7 @@ export async function deployRolesV2(
   avatar: string,
   target: string,
   proxied: boolean,
-  chainConfig: ChainConfig
+  chainConfig: ChainConfig["v2"]
 ) {
   const [caller] = await ethers.getSigners();
   if (proxied) {
@@ -40,7 +41,7 @@ export async function deployRolesV2(
       [owner, avatar, target],
     );
     const rolesMaster = new ethers.Contract(
-      chainConfig.ROLES_V2_MASTER_COPY_ADDR,
+      chainConfig.ROLES_MASTER_COPY_ADDR,
       ROLES_V2_MASTER_COPY_ABI,
       caller,
     );
@@ -53,7 +54,7 @@ export async function deployRolesV2(
     );
 
     const deployModTx = await safeModuleProxyFactory.deployModule(
-      chainConfig.ROLES_V2_MASTER_COPY_ADDR,
+      chainConfig.ROLES_MASTER_COPY_ADDR,
       initParams.data as string,
       tsSalt,
     );
@@ -150,7 +151,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
 }
 
 // sets the address of the multisend contract
-export async function setRolesMultisend(safeAddr: string, rolesAddr: string, chainConfig: ChainConfig) {
+export async function setRolesMultisend(safeAddr: string, rolesAddr: string, chainConfig: ChainConfig["v2"]) {
   const [caller] = await ethers.getSigners();
   const roles = new ethers.Contract(
     rolesAddr,
@@ -160,8 +161,7 @@ export async function setRolesMultisend(safeAddr: string, rolesAddr: string, cha
   const multisendOnRecord = await roles.multisend();
   //If no MS on record, submit a tx to write one on record
   if (multisendOnRecord === ethers.constants.AddressZero) {
-    const setMsPopTx =
-      await roles.populateTransaction.setMultisend(chainConfig.MULTISEND_ADDR);
+    const setMsPopTx = await roles.populateTransaction.setMultisend(chainConfig.MULTISEND_ADDR);
 
     const safe = new ethers.Contract(
       safeAddr,
@@ -191,7 +191,7 @@ export async function setRolesMultisend(safeAddr: string, rolesAddr: string, cha
   }
 }
 
-export async function setRolesUnwrapper(safeAddr: string, rolesAddr: string, chainConfig: ChainConfig) {
+export async function setRolesUnwrapper(safeAddr: string, rolesAddr: string, chainConfig: ChainConfig["v2"]) {
   const [caller] = await ethers.getSigners();
 
   const roles = new ethers.Contract(
@@ -199,12 +199,6 @@ export async function setRolesUnwrapper(safeAddr: string, rolesAddr: string, cha
     ROLES_V2_MASTER_COPY_ABI,
     caller,
   );
-
-  // const MultiSend = await ethers.getContractFactory("MultiSend");
-  // const multisend = await MultiSend.deploy();
-
-  // const MultiSendUnwrapper = await ethers.getContractFactory("MultiSendUnwrapper");
-  // const adapter = await MultiSendUnwrapper.deploy();
 
   const setMsPopTx = await roles.populateTransaction.setTransactionUnwrapper(
     chainConfig.MULTISEND_ADDR,
@@ -244,7 +238,7 @@ export async function assignRoles(
   rolesAddr: string,
   memberAddrs: string[],
   roleId: `0x${string}`,
-  chainConfig: ChainConfig
+  chainConfig: ChainConfig["v2"]
 ) {
   const [caller] = await ethers.getSigners();
   // assign manager a role (becomes a member of role:manager_role_id)
@@ -310,7 +304,7 @@ export const deployAccessControlSystemV2 = async (
   },
 ) => {
   // get chain config for multichain deploy
-  const chainConfig = getChainConfig(chainId);
+  const chainConfig = getChainConfig(chainId, "v2");
 
   //Deploy both safes
   const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafeV2(chainConfig));

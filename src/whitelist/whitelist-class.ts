@@ -24,6 +24,7 @@ import {
   ZERO_VALUE,
 } from "../utils/constants";
 import { getChainConfig } from "../utils/roles-chain-config";
+import { RolesVersion } from "../utils/types";
 
 export enum ExecutionOptions {
   None,
@@ -106,12 +107,13 @@ export class Whitelist {
  */
 export async function executeWhitelistV2(
   permissions: Permission[],
-  chainId: ChainId
+  chainId: ChainId,
+  rolesVersion: RolesVersion
 ) {
   const [_, securityEOAs, __] = await ethers.getSigners();
 
   // get chain config
-  const chainConfig = getChainConfig(chainId);
+  const chainConfig = getChainConfig(chainId, rolesVersion);
 
   // Process the permissions
   const { targets } = processPermissions(permissions);

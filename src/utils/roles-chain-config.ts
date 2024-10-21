@@ -6,7 +6,7 @@ import {
   DEFAULT_FALLBACK_HANDLER_ADDRESS,
   DEFAULT_UNWRAPPER_ADDR,
   MULTISEND_SELECTOR,
-  SAFE_MASTER_COPY_ADDR,
+  SAFE_MASTER_COPY_V1_ADDR,
   SAFE_PROXY_FACTORY_ADDR,
   BASE_ROLES_V2_MASTER_COPY_ADDR,
   BASE_SAFE_MODULE_PROXY_FACTORY_ADDR,
@@ -17,49 +17,45 @@ import {
   BASE_SAFE_MASTER_COPY_ADDR,
   BASE_SAFE_PROXY_FACTORY_ADDR,
 } from "./constants";
-
-export interface ChainConfig {
-  v1: {
-    ROLES_MASTER_COPY_ADDR: string;
-    SAFE_MODULE_PROXY_FACTORY_ADDR: string;
-    MULTISEND_ADDR: string;
-    DEFAULT_FALLBACK_HANDLER_ADDRESS: string;
-    DEFAULT_UNWRAPPER_ADDR: string;
-    MULTISEND_SELECTOR: string;
-    SAFE_MASTER_COPY_ADDR: string;
-    SAFE_PROXY_FACTORY_ADDR: string;
-  },
-  v2: {
-    ROLES_MASTER_COPY_ADDR: string;
-    SAFE_MODULE_PROXY_FACTORY_ADDR: string;
-    MULTISEND_ADDR: string;
-    DEFAULT_FALLBACK_HANDLER_ADDRESS: string;
-    DEFAULT_UNWRAPPER_ADDR: string;
-    MULTISEND_SELECTOR: string;
-    SAFE_MASTER_COPY_ADDR: string;
-    SAFE_PROXY_FACTORY_ADDR: string;
-  }
-}
+import { ChainConfig, RolesVersion } from "./types";
 
 const chainConfigs: Partial<Record<ChainId, ChainConfig>> = {
   [1]: {
-    v1: {},
+    v1: {
+      ROLES_MASTER_COPY_ADDR: "",
+      SAFE_MODULE_PROXY_FACTORY_ADDR: "",
+      MULTISEND_ADDR: "",
+      DEFAULT_FALLBACK_HANDLER_ADDRESS: "",
+      DEFAULT_UNWRAPPER_ADDR: "",
+      MULTISEND_SELECTOR: "",
+      SAFE_MASTER_COPY_ADDR: "",
+      SAFE_PROXY_FACTORY_ADDR: ""
+    },
     v2: {
-      ROLES_V2_MASTER_COPY_ADDR: ROLES_V2_MASTER_COPY_ADDR,
+      ROLES_MASTER_COPY_ADDR: ROLES_V2_MASTER_COPY_ADDR,
       SAFE_MODULE_PROXY_FACTORY_ADDR: SAFE_MODULE_PROXY_FACTORY_ADDR,
       MULTISEND_ADDR: MULTISEND_ADDR,
       DEFAULT_FALLBACK_HANDLER_ADDRESS: DEFAULT_FALLBACK_HANDLER_ADDRESS,
       DEFAULT_UNWRAPPER_ADDR: DEFAULT_UNWRAPPER_ADDR,
       MULTISEND_SELECTOR: MULTISEND_SELECTOR,
-      SAFE_MASTER_COPY_ADDR: SAFE_MASTER_COPY_ADDR,
+      SAFE_MASTER_COPY_ADDR: SAFE_MASTER_COPY_V1_ADDR,
       SAFE_PROXY_FACTORY_ADDR: SAFE_PROXY_FACTORY_ADDR,
     }
 
   },
   [8453]: {
-    v1: {},
+    v1: {
+      ROLES_MASTER_COPY_ADDR: "",
+      SAFE_MODULE_PROXY_FACTORY_ADDR: "",
+      MULTISEND_ADDR: "",
+      DEFAULT_FALLBACK_HANDLER_ADDRESS: "",
+      DEFAULT_UNWRAPPER_ADDR: "",
+      MULTISEND_SELECTOR: "",
+      SAFE_MASTER_COPY_ADDR: "",
+      SAFE_PROXY_FACTORY_ADDR: ""
+    },
     v2: {
-      ROLES_V2_MASTER_COPY_ADDR: BASE_ROLES_V2_MASTER_COPY_ADDR,
+      ROLES_MASTER_COPY_ADDR: BASE_ROLES_V2_MASTER_COPY_ADDR,
       SAFE_MODULE_PROXY_FACTORY_ADDR: BASE_SAFE_MODULE_PROXY_FACTORY_ADDR,
       MULTISEND_ADDR: BASE_MULTISEND_ADDR,
       DEFAULT_FALLBACK_HANDLER_ADDRESS: BASE_DEFAULT_FALLBACK_HANDLER_ADDRESS,
@@ -72,10 +68,10 @@ const chainConfigs: Partial<Record<ChainId, ChainConfig>> = {
   // @note Add configurations for other chains here
 };
 
-export function getChainConfig(chainId: ChainId): ChainConfig {
-  const config = chainConfigs[chainId];
+export function getChainConfig(chainId: ChainId, rolesVersion: RolesVersion): ChainConfig[RolesVersion] {
+  const config = chainConfigs[chainId][rolesVersion];
   if (!config) {
-    throw new Error(`No configuration found for chain ID ${chainId}`);
+    throw new Error(`No configuration found for chain ID ${chainId} and roles version ${rolesVersion}`);
   }
   return config;
 }

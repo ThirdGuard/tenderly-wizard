@@ -9,8 +9,8 @@
     "scripts": {
         "start": "ts-node src/index.ts",
         "test": "hardhat test",
-        "deploy:vnet": "hardhat run src/deploy-vnet-safes.ts --network virtual_mainnet",
-        "deploy:whitelist": "hardhat run src/whitelist-vnet-safes.ts --network virtual_mainnet --roles-version $1 --input-file $2"
+        "deploy:vnet": "hardhat run src/scripts/deploy-vnet-safes.ts --network virtual_mainnet --roles-version $1",
+        "deploy:whitelist": "hardhat run src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet --roles-version $1 --input-file $2"
     },
     "keywords": [
         "virtual",

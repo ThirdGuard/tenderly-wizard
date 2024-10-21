@@ -10,6 +10,8 @@ export const AMOUNTS = {
     million: "1000000",
 }
 
+export const MANAGER_ROLE_ID_V1 = 1;
+export const SECURITY_ROLE_ID_V1 = 1;
 export const MANAGER_ROLE_ID_V2 = encodeBytes32String("default");
 export const SECURITY_ROLE_ID_V2 = encodeBytes32String("security");
 
@@ -55,6 +57,18 @@ export const tx = {
     refundReceiver: hre.ethers.constants.AddressZero,
 };
 
+// Roles V1
+// MAINNET safe & roles specific addresses
+export const SAFE_MASTER_COPY_V1_ADDR = '0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552'; //@note v 1.3.0
+export const SAFE_PROXY_FACTORY_V1_ADDR = '0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2';
+export const SAFE_MODULE_PROXY_FACTORY_V1_ADDR = '0x00000000000DC7F163742Eb4aBEf650037b1f588';
+export const ROLES_V1_MASTER_COPY_ADDR = '0xD8DfC1d938D7D163C5231688341e9635E9011889';
+export const PERMISSIONS_V1_LIB = '0x33D1C5A5B6a7f3885c7467e829aaa21698937597';
+export const MULTISEND_V1_ADDR = '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761';
+export const DEFAULT_FALLBACK_HANDLER_V1_ADDR = '0xf48f2B2d2a534e402487b3ee7C18c33Aec0Fe5e4';
+
+
+// Roles V2
 // MAINNET safe & roles specific addresses
 export const SAFE_MASTER_COPY_ADDR = "0x41675C099F32341bf84BFc5382aF534df5C7461a"; // @note v 1.4.0
 export const SAFE_MODULE_PROXY_FACTORY_ADDR = "0x000000000000aDdB49795b0f9bA5BC298cDda236";
