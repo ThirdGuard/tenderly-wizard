@@ -40,6 +40,8 @@ async function getTestnetList() {
 }
 
 export async function start() {
+    const rolesVersions = ["V1", "V2"];
+
     terminal.grabInput(true);
     terminal.on('key', (name: any, matches: any, data: any) => {
         if (name === 'ESCAPE') {
@@ -103,6 +105,10 @@ export async function start() {
 
     // deploy safes
     if (action.selectedIndex == 4) {
+
+        // @todo select roles version
+
+        // confirmation
         console.log("Are you sure you want to deploy default safes to this testnet (Y/N):", testnet.selectedText);
         const confirmDeploy = await terminal.yesOrNo().promise;
         if (confirmDeploy?.valueOf()) {
@@ -114,11 +120,22 @@ export async function start() {
     }
 
     if (action.selectedIndex == 5) {
+        // @todo select roles version
+        terminal.red("Select roles version: ")
+        const roleVersionSelection = await terminal.singleColumnMenu(rolesVersions).promise;
+        let rolesVersion = 'v1'     // apply roles V1
+        if (roleVersionSelection.selectedIndex == 1) {
+            // apply roles v2
+            rolesVersion = 'v2'
+        }
+
+
+        // confirmation
         console.log("Are you sure you want to apply whitelist to the default safes on this testnet (Y/N):", testnet.selectedText);
         const confirmDeploy = await terminal.yesOrNo().promise;
         if (confirmDeploy?.valueOf()) {
             console.log("\nApplying whitelist...");
-            const output = execSync('npm run deploy:whitelist', { stdio: 'pipe' }).toString()
+            const output = execSync(`npm run deploy:whitelist ${rolesVersion}`, { stdio: 'pipe' }).toString()
             console.log(output)
             console.log("\nApplied whitelist successfully");
         }
