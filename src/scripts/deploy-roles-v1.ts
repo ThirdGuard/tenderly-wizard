@@ -1,51 +1,40 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-
-import {
-  MANAGER_ROLE_ID,
-  MULTISEND_ADDR,
-  ROLES_V1_MASTER_COPY_ADDR,
-  SAFE_MODULE_PROXY_FACTORY_ADDR,
-  SAFE_OPERATION_DELEGATECALL,
-  SECURITY_ROLE_ID,
-  tx,
-} from "./constants";
-import SAFE_MASTER_COPY_ABI from "../abi/SafeMasterCopy.json";
-import SAFE_MODULE_PROXY_FACTORY_ABI from "../abi/SafeModuleProxyFactory.json";
-import ROLES_V1_MASTER_COPY_ABI from "../abi/RolesV1.json";
-import { createMultisendTx, getPreValidatedSignatures } from "./utils";
-import { AccessControllerWhitelist } from "./whitelist/acs/scope-access-controller";
+import SAFE_MASTER_COPY_ABI from "../contracts/safe_master_copy_v1.json";
+import SAFE_MODULE_PROXY_FACTORY_ABI from "../contracts/safe_module_proxy_factory_v1.json";
+import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
+import { AccessControllerWhitelist } from "../whitelist/acs/scope-access-controller";
 import colors from "colors";
 import {
   addSafeSigners,
   deploySafe,
   removeDeployerAsOwner,
-} from "./deploy-safe";
+} from "./deploy-safe-v1";
+import { SAFE_MODULE_PROXY_FACTORY_ADDR, tx, MULTISEND_ADDR, SAFE_OPERATION_DELEGATECALL } from "../utils/constants";
+// @ts-ignore
+import { ethers } from "hardhat"
+import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
-
-const hre: HardhatRuntimeEnvironment = require("hardhat");
-
 export async function deployRoles(
   owner: string,
   avatar: string,
   target: string,
   proxied: boolean
 ) {
-  const [caller] = await hre.ethers.getSigners();
+  const [caller] = await ethers.getSigners();
   if (proxied) {
-    const abiCoder = hre.ethers.utils.defaultAbiCoder;
+    const abiCoder = ethers.utils.defaultAbiCoder;
     const encoded = abiCoder.encode(
       ["address", "address", "address"],
       [owner, avatar, target]
     );
-    const rolesMaster = new hre.ethers.Contract(
+    const rolesMaster = new ethers.Contract(
       ROLES_V1_MASTER_COPY_ADDR,
       ROLES_V1_MASTER_COPY_ABI,
       caller
     );
     const initParams = await rolesMaster.populateTransaction.setUp(encoded);
     const tsSalt = new Date().getTime();
-    const safeModuleProxyFactory = new hre.ethers.Contract(
+    const safeModuleProxyFactory = new ethers.Contract(
       SAFE_MODULE_PROXY_FACTORY_ADDR,
       SAFE_MODULE_PROXY_FACTORY_ABI,
       caller
@@ -67,9 +56,9 @@ export async function deployRoles(
     );
     return rolesModAddress;
   }
-  const Permissions = await hre.ethers.getContractFactory("Permissions");
+  const Permissions = await ethers.getContractFactory("Permissions");
   const permissions = await Permissions.deploy();
-  const Roles = await hre.ethers.getContractFactory("Roles", {
+  const Roles = await ethers.getContractFactory("Roles", {
     libraries: {
       Permissions: permissions.address,
     },
@@ -81,10 +70,10 @@ export async function deployRoles(
 
 //If the roles module is not already enabled on Safe, enable it
 export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
-  const [caller] = await hre.ethers.getSigners();
+  const [caller] = await ethers.getSigners();
   const signature = getPreValidatedSignatures(caller.address);
 
-  const invSafe = new hre.ethers.Contract(
+  const invSafe = new ethers.Contract(
     safeAddr,
     SAFE_MASTER_COPY_ABI,
     caller
@@ -126,19 +115,19 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
 
 // sets the address of the multisend contract
 export async function setRolesMultisend(safeAddr: string, rolesAddr: string) {
-  const [caller] = await hre.ethers.getSigners();
-  const roles = new hre.ethers.Contract(
+  const [caller] = await ethers.getSigners();
+  const roles = new ethers.Contract(
     rolesAddr,
     ROLES_V1_MASTER_COPY_ABI,
     caller
   );
   const multisendOnRecord = await roles.multisend();
   //If no MS on record, submit a tx to write one on record
-  if (multisendOnRecord === hre.ethers.constants.AddressZero) {
+  if (multisendOnRecord === ethers.constants.AddressZero) {
     const setMsPopTx = await roles.populateTransaction.setMultisend(
       MULTISEND_ADDR
     );
-    const safe = new hre.ethers.Contract(
+    const safe = new ethers.Contract(
       safeAddr,
       SAFE_MASTER_COPY_ABI,
       caller
@@ -173,15 +162,15 @@ export async function assignRoles(
   memberAddrs: string[],
   roleId: number
 ) {
-  const [caller] = await hre.ethers.getSigners();
+  const [caller] = await ethers.getSigners();
   // assign manager a role (becomes a member of role:manager_role_id)
-  const roles = new hre.ethers.Contract(
+  const roles = new ethers.Contract(
     rolesAddr,
     ROLES_V1_MASTER_COPY_ABI,
     caller
   );
   const signature = getPreValidatedSignatures(caller.address);
-  const acSafe = new hre.ethers.Contract(
+  const acSafe = new ethers.Contract(
     safeAddr,
     SAFE_MASTER_COPY_ABI,
     caller
@@ -276,7 +265,7 @@ export const deployAccessControlSystem = async (
     SECURITY_ROLE_ID
   );
   // Populate this role for Security so they can call whitelisting related functions on investment roles
-  const [caller] = await hre.ethers.getSigners();
+  const [caller] = await ethers.getSigners();
   const accessControllerWhitelist = new AccessControllerWhitelist(
     acRolesAddr,
     caller

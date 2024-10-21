@@ -1,14 +1,16 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-import { DEFAULT_FALLBACK_HANDLER_ADDRESS, MULTISEND_ADDR, SAFE_MASTER_COPY_ADDR, SAFE_MODULE_PROXY_FACTORY_ADDR, SAFE_OPERATION_DELEGATECALL, SAFE_PROXY_FACTORY_ADDR, tx } from "./constants";
+
 import SAFE_MASTER_COPY_ABI from "../abi/SafeMasterCopy.json"
 import SAFE_PROXY_FACTORY_ABI from "../abi/SafeProxyFactory.json"
 import { createMultisendTx, getPreValidatedSignatures } from "./utils";
 import colors from 'colors';
+import { DEFAULT_FALLBACK_HANDLER_ADDRESS, MULTISEND_ADDR, SAFE_MASTER_COPY_ADDR, SAFE_OPERATION_DELEGATECALL, SAFE_PROXY_FACTORY_ADDR, tx } from "../utils/constants";
 
 const hre: HardhatRuntimeEnvironment = require("hardhat");
 
 
+// @todo update imports to use chain selector
 export async function deploySafe() {
     const [caller] = await hre.ethers.getSigners()
     const safeMaster = new hre.ethers.Contract(SAFE_MASTER_COPY_ADDR, SAFE_MASTER_COPY_ABI, caller)

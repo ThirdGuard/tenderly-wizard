@@ -1,9 +1,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 // @ts-ignore
 import { ethers, network } from "hardhat";
-import VirtualTestNet from "../create-vnet";
+import VirtualTestNet from "./create-vnet";
 import { ChainId } from "zodiac-roles-sdk";
-import { executeWhitelistV2 } from "../src/whitelist/whitelist-class";
+import { executeWhitelistV2 } from "../whitelist/whitelist-class";
 
 const { VIRTUAL_MAINNET_RPC } = process.env;
 

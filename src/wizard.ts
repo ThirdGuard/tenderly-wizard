@@ -1,6 +1,6 @@
 import { terminal } from 'terminal-kit';
 import { execSync } from 'child_process';
-import VirtualTestNet from './create-vnet'; // Import the VirtualTestNet class
+import VirtualTestNet from './scripts/create-vnet'; // Import the VirtualTestNet class
 
 async function getTestnetList() {
     const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets

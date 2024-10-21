@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { deployAccessControlSystemV2 } from "./deploy-rolesv2";
+import { deployAccessControlSystemV2 } from "./deploy-roles-v2";
 // @ts-ignore
 import { ethers, network } from "hardhat";
 import VirtualTestNet from "./create-vnet";

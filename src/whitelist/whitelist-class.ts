@@ -23,7 +23,7 @@ import {
   TYPE_STATIC,
   ZERO_VALUE,
 } from "../utils/constants";
-import { getChainConfig } from "../utils/chain-config";
+import { getChainConfig } from "../utils/roles-chain-config";
 
 export enum ExecutionOptions {
   None,

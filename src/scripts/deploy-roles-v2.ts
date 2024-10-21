@@ -1,20 +1,20 @@
 
-import SAFE_MASTER_COPY_BASE_ABI from "./contracts/safe_master_copy.json";
-import SAFE_MODULE_PROXY_FACTORY_ABI from "./contracts/safe_module_proxy_factory.json";
-import ROLES_V2_MASTER_COPY_ABI from "./contracts/roles_v2.json";
-import { createMultisendTx, getPreValidatedSignatures } from "./utils/util";
+import SAFE_MASTER_COPY_BASE_ABI from "../contracts/safe_master_copy_v2.json";
+import SAFE_MODULE_PROXY_FACTORY_ABI from "../contracts/safe_module_proxy_factory_v2.json";
+import ROLES_V2_MASTER_COPY_ABI from "../contracts/roles_v2.json";
+import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
 import colors from "colors";
 import {
   deploySafeV2,
   addSafeSigners,
-} from "./deploy-safev2";
+} from "./deploy-safe-v2";
 // @ts-ignore
 import { ethers } from "hardhat";
 import { ChainId } from "zodiac-roles-sdk";
-import { ChainConfig, getChainConfig } from "./utils/chain-config";
+import { ChainConfig, getChainConfig } from "../utils/roles-chain-config";
 import { deployViaFactory } from "./EIP2470";
-import { MANAGER_ROLE_ID_V2, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from "./utils/constants";
-import { AccessControllerWhitelist } from "./whitelist/acs/scope-access-controller";
+import { MANAGER_ROLE_ID_V2, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from "../utils/constants";
+import { AccessControllerWhitelist } from "../whitelist/acs/scope-access-controller";
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 

@@ -1,11 +1,11 @@
-import SAFE_MASTER_COPY_ABI from "./contracts/safe_master_copy.json";
-import SAFE_PROXY_FACTORY_ABI from "./contracts/safe_proxy_factory.json";
-import { ChainConfig } from "./utils/chain-config";
-import { createMultisendTx, getPreValidatedSignatures } from "./utils/util";
+import SAFE_MASTER_COPY_ABI from "../contracts/safe_master_copy_v2.json";
+import SAFE_PROXY_FACTORY_ABI from "../contracts/safe_proxy_factory_v2.json";
+import { ChainConfig } from "../utils/roles-chain-config";
+import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
 import colors from "colors";
 // @ts-ignore
 import { ethers } from "hardhat";
-import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, tx } from "./utils/constants";
+import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, tx } from "../utils/constants";
 
 export async function deploySafeV2(chainConfig: ChainConfig) {
   const [caller] = await ethers.getSigners();
