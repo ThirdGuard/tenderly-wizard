@@ -8,7 +8,9 @@
     "bin": "./bin/cli.js",
     "scripts": {
         "start": "ts-node src/index.ts",
-        "test": "hardhat test"
+        "test": "hardhat test",
+        "deploy:vnet": "hardhat run src/deploy-vnet-safes.ts --network virtual_mainnet",
+        "deploy:whitelist": "hardhat run src/whitelist-vnet-safes.ts --network virtual_mainnet --input $permissions_file"
     },
     "keywords": [
         "virtual",

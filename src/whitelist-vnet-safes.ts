@@ -1,14 +1,21 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 // @ts-ignore
 import { ethers, network } from "hardhat";
-import { VirtualTestNet } from "./create-vnet";
-import aerodromePermissions from "../src/roles/aerodrome/permissions";
+import VirtualTestNet from "./create-vnet";
 import { ChainId } from "zodiac-roles-sdk";
 import { executeWhitelistV2 } from "../src/whitelist/whitelist-class";
 
 const { VIRTUAL_MAINNET_RPC } = process.env;
 
 export async function whitelistSafes() {
+    // @todo get file fromt node args
+    const input = process.argv.find(arg => arg.startsWith('--input=')).split('=')[1];
+
+    if (!input) {
+        console.error('No input file specified');
+        process.exit(1);
+    }
+
     // set gas for all accounts
     await setGas();
 
@@ -25,7 +32,7 @@ export async function whitelistSafes() {
         case 8453:
             // base whitelists
             // aerodrome 
-            await executeWhitelistV2(aerodromePermissions, chainId)
+            // await executeWhitelistV2(aerodromePermissions, chainId)
             break;
         case 137:
             // polygon whitelists
