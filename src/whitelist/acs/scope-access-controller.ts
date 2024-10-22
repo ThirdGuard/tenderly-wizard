@@ -1,5 +1,5 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import SAFE_MASTER_COPY_V2_ABI from "../../contracts/safe_master_copy.json";
+import SAFE_MASTER_COPY_V1_ABI from "../../contracts/safe_master_copy_v1.json";
+import SAFE_MASTER_COPY_V2_ABI from "../../contracts/safe_master_copy_v2.json";
 import { Whitelist } from "../whitelist-class";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { LedgerSigner } from "@anders-t/ethers-ledger";
@@ -7,6 +7,7 @@ import { LedgerSigner } from "@anders-t/ethers-ledger";
 import { ethers } from "hardhat";
 import { createMultisendTx, getPreValidatedSignatures, scopeTargets } from "../../utils/util";
 import { BASE_MULTISEND_ADDR, GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from "../../utils/constants";
+import { RolesVersion } from "../../utils/types";
 
 const ROLES_FUNCTIONS_ALLOWED = [
   "revokeTarget",
@@ -23,8 +24,10 @@ const ROLES_FUNCTIONS_ALLOWED = [
 
 // this whitelisting class is used in the roles deployment so that security has the ability to scope functions
 export class AccessControllerWhitelist extends Whitelist {
-  constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner) {
+  rolesVersion: RolesVersion;
+  constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner, rolesVersion: RolesVersion) {
     super(acRolesAddr, caller);
+    this.rolesVersion = rolesVersion;
   }
 
   // Allow the security team to call all the functions listed in `ROLES_FUNCTIONS_ALLOWED`on the investment roles modifier
@@ -53,7 +56,7 @@ export class AccessControllerWhitelist extends Whitelist {
     const metaTx = await this.getFullScope(invRolesAddr);
     const acSafe = new ethers.Contract(
       accessControlSafeAddr,
-      SAFE_MASTER_COPY_V2_ABI,
+      this.rolesVersion === 'v1' ? SAFE_MASTER_COPY_V1_ABI : SAFE_MASTER_COPY_V2_ABI,
       this.caller
     );
     const signature = getPreValidatedSignatures(await this.caller.getAddress());

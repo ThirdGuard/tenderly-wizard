@@ -1,4 +1,4 @@
-const VirtualTestNet = require('./create-vnet').default;
+const VirtualTestNet = require('./scripts/create-vnet').default;
 // import { start as wizardStart } from './wizard';
 const wizardStart = require('./wizard').start;
 

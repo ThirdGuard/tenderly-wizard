@@ -356,6 +356,7 @@ export const deployAccessControlSystemV2 = async (
   const accessControllerWhitelist = new AccessControllerWhitelist(
     acRolesAddr,
     caller,
+    "v2"
   );
   await accessControllerWhitelist.execute(invRolesAddr, accessControlSafeAddr);
 

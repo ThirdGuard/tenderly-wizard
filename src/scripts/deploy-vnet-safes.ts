@@ -6,6 +6,8 @@ import VirtualTestNet from "./create-vnet";
 import { ChainId } from "zodiac-roles-sdk";
 import { deployAccessControlSystemV1 } from "./deploy-roles-v1";
 import { RolesVersion } from "../utils/types";
+import yargs from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
 
 const { VIRTUAL_MAINNET_RPC } = process.env;
 
@@ -82,22 +84,17 @@ async function setGas() {
 }
 
 async function main() {
-    const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10)
-    // @note tenderly fork ID defaults to 1 if not set in .env
-
-
-    // @todo get roles version from node args
-    // Get roles version from node args
-    const rolesVersion = process.argv.find(arg => arg.startsWith('--roles-version=')).split('=')[1];
-
-    if (!rolesVersion || (rolesVersion !== 'v1' && rolesVersion !== 'v2')) {
-        console.error('Invalid or missing roles version. Please specify --roles-version=v1 or --roles-version=v2');
-        process.exit(1);
-    }
-
+    const { ROLES_VERSION: rolesVersion } = process.env;
     console.log(`Deploying with roles version: ${rolesVersion}`);
 
-    // await deploySafesOnVnet(chainId as ChainId, rolesVersion);
+    // @note tenderly fork ID defaults to 1 if not set in .env
+    const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10)
+
+
+    await deploySafesOnVnet(chainId as ChainId, rolesVersion as RolesVersion);
 }
 
-main();
+main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+});

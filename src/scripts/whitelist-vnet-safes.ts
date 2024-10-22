@@ -4,26 +4,55 @@ import { ethers, network } from "hardhat";
 import VirtualTestNet from "./create-vnet";
 import { ChainId } from "zodiac-roles-sdk";
 import { executeWhitelistV2 } from "../whitelist/whitelist-class";
+import path from "path";
+import fs from 'fs';
+import { RolesVersion } from "../utils/types";
 
 const { VIRTUAL_MAINNET_RPC } = process.env;
 
-export async function whitelistSafes() {
-    // @todo get file fromt node args
-    const input = process.argv.find(arg => arg.startsWith('--input=')).split('=')[1];
+// set directory for roles to src/roles 
+const rolesDirectory = path.join(__dirname, 'src', 'roles');
 
-    if (!input) {
-        console.error('No input file specified');
+export async function whitelistSafes(rolesDirectory: string) {
+    // find all files named permissions.ts in the src/roles directory
+    let permissionsFiles: string[];
+    try {
+        permissionsFiles = findPermissionsFiles(rolesDirectory);
+    } catch (error) {
+        console.error('Error finding permissions files:', error);
         process.exit(1);
+    }
+
+    // if no permissions files are found, throw an error
+    if (permissionsFiles.length === 0) {
+        throw new Error(`No permissions.ts files found in the ${rolesDirectory} directory or its subdirectories.`);
     }
 
     // set gas for all accounts
     await setGas();
+
+    const { ROLES_VERSION: rolesVersion } = process.env;
 
     // get chain
     const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10) as ChainId
 
     /* @note add all whilist execution code here */
     /*********************************************/
+    // iterate all permissions files
+    for (const file of permissionsFiles) {
+        const permissions = require(file).default;
+
+        // Determine the chainId based on the file path or other logic
+        // For this example, we'll use a default chainId of 1 (Ethereum mainnet)
+        const chainId: ChainId = 1;
+
+        try {
+            await executeWhitelistV2(permissions, chainId, rolesVersion as RolesVersion);
+            console.log(`Whitelist executed successfully for ${file}`);
+        } catch (error) {
+            console.error(`Error executing whitelist for ${file}:`, error);
+        }
+    }
 
     switch (chainId) {
         case 1:
@@ -79,8 +108,35 @@ async function setGas() {
     ]);
 }
 
+function findPermissionsFiles(dir: string): string[] {
+    if (!fs.existsSync(dir)) {
+        throw new Error(`The directory ${dir} does not exist.`);
+    }
+
+    let results: string[] = [];
+    const files = fs.readdirSync(dir);
+
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+
+        if (stat.isDirectory()) {
+            results = results.concat(findPermissionsFiles(filePath));
+        } else if (file === 'permissions.ts') {
+            results.push(filePath);
+        }
+    }
+
+    return results;
+}
+
 async function main() {
-    await whitelistSafes();
+    // const { ROLES_DIRECTORY } = process.env;
+    // if (!ROLES_DIRECTORY) {
+    //     throw new Error('ROLES_DIRECTORY is not set in the .env file');
+    // }
+    // await whitelistSafes(ROLES_DIRECTORY);
+    await whitelistSafes(rolesDirectory);
 }
 
 main();
