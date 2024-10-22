@@ -10,7 +10,7 @@
         "start": "ts-node src/index.ts",
         "test": "hardhat test",
         "deploy:vnet": "hardhat run src/scripts/deploy-vnet-safes.ts --network virtual_mainnet",
-        "deploy:whitelist": "hardhat run src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet --input-file $1",
+        "deploy:whitelist": "hardhat run src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet",
         "save:vnet-snapshot": "hardhat run src/scripts/save-vnet-snapshot.ts --network virtual_mainnet"
     },
     "keywords": [

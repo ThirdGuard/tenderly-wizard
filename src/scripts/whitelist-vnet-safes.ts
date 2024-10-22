@@ -10,9 +10,6 @@ import { RolesVersion } from "../utils/types";
 
 const { VIRTUAL_MAINNET_RPC } = process.env;
 
-// set directory for roles to src/roles 
-const rolesDirectory = path.join(__dirname, 'src', 'roles');
-
 export async function whitelistSafes(rolesDirectory: string) {
     // find all files named permissions.ts in the src/roles directory
     let permissionsFiles: string[];
@@ -31,7 +28,8 @@ export async function whitelistSafes(rolesDirectory: string) {
     // set gas for all accounts
     await setGas();
 
-    const { ROLES_VERSION: rolesVersion } = process.env;
+    // get roles version from .env
+    const rolesVersion = process.env.ROLES_VERSION as RolesVersion;
 
     // get chain
     const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10) as ChainId
@@ -42,34 +40,31 @@ export async function whitelistSafes(rolesDirectory: string) {
     for (const file of permissionsFiles) {
         const permissions = require(file).default;
 
-        // Determine the chainId based on the file path or other logic
-        // For this example, we'll use a default chainId of 1 (Ethereum mainnet)
-        const chainId: ChainId = 1;
-
         try {
-            await executeWhitelistV2(permissions, chainId, rolesVersion as RolesVersion);
+
+            // switch (chainId) {
+            //     case 1:
+            //         // eth whitelists
+            //         break;
+            //     case 8453:
+            //         // base whitelists
+            //         // aerodrome 
+            //         // await executeWhitelistV2(aerodromePermissions, chainId)
+            //         break;
+            //     case 137:
+            //         // polygon whitelists
+            //         break;
+            //     default:
+            //         break;
+            // }
+
+            // @audit need to find a way to detect the chain that the permissions file is for
+            await executeWhitelistV2(permissions, chainId, rolesVersion);
             console.log(`Whitelist executed successfully for ${file}`);
         } catch (error) {
             console.error(`Error executing whitelist for ${file}:`, error);
         }
     }
-
-    switch (chainId) {
-        case 1:
-            // eth whitelists
-            break;
-        case 8453:
-            // base whitelists
-            // aerodrome 
-            // await executeWhitelistV2(aerodromePermissions, chainId)
-            break;
-        case 137:
-            // polygon whitelists
-            break;
-        default:
-            break;
-    }
-
     /*********************************************/
     /*********************************************/
 
@@ -131,6 +126,10 @@ function findPermissionsFiles(dir: string): string[] {
 }
 
 async function main() {
+    // set directory for roles to src/roles 
+    const rolesDirectory = path.join(__dirname, 'src', 'roles');
+
+    // @audit add roles directory path to .env for more flexibility
     // const { ROLES_DIRECTORY } = process.env;
     // if (!ROLES_DIRECTORY) {
     //     throw new Error('ROLES_DIRECTORY is not set in the .env file');

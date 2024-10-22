@@ -268,7 +268,8 @@ export const deployAccessControlSystemV1 = async (
   const [caller] = await ethers.getSigners();
   const accessControllerWhitelist = new AccessControllerWhitelist(
     acRolesAddr,
-    caller
+    caller,
+    "v1"
   );
   await accessControllerWhitelist.execute(invRolesAddr, accessControlSafeAddr);
 

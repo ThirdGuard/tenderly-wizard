@@ -23,6 +23,7 @@ export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVer
     let base: any;
 
     if (rolesVersion === 'v1') {
+        console.log("Deploying with roles version: v1");
         base = await deployAccessControlSystemV1(chainId, {
             proxied: true,
             managerEOAs: [managerEOAs.address],
@@ -32,6 +33,7 @@ export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVer
             sysAdminAddresses: [sysAdmins.address],
         });
     } else {
+        console.log("Deploying with roles version: v2");
         base = await deployAccessControlSystemV2(chainId, {
             proxied: true,
             managerEOAs: [managerEOAs.address],
