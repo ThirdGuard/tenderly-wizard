@@ -12,7 +12,6 @@
         "tenderly-wizard": "ts-node src/index.ts",
         "start": "ts-node src/index.ts",
         "build": "tsc",
-        "test": "npm build && npm pack &&  npm install -g ./tenderly-wizard-1.0.6.tgz",
         "deploy:vnet": "hardhat run src/scripts/deploy-vnet-safes.ts --network virtual_mainnet",
         "deploy:whitelist": "hardhat run src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet",
         "save:vnet-snapshot": "hardhat run src/scripts/save-vnet-snapshot.ts --network virtual_mainnet"

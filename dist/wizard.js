@@ -119,12 +119,7 @@ async function start() {
         const confirmDeploy = await terminal_kit_1.terminal.yesOrNo().promise;
         if (confirmDeploy === null || confirmDeploy === void 0 ? void 0 : confirmDeploy.valueOf()) {
             console.log("\nDeploying default safes...");
-            // const output = execSync(`npm run deploy:vnet`, { 
-            //     stdio: 'pipe',
-            //     cwd: '/path/to/your/package/directory'
-            //   }).toString();
-            // const output = execSync(`cd /path/to/package && npm run deploy:vnet`, { stdio: 'pipe' }).toString();
-            const output = (0, child_process_1.execSync)(`tenderly-wizard deploy:vnet`, { stdio: 'pipe' }).toString();
+            const output = (0, child_process_1.execSync)(`npm run deploy:vnet`, { stdio: 'pipe' }).toString();
             console.log(output);
             console.log("\nDeployed default safes successfully");
         }

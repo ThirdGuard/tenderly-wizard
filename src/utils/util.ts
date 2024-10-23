@@ -250,8 +250,8 @@ export function updatePackageJson() {
   // dist/scripts/save-vnet-snapshot.js
 
   const scriptsToAdd = {
-    "deploy:vnet": `hardhat run ${appPath}/src/scripts/deploy-vnet-safes.ts --network virtual_mainnet`,
-    "deploy:whitelist": `hardhat run ${appPath}/src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet`,
+    "deploy:vnet": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
+    "deploy:whitelist": `hardhat run ${appPath}/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
     "save:vnet-snapshot": `hardhat run ${appPath}/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
   };
 
