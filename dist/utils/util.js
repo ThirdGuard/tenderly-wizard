@@ -175,8 +175,6 @@ function updatePackageJson() {
     console.log("tenderlyWizardPath: ", tenderlyWizardPath);
     const appPath = (0, child_process_1.execSync)(`readlink -f ${tenderlyWizardPath}`).toString().trim().replace(/(.*tenderly-wizard).*/, '$1');
     console.log("appPath: ", appPath);
-    // /Users/michaellungu/.nvm/versions/node/v20.13.0/lib/node_modules/tenderly-wizard/src/scripts/save-vnet-snapshot.ts
-    // dist/scripts/save-vnet-snapshot.js
     const scriptsToAdd = {
         "deploy:vnet": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
         "deploy:whitelist": `hardhat run ${appPath}/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,

@@ -186,7 +186,7 @@ export function findPermissionsFiles(dir: string): string[] {
 }
 
 
-export function findWhitelistClasses(whitelistDir: string): string[] {
+export function findWhitelistClasses(whitelistDir: string): { relativePath: string, className: string }[] {
   const project = new Project();
 
   // Add all TypeScript files from the whitelist directory to the project
@@ -196,7 +196,7 @@ export function findWhitelistClasses(whitelistDir: string): string[] {
     }
   });
 
-  const whitelistExtensions: string[] = [];
+  const whitelistExtensions: { relativePath: string, className: string }[] = [];
 
   // Iterate through all source files
   project.getSourceFiles().forEach(sourceFile => {
@@ -212,7 +212,11 @@ export function findWhitelistClasses(whitelistDir: string): string[] {
           node.getText().includes('Whitelist')
         )
       )) {
-        whitelistExtensions.push(classDeclaration.getName() || 'AnonymousClass');
+        const relativePath = path.relative(
+          path.dirname(path.resolve(__dirname, '../scripts/execute-whitelist-v1.ts')),
+          sourceFile.getFilePath()
+        );
+        whitelistExtensions.push({ relativePath, className: classDeclaration.getName() ?? '' });
       }
     });
   });
@@ -221,7 +225,6 @@ export function findWhitelistClasses(whitelistDir: string): string[] {
 
   return whitelistExtensions;
 }
-
 
 export function checkRequiredEnvVariables(requiredVariables: string[]) {
   const missingVariables = requiredVariables.filter((variable) => !process.env[variable]);
@@ -244,10 +247,6 @@ export function updatePackageJson() {
 
   const appPath = execSync(`readlink -f ${tenderlyWizardPath}`).toString().trim().replace(/(.*tenderly-wizard).*/, '$1')
   console.log("appPath: ", appPath)
-
-  // /Users/michaellungu/.nvm/versions/node/v20.13.0/lib/node_modules/tenderly-wizard/src/scripts/save-vnet-snapshot.ts
-
-  // dist/scripts/save-vnet-snapshot.js
 
   const scriptsToAdd = {
     "deploy:vnet": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,

@@ -7,7 +7,6 @@ exports.start = void 0;
 const terminal_kit_1 = require("terminal-kit");
 const child_process_1 = require("child_process");
 const virtual_test_net_1 = __importDefault(require("./scripts/virtual-test-net")); // Import the VirtualTestNet class
-const util_1 = require("./utils/util");
 async function getTestnetList() {
     const vnets = await virtual_test_net_1.default.listVirtualTestnets(); // Get the list of virtual testnets
     const testnets = vnets.map(vnet => vnet.displayName);
@@ -43,9 +42,9 @@ async function getTestnetList() {
     return testnet;
 }
 async function start() {
-    var _a, _b, _c, _d;
     // update target repo's package.json with scripts
-    (0, util_1.updatePackageJson)();
+    // updatePackageJson()
+    var _a, _b, _c, _d;
     const rolesVersions = ["V1", "V2"];
     terminal_kit_1.terminal.grabInput(true);
     terminal_kit_1.terminal.on('key', (name, matches, data) => {

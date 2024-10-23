@@ -8,7 +8,7 @@ const path_1 = __importDefault(require("path"));
 // @ts-ignore
 const hardhat_1 = require("hardhat");
 const util_1 = require("../utils/util");
-async function whitelistSafesV1(whitelistDirectory = path_1.default.join(__dirname, 'src', 'whitelist')) {
+async function whitelistSafesV1(whitelistDirectory = path_1.default.join(__dirname, 'whitelist')) {
     // first do a check for safes and roles addresses in .env. Throw an error if any of them are missing
     const ok = (0, util_1.checkRequiredEnvVariables)(["ACCESS_CONTROL_SAFE_ADDRESS", "INVESTMENT_SAFE_ADDRESS", "INVESTMENT_ROLES_ADDRESS", "ACCESS_CONTROL_ROLES_ADDRESS"]);
     if (!ok) {

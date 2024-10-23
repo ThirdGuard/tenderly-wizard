@@ -12,7 +12,7 @@ async function main() {
     const { ROLES_VERSION } = process.env;
 
     if (ROLES_VERSION === "v1") {
-        await whitelistSafesV1();
+        await whitelistSafesV1('src/whitelist-test');
     } else if (ROLES_VERSION === "v2") {
         await whitelistSafesV2();
     }
