@@ -128,18 +128,17 @@ export async function executeWhitelistV2(
   });
 
   console.log(`${calls.length} permissions to execute`);
-
   const multiSendTx = encodeMulti(
     calls.map((data: `0x${string}`) => {
       return {
-        to: process.env.INVESTMENT_ROLES,
+        to: process.env.INVESTMENT_ROLES as string,
         value: "0",
         data,
       };
     })
   );
 
-  //security needs to indirectly execute this bundle via acRoles
+  // Security needs to indirectly execute this bundle via acRoles
   const acRoles = new Contract(
     process.env.ACCESS_CONTROL_ROLES!,
     ROLES_V2_MASTER_COPY_ABI,

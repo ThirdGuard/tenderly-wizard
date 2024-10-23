@@ -7,6 +7,7 @@ import path from "path";
 // @ts-ignore
 import { ethers, network } from "hardhat";
 import { Project, ClassDeclaration, SyntaxKind } from 'ts-morph';
+import { execSync } from "child_process";
 
 export enum OperationType {
   Call,
@@ -190,7 +191,7 @@ export function findWhitelistClasses(whitelistDir: string): string[] {
 
   // Add all TypeScript files from the whitelist directory to the project
   fs.readdirSync(whitelistDir, { recursive: true }).forEach(file => {
-    if (file.endsWith('.ts')) {
+    if (typeof file === 'string' && file.endsWith('.ts')) {
       project.addSourceFileAtPath(path.join(whitelistDir, file));
     }
   });
@@ -234,4 +235,40 @@ export function checkRequiredEnvVariables(requiredVariables: string[]) {
 
   console.log("All required environment variables are present.");
   return true;
+}
+
+export function updatePackageJson() {
+  // get the path of the tenderly-wizard package
+  const tenderlyWizardPath = execSync('which tenderly-wizard').toString().trim()
+  console.log("tenderlyWizardPath: ", tenderlyWizardPath)
+
+  const appPath = execSync(`readlink -f ${tenderlyWizardPath}`).toString().trim().replace(/(.*tenderly-wizard).*/, '$1')
+  console.log("appPath: ", appPath)
+
+  // /Users/michaellungu/.nvm/versions/node/v20.13.0/lib/node_modules/tenderly-wizard/src/scripts/save-vnet-snapshot.ts
+
+  // dist/scripts/save-vnet-snapshot.js
+
+  const scriptsToAdd = {
+    "deploy:vnet": `hardhat run ${appPath}/src/scripts/deploy-vnet-safes.ts --network virtual_mainnet`,
+    "deploy:whitelist": `hardhat run ${appPath}/src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet`,
+    "save:vnet-snapshot": `hardhat run ${appPath}/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
+  };
+
+  const packageJsonPath = path.join(process.cwd(), 'package.json');
+
+  if (fs.existsSync(packageJsonPath)) {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+
+    if (!packageJson.scripts) {
+      packageJson.scripts = {};
+    }
+
+    Object.assign(packageJson.scripts, scriptsToAdd);
+
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+    console.log('Scripts added to package.json successfully.');
+  } else {
+    console.error('package.json not found in the current working directory.');
+  }
 }

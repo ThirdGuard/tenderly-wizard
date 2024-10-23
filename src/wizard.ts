@@ -1,6 +1,8 @@
 import { terminal } from 'terminal-kit';
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import VirtualTestNet from './scripts/virtual-test-net'; // Import the VirtualTestNet class
+import path from 'path';
+import { updatePackageJson } from './utils/util';
 
 async function getTestnetList() {
     const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
@@ -40,6 +42,9 @@ async function getTestnetList() {
 }
 
 export async function start() {
+    // update target repo's package.json with scripts
+    updatePackageJson()
+
     const rolesVersions = ["V1", "V2"];
 
     terminal.grabInput(true);
@@ -85,7 +90,7 @@ export async function start() {
     // save snapshot
     if (action.selectedIndex == 2) {
         // @note this function needs to be called from terminal in order to work (needs hardhat to fetch the snapshot)
-        const output = execSync('yarn save:vnet-snapshot', { stdio: 'pipe' }).toString()
+        const output = execSync(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString()
         console.log(output)
     }
 
@@ -100,7 +105,7 @@ export async function start() {
         VirtualTestNet.addToEnvFile('TENDERLY_FORK_ID', testNet?.network_id?.toString() ?? '1')
 
         // overwrite Snapshot in .env
-        const output = execSync('npm run save:vnet-snapshot', { stdio: 'pipe' }).toString()
+        const output = execSync(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString()
 
         // log terminal output
         console.log(output)
@@ -129,7 +134,16 @@ export async function start() {
         const confirmDeploy = await terminal.yesOrNo().promise;
         if (confirmDeploy?.valueOf()) {
             console.log("\nDeploying default safes...");
-            const output = execSync(`npm run deploy:vnet`, { stdio: 'pipe' }).toString()
+
+            // const output = execSync(`npm run deploy:vnet`, { 
+            //     stdio: 'pipe',
+            //     cwd: '/path/to/your/package/directory'
+            //   }).toString();
+
+            // const output = execSync(`cd /path/to/package && npm run deploy:vnet`, { stdio: 'pipe' }).toString();
+
+
+            const output = execSync(`tenderly-wizard deploy:vnet`, { stdio: 'pipe' }).toString()
             console.log(output)
             console.log("\nDeployed default safes successfully");
         }
@@ -169,3 +183,4 @@ export async function start() {
 }
 
 // start();
+

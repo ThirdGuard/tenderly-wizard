@@ -27,9 +27,9 @@ export async function whitelistSafesV1(whitelistDirectory: string = path.join(__
     }
 
     // @todo iterate over all whitelists and execute them
-    // for (const whitelist of whitelists) {
-    //     const { default: whitelistClass } = require(whitelist);
-    //     const whitelistInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, caller);
-    //     await whitelistInstance.execute(ACCESS_CONTROL_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS);
-    // }
+    for (const whitelist of whitelists) {
+        const { default: whitelistClass } = require(whitelist);
+        const whitelistInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, caller);
+        await whitelistInstance.execute(ACCESS_CONTROL_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS);
+    }
 }

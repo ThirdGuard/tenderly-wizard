@@ -75,7 +75,7 @@ const chainConfigs: Partial<Record<ChainId, ChainConfig>> = {
 };
 
 export function getChainConfig(chainId: ChainId, rolesVersion: RolesVersion): ChainConfig[RolesVersion] {
-  const config = chainConfigs[chainId][rolesVersion];
+  const config = chainConfigs[chainId]?.[rolesVersion];
   if (!config) {
     throw new Error(`No configuration found for chain ID ${chainId} and roles version ${rolesVersion}`);
   }
