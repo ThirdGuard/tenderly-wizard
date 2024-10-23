@@ -1,5 +1,5 @@
 import { network } from "hardhat";
-import VirtualTestNet from "./create-vnet";
+import VirtualTestNet from "./virtual-test-net";
 
 async function getVnetSnapshot() {
   console.log("Getting snapshot")

@@ -1,7 +1,12 @@
-import { BigNumberish, Contract, PopulatedTransaction, ethers } from "ethers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { BigNumber, BigNumberish, Contract, PopulatedTransaction, utils } from "ethers";
 import { MetaTransaction, encodeMulti } from "ethers-multisend";
 import { formatBytes32String } from "ethers/lib/utils";
-import { network } from "hardhat";
+import fs from 'fs';
+import path from "path";
+// @ts-ignore
+import { ethers, network } from "hardhat";
+import { Project, ClassDeclaration, SyntaxKind } from 'ts-morph';
 
 export enum OperationType {
   Call,
@@ -90,13 +95,11 @@ export async function scopeAllowFunctions(
   return scopeFuncsTxs;
 }
 
-export const getABICodedAddress = (address: string) => {
-  return ethers.utils.defaultAbiCoder.encode(["address"], [address]);
-};
+export const getABICodedAddress = (address: string) => utils.defaultAbiCoder.encode(["address"], [address]);
 
 export function numberToBytes32(num: number): `0x${string}` {
   // Convert the number to a hex string
-  let hexString = ethers.utils.hexlify(num);
+  let hexString = utils.hexlify(num);
 
   // Remove the "0x" prefix
   hexString = hexString.slice(2);
@@ -108,9 +111,7 @@ export function numberToBytes32(num: number): `0x${string}` {
   return `0x${paddedHexString}`;
 }
 
-export const encodeBytes32String = formatBytes32String as (
-  text: string,
-) => `0x${string}`;
+export const encodeBytes32String = formatBytes32String as (text: string) => `0x${string}`;
 
 export const setERC20TokenBalances = async (
   tokenAddresses: string[],
@@ -127,9 +128,110 @@ export const setERC20TokenBalance = async (
   address: string,
   amount: BigNumberish
 ) => {
-  const value = ethers.BigNumber.from(amount).toHexString();
+  const value = BigNumber.from(amount).toHexString();
   await network.provider.request({
     method: "tenderly_setErc20Balance",
     params: [token, address, value.replace("0x0", "0x")],
   });
 };
+
+export async function setGas() {
+  const { VIRTUAL_MAINNET_RPC } = process.env;
+  let caller: SignerWithAddress;
+  let manager: SignerWithAddress;
+  let dummyOwnerOne: SignerWithAddress;
+  let dummyOwnerTwo: SignerWithAddress;
+  let dummyOwnerThree: SignerWithAddress;
+  let security: SignerWithAddress;
+  [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
+  const provider = new ethers.providers.JsonRpcProvider(VIRTUAL_MAINNET_RPC);
+  await provider.send("tenderly_setBalance", [
+    caller.address,
+    "0xDE0B6B3A7640000",
+  ]);
+  await provider.send("tenderly_setBalance", [
+    manager.address,
+    "0xDE0B6B3A7640000",
+  ]);
+  await provider.send("tenderly_setBalance", [
+    security.address,
+    "0xDE0B6B3A7640000",
+  ]);
+  await provider.send("tenderly_setBalance", [
+    dummyOwnerOne.address,
+    "0xDE0B6B3A7640000",
+  ]);
+}
+
+export function findPermissionsFiles(dir: string): string[] {
+  if (!fs.existsSync(dir)) {
+    throw new Error(`The directory ${dir} does not exist.`);
+  }
+
+  let results: string[] = [];
+  const files = fs.readdirSync(dir);
+
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+
+    if (stat.isDirectory()) {
+      results = results.concat(findPermissionsFiles(filePath));
+    } else if (file === 'permissions.ts') {
+      results.push(filePath);
+    }
+  }
+  return results;
+}
+
+
+export function findWhitelistClasses(whitelistDir: string): string[] {
+  const project = new Project();
+
+  // Add all TypeScript files from the whitelist directory to the project
+  fs.readdirSync(whitelistDir, { recursive: true }).forEach(file => {
+    if (file.endsWith('.ts')) {
+      project.addSourceFileAtPath(path.join(whitelistDir, file));
+    }
+  });
+
+  const whitelistExtensions: string[] = [];
+
+  // Iterate through all source files
+  project.getSourceFiles().forEach(sourceFile => {
+    // Find all class declarations in the file
+    const classes = sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration);
+
+    classes.forEach((classDeclaration: ClassDeclaration) => {
+      const heritage = classDeclaration.getHeritageClauses();
+
+      // Check if the class extends Whitelist
+      if (heritage.some(clause =>
+        clause.getTypeNodes().some(node =>
+          node.getText().includes('Whitelist')
+        )
+      )) {
+        whitelistExtensions.push(classDeclaration.getName() || 'AnonymousClass');
+      }
+    });
+  });
+
+  console.log('Classes extending Whitelist:', whitelistExtensions);
+
+  return whitelistExtensions;
+}
+
+
+export function checkRequiredEnvVariables(requiredVariables: string[]) {
+  const missingVariables = requiredVariables.filter((variable) => !process.env[variable]);
+
+  console.log({ missingVariables });
+
+  if (missingVariables.length > 0) {
+    console.log(`Missing required environment variables: ${missingVariables.join(", ")}`);
+    return false;
+  }
+
+  console.log("All required environment variables are present.");
+  return true;
+}

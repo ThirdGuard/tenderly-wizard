@@ -1,6 +1,6 @@
 import { terminal } from 'terminal-kit';
 import { execSync } from 'child_process';
-import VirtualTestNet from './scripts/create-vnet'; // Import the VirtualTestNet class
+import VirtualTestNet from './scripts/virtual-test-net'; // Import the VirtualTestNet class
 
 async function getTestnetList() {
     const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
@@ -100,7 +100,7 @@ export async function start() {
         VirtualTestNet.addToEnvFile('TENDERLY_FORK_ID', testNet?.network_id?.toString() ?? '1')
 
         // overwrite Snapshot in .env
-        const output = execSync('yarn save:vnet-snapshot', { stdio: 'pipe' }).toString()
+        const output = execSync('npm run save:vnet-snapshot', { stdio: 'pipe' }).toString()
 
         // log terminal output
         console.log(output)
