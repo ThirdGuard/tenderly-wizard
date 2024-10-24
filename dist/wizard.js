@@ -7,6 +7,7 @@ exports.start = void 0;
 const terminal_kit_1 = require("terminal-kit");
 const child_process_1 = require("child_process");
 const virtual_test_net_1 = __importDefault(require("./scripts/virtual-test-net")); // Import the VirtualTestNet class
+const util_1 = require("./utils/util");
 async function getTestnetList() {
     const vnets = await virtual_test_net_1.default.listVirtualTestnets(); // Get the list of virtual testnets
     const testnets = vnets.map(vnet => vnet.displayName);
@@ -42,9 +43,9 @@ async function getTestnetList() {
     return testnet;
 }
 async function start() {
-    // update target repo's package.json with scripts
-    // updatePackageJson()
     var _a, _b, _c, _d;
+    // update target repo's package.json with scripts
+    (0, util_1.updatePackageJson)();
     const rolesVersions = ["V1", "V2"];
     terminal_kit_1.terminal.grabInput(true);
     terminal_kit_1.terminal.on('key', (name, matches, data) => {
@@ -140,8 +141,13 @@ async function start() {
         const confirmDeploy = await terminal_kit_1.terminal.yesOrNo().promise;
         if (confirmDeploy === null || confirmDeploy === void 0 ? void 0 : confirmDeploy.valueOf()) {
             console.log("\nApplying whitelist...");
-            const output = (0, child_process_1.execSync)(`npm run deploy:whitelist`, { stdio: 'pipe' }).toString();
-            console.log(output);
+            // const output = execSync(`npm run deploy:whitelist`, { stdio: 'pipe', encoding: 'utf8', maxBuffer: 1024 * 1024 * 10 }).toString()
+            const output = executeWithLogs(`npm run deploy:whitelist`);
+            // console.log(output)
+            if (!output.success) {
+                console.error('Error details:', output.error);
+                console.error('Error output:', output.output);
+            }
             console.log("\nApplied whitelist successfully");
         }
     }
@@ -151,4 +157,37 @@ async function start() {
     terminal_kit_1.terminal.processExit(0);
 }
 exports.start = start;
+function executeWithLogs(command, options = {}) {
+    try {
+        // Merge default options with user provided options
+        const defaultOptions = {
+            encoding: 'utf8',
+            stdio: 'pipe',
+            maxBuffer: 1024 * 1024 * 10,
+            ...options
+        };
+        // Execute the command and capture output
+        const output = (0, child_process_1.execSync)(command, defaultOptions);
+        return {
+            success: true,
+            output,
+            error: null
+        };
+    }
+    catch (error) {
+        // Capture detailed error information
+        return {
+            success: false,
+            output: error.output ? error.output.toString() : null,
+            error: {
+                message: error.message,
+                status: error.status,
+                signal: error.signal,
+                stderr: error.stderr ? error.stderr.toString() : null,
+                stdout: error.stdout ? error.stdout.toString() : null,
+                command: error.cmd
+            }
+        };
+    }
+}
 // start();

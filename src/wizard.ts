@@ -1,5 +1,5 @@
 import { terminal } from 'terminal-kit';
-import { exec, execSync } from 'child_process';
+import { exec, execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import VirtualTestNet from './scripts/virtual-test-net'; // Import the VirtualTestNet class
 import path from 'path';
 import { updatePackageJson } from './utils/util';
@@ -43,7 +43,7 @@ async function getTestnetList() {
 
 export async function start() {
     // update target repo's package.json with scripts
-    // updatePackageJson()
+    updatePackageJson()
 
     const rolesVersions = ["V1", "V2"];
 
@@ -160,8 +160,14 @@ export async function start() {
         const confirmDeploy = await terminal.yesOrNo().promise;
         if (confirmDeploy?.valueOf()) {
             console.log("\nApplying whitelist...");
-            const output = execSync(`npm run deploy:whitelist`, { stdio: 'pipe' }).toString()
-            console.log(output)
+            // const output = execSync(`npm run deploy:whitelist`, { stdio: 'pipe', encoding: 'utf8', maxBuffer: 1024 * 1024 * 10 }).toString()
+
+            const output = executeWithLogs(`npm run deploy:whitelist`)
+            // console.log(output)
+            if (!output.success) {
+                console.error('Error details:', output.error);
+                console.error('Error output:', output.output);
+            }
             console.log("\nApplied whitelist successfully");
         }
     }
@@ -171,6 +177,40 @@ export async function start() {
     }
 
     terminal.processExit(0);
+}
+
+function executeWithLogs(command: string, options = {}) {
+    try {
+        // Merge default options with user provided options
+        const defaultOptions: ExecSyncOptionsWithStringEncoding = {
+            encoding: 'utf8',
+            stdio: 'pipe',
+            maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+            ...options
+        };
+
+        // Execute the command and capture output
+        const output = execSync(command, defaultOptions);
+        return {
+            success: true,
+            output,
+            error: null
+        };
+    } catch (error: any) {
+        // Capture detailed error information
+        return {
+            success: false,
+            output: error.output ? error.output.toString() : null,
+            error: {
+                message: error.message,
+                status: error.status,
+                signal: error.signal,
+                stderr: error.stderr ? error.stderr.toString() : null,
+                stdout: error.stdout ? error.stdout.toString() : null,
+                command: error.cmd
+            }
+        };
+    }
 }
 
 // start();

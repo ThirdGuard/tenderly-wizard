@@ -8,8 +8,10 @@ const path_1 = __importDefault(require("path"));
 // @ts-ignore
 const hardhat_1 = require("hardhat");
 const util_1 = require("../utils/util");
-async function whitelistSafesV1(whitelistDirectory = path_1.default.join(__dirname, 'whitelist')) {
-    // first do a check for safes and roles addresses in .env. Throw an error if any of them are missing
+async function whitelistSafesV1(whitelistDirectory = 'src/whitelist') {
+    const callerDir = process.cwd();
+    const absoluteWhitelistDirectory = path_1.default.resolve(callerDir, whitelistDirectory);
+    console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory);
     const ok = (0, util_1.checkRequiredEnvVariables)(["ACCESS_CONTROL_SAFE_ADDRESS", "INVESTMENT_SAFE_ADDRESS", "INVESTMENT_ROLES_ADDRESS", "ACCESS_CONTROL_ROLES_ADDRESS"]);
     if (!ok) {
         process.exit(1);
@@ -21,6 +23,7 @@ async function whitelistSafesV1(whitelistDirectory = path_1.default.join(__dirna
     // @todo grab all files from src/whitelist and those that are extensions of the whitelist class should be extracted into a new array
     let whitelists = [];
     try {
+        // console.log("whitelistDirectory: ", whitelistDirectory)
         whitelists = (0, util_1.findWhitelistClasses)(whitelistDirectory);
     }
     catch (error) {
@@ -28,10 +31,14 @@ async function whitelistSafesV1(whitelistDirectory = path_1.default.join(__dirna
         process.exit(1);
     }
     // @todo iterate over all whitelists and execute them
-    // for (const whitelist of whitelists) {
-    //     const { default: whitelistClass } = require(whitelist);
-    //     const whitelistInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, caller);
-    //     await whitelistInstance.execute(ACCESS_CONTROL_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS);
-    // }
+    for (const whitelist of whitelists) {
+        const { className, path: whitelistPath } = whitelist;
+        // import the whitelist class
+        const whitelistClass = require(whitelistPath)[className];
+        // instantiate the whitelist class
+        const whitelistClassInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, caller);
+        // execute the whitelist
+        await whitelistClassInstance.execute(ACCESS_CONTROL_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS);
+    }
 }
 exports.whitelistSafesV1 = whitelistSafesV1;

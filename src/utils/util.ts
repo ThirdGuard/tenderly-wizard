@@ -28,12 +28,16 @@ export interface MetaTransactionData {
   operation?: OperationType;
 }
 
-// Encodes multiple transactions so we can then use a Safe with multisend for atomic transacting
+/**
+ * Encodes multiple transactions so we can then use a Safe with multisend for atomic transacting
+ * @param {PopulatedTransaction[]} populatedTxs - Array of populated transactions
+ * @param {string} multisendAddr - Address of the multisend contract
+ * @returns {MetaTransaction} Encoded multi-transaction
+ */
 export function createMultisendTx(
   populatedTxs: PopulatedTransaction[],
   multisendAddr: string,
 ): MetaTransaction {
-  // console.log("encoding data");
   const safeTransactionData: MetaTransactionData[] = populatedTxs.map(
     (popTx) => ({
       to: popTx.to as string,
@@ -42,12 +46,15 @@ export function createMultisendTx(
     }),
   );
 
-  // console.log({ safeTransactionData });
-
   return encodeMulti(safeTransactionData, multisendAddr);
 }
 
-// When we have a single owner on a safe, the output of this function can be used as the signature parameter on a execTransaction call on a safe
+/**
+ * Generates pre-validated signatures for a single owner on a safe
+ * @param {string} from - Address of the signer
+ * @param {string} [initialString="0x"] - Initial string to prepend
+ * @returns {string} Pre-validated signature string
+ */
 export const getPreValidatedSignatures = (
   from: string,
   initialString = "0x",
@@ -58,7 +65,13 @@ export const getPreValidatedSignatures = (
   )}000000000000000000000000000000000000000000000000000000000000000001`;
 };
 
-// roles.scopeTarget helper function
+/**
+ * Helper function to scope targets in roles contract
+ * @param {string[]} targetAddrs - Array of target addresses
+ * @param {`0x${string}`} roleId - Role ID
+ * @param {Contract} roles - Roles contract instance
+ * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
+ */
 export async function scopeTargets(
   targetAddrs: string[],
   roleId: `0x${string}`,
@@ -66,7 +79,6 @@ export async function scopeTargets(
 ) {
   const scopeTargetTxs = await Promise.all(
     targetAddrs.map(async (target) => {
-      //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
       const tx = await roles.populateTransaction.scopeTarget(roleId, target);
       return tx;
     }),
@@ -74,7 +86,14 @@ export async function scopeTargets(
   return scopeTargetTxs;
 }
 
-// Helper to allows function calls without param scoping
+/**
+ * Helper to allow function calls without param scoping
+ * @param {string} target - Target contract address
+ * @param {string[]} sigs - Array of function signatures
+ * @param {number} roleId - Role ID
+ * @param {Contract} roles - Roles contract instance
+ * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
+ */
 export async function scopeAllowFunctions(
   target: string,
   sigs: string[],
@@ -83,7 +102,6 @@ export async function scopeAllowFunctions(
 ) {
   const scopeFuncsTxs = await Promise.all(
     sigs.map(async (sig) => {
-      // allowFunction on Roles allows a role member to call the function in question with no paramter scoping
       const tx = await roles.populateTransaction.allowFunction(
         roleId,
         target,
@@ -96,24 +114,39 @@ export async function scopeAllowFunctions(
   return scopeFuncsTxs;
 }
 
+/**
+ * Encodes an address as ABI
+ * @param {string} address - Address to encode
+ * @returns {string} ABI encoded address
+ */
 export const getABICodedAddress = (address: string) => utils.defaultAbiCoder.encode(["address"], [address]);
 
+/**
+ * Converts a number to bytes32 format
+ * @param {number} num - Number to convert
+ * @returns {`0x${string}`} Bytes32 representation of the number
+ */
 export function numberToBytes32(num: number): `0x${string}` {
-  // Convert the number to a hex string
   let hexString = utils.hexlify(num);
-
-  // Remove the "0x" prefix
   hexString = hexString.slice(2);
-
-  // Pad the hex string to make sure it's 64 characters long (32 bytes)
   const paddedHexString = hexString.padStart(64, "0");
-
-  // Add the "0x" prefix back
   return `0x${paddedHexString}`;
 }
 
+/**
+ * Encodes a string to bytes32 format
+ * @param {string} text - String to encode
+ * @returns {`0x${string}`} Bytes32 representation of the string
+ */
 export const encodeBytes32String = formatBytes32String as (text: string) => `0x${string}`;
 
+/**
+ * Sets ERC20 token balances for multiple tokens and a single recipient
+ * @param {string[]} tokenAddresses - Array of token addresses
+ * @param {string} recipient - Address of the recipient
+ * @param {BigNumberish} amount - Amount to set for each token
+ * @returns {Promise<void>}
+ */
 export const setERC20TokenBalances = async (
   tokenAddresses: string[],
   recipient: string,
@@ -124,6 +157,13 @@ export const setERC20TokenBalances = async (
       await setERC20TokenBalance(tokenAddress, recipient, amount)
   );
 
+/**
+ * Sets ERC20 token balance for a single token and recipient
+ * @param {string} token - Token address
+ * @param {string} address - Recipient address
+ * @param {BigNumberish} amount - Amount to set
+ * @returns {Promise<void>}
+ */
 export const setERC20TokenBalance = async (
   token: string,
   address: string,
@@ -136,6 +176,10 @@ export const setERC20TokenBalance = async (
   });
 };
 
+/**
+ * Sets gas balance for multiple addresses
+ * @returns {Promise<void>}
+ */
 export async function setGas() {
   const { VIRTUAL_MAINNET_RPC } = process.env;
   let caller: SignerWithAddress;
@@ -164,6 +208,11 @@ export async function setGas() {
   ]);
 }
 
+/**
+ * Finds all 'permissions.ts' files in a directory and its subdirectories
+ * @param {string} dir - Directory to search
+ * @returns {string[]} Array of file paths
+ */
 export function findPermissionsFiles(dir: string): string[] {
   if (!fs.existsSync(dir)) {
     throw new Error(`The directory ${dir} does not exist.`);
@@ -185,38 +234,35 @@ export function findPermissionsFiles(dir: string): string[] {
   return results;
 }
 
-
-export function findWhitelistClasses(whitelistDir: string): { relativePath: string, className: string }[] {
+/**
+ * Finds all classes that extend Whitelist in a directory
+ * @param {string} whitelistDir - Directory to search
+ * @returns {{ path: string, className: string }[]} Array of objects containing path and class name
+ */
+export function findWhitelistClasses(whitelistDir: string): { path: string, className: string }[] {
   const project = new Project();
 
-  // Add all TypeScript files from the whitelist directory to the project
   fs.readdirSync(whitelistDir, { recursive: true }).forEach(file => {
     if (typeof file === 'string' && file.endsWith('.ts')) {
       project.addSourceFileAtPath(path.join(whitelistDir, file));
     }
   });
 
-  const whitelistExtensions: { relativePath: string, className: string }[] = [];
+  const whitelistExtensions: { path: string, className: string }[] = [];
 
-  // Iterate through all source files
   project.getSourceFiles().forEach(sourceFile => {
-    // Find all class declarations in the file
     const classes = sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration);
 
     classes.forEach((classDeclaration: ClassDeclaration) => {
       const heritage = classDeclaration.getHeritageClauses();
 
-      // Check if the class extends Whitelist
       if (heritage.some(clause =>
         clause.getTypeNodes().some(node =>
           node.getText().includes('Whitelist')
         )
       )) {
-        const relativePath = path.relative(
-          path.dirname(path.resolve(__dirname, '../scripts/execute-whitelist-v1.ts')),
-          sourceFile.getFilePath()
-        );
-        whitelistExtensions.push({ relativePath, className: classDeclaration.getName() ?? '' });
+        const absolutePath = sourceFile.getFilePath();
+        whitelistExtensions.push({ path: absolutePath, className: classDeclaration.getName() ?? '' });
       }
     });
   });
@@ -226,6 +272,11 @@ export function findWhitelistClasses(whitelistDir: string): { relativePath: stri
   return whitelistExtensions;
 }
 
+/**
+ * Checks if required environment variables are present
+ * @param {string[]} requiredVariables - Array of required variable names
+ * @returns {boolean} True if all required variables are present, false otherwise
+ */
 export function checkRequiredEnvVariables(requiredVariables: string[]) {
   const missingVariables = requiredVariables.filter((variable) => !process.env[variable]);
 
@@ -240,8 +291,11 @@ export function checkRequiredEnvVariables(requiredVariables: string[]) {
   return true;
 }
 
+/**
+ * Updates package.json with new scripts
+ * @returns {void}
+ */
 export function updatePackageJson() {
-  // get the path of the tenderly-wizard package
   const tenderlyWizardPath = execSync('which tenderly-wizard').toString().trim()
   console.log("tenderlyWizardPath: ", tenderlyWizardPath)
 
