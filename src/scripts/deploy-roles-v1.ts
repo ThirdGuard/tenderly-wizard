@@ -8,7 +8,7 @@ import {
   deploySafe,
   removeDeployerAsOwner,
 } from "./deploy-safe-v1";
-import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1 } from "../utils/constants";
+import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1, GAS_LIMIT } from "../utils/constants";
 // @ts-ignore
 import { ethers } from "hardhat";
 import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
@@ -94,7 +94,10 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
       tx.gasPrice,
       tx.gasToken,
       tx.refundReceiver,
-      signature
+      signature,
+      {
+        gasLimit: GAS_LIMIT
+      }
     );
     const txReceipt = await enableTx.wait();
     const txData = txReceipt.events?.find(
@@ -139,7 +142,10 @@ export async function setRolesMultisend(safeAddr: string, rolesAddr: string, cha
       tx.gasPrice,
       tx.gasToken,
       tx.refundReceiver,
-      signature
+      signature,
+      {
+        gasLimit: GAS_LIMIT
+      }
     );
     console.info(
       colors.blue(`ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`)
@@ -189,7 +195,10 @@ export async function assignRoles(
     tx.gasPrice,
     tx.gasToken,
     tx.refundReceiver,
-    signature
+    signature,
+    {
+      gasLimit: GAS_LIMIT
+    }
   );
 
   console.info(

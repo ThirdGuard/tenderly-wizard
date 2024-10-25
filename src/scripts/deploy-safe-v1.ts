@@ -7,7 +7,6 @@ import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
 import { ChainConfig } from "../utils/types";
 import { SAFE_OPERATION_DELEGATECALL, tx } from "../utils/constants";
 
-// @todo update imports to use chain selector
 export async function deploySafe(chainConfig: ChainConfig["v1"]) {
     const [caller] = await ethers.getSigners()
     const safeMaster = new ethers.Contract(chainConfig.SAFE_MASTER_COPY_ADDR, SAFE_MASTER_COPY_ABI, caller)

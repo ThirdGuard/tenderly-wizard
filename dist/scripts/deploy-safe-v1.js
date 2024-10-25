@@ -11,7 +11,6 @@ const colors_1 = __importDefault(require("colors"));
 const hardhat_1 = require("hardhat");
 const util_1 = require("../utils/util");
 const constants_1 = require("../utils/constants");
-// @todo update imports to use chain selector
 async function deploySafe(chainConfig) {
     var _a, _b;
     const [caller] = await hardhat_1.ethers.getSigners();
