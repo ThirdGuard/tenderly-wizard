@@ -80,7 +80,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
   const invSafe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
   const enabled = await invSafe.isModuleEnabled(rolesAddr);
   console.log(
-    `ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr}? ${enabled}`
+    `ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr} ${enabled}`
   );
   if (!enabled) {
     const enable = await invSafe.populateTransaction.enableModule(rolesAddr);
@@ -94,10 +94,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
       tx.gasPrice,
       tx.gasToken,
       tx.refundReceiver,
-      signature,
-      {
-        gasLimit: GAS_LIMIT
-      }
+      signature
     );
     const txReceipt = await enableTx.wait();
     const txData = txReceipt.events?.find(
@@ -142,10 +139,7 @@ export async function setRolesMultisend(safeAddr: string, rolesAddr: string, cha
       tx.gasPrice,
       tx.gasToken,
       tx.refundReceiver,
-      signature,
-      {
-        gasLimit: GAS_LIMIT
-      }
+      signature
     );
     console.info(
       colors.blue(`ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`)
@@ -196,9 +190,6 @@ export async function assignRoles(
     tx.gasToken,
     tx.refundReceiver,
     signature,
-    {
-      gasLimit: GAS_LIMIT
-    }
   );
 
   console.info(
@@ -243,8 +234,6 @@ export const deployAccessControlSystemV1 = async (
       options.proxied,
       chainConfig
     ));
-
-  console.log({ invRolesAddr });
 
   await enableRolesModifier(investmentSafeAddr, invRolesAddr);
   //Set the multisend address on roles so that manager can send multisend txs later on
@@ -297,8 +286,8 @@ export const deployAccessControlSystemV1 = async (
   await addSafeSigners(accessControlSafeAddr, options.sysAdminAddresses, chainConfig);
 
   //Remove the deployer address as owner and rewrite signing threshold
-  await removeDeployerAsOwner(investmentSafeAddr, options.invSafeThreshold);
-  await removeDeployerAsOwner(accessControlSafeAddr, options.acSafeThreshold);
+  // await removeDeployerAsOwner(investmentSafeAddr, options.invSafeThreshold);
+  // await removeDeployerAsOwner(accessControlSafeAddr, options.acSafeThreshold);
 
   return {
     acSafe: accessControlSafeAddr,

@@ -45,7 +45,9 @@ async function getTestnetList() {
 async function start() {
     var _a, _b, _c, _d;
     // update target repo's package.json with scripts
-    (0, util_1.updatePackageJson)();
+    if (!process.env.IS_DEV) {
+        (0, util_1.updatePackageJson)();
+    }
     const rolesVersions = ["V1", "V2"];
     terminal_kit_1.terminal.grabInput(true);
     terminal_kit_1.terminal.on('key', (name, matches, data) => {

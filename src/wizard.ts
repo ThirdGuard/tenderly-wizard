@@ -43,7 +43,9 @@ async function getTestnetList() {
 
 export async function start() {
     // update target repo's package.json with scripts
-    updatePackageJson()
+    if (!process.env.IS_DEV) {
+        updatePackageJson()
+    }
 
     const rolesVersions = ["V1", "V2"];
 

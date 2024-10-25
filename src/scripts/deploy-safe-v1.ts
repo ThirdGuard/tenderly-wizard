@@ -64,7 +64,7 @@ export async function addSafeSigners(safeAddr: string, newOwners: string[], chai
             tx.gasPrice,
             tx.gasToken,
             tx.refundReceiver,
-            signature
+            signature,
         )
         const txReceipt = await addSignersTx.wait();
         const txData = txReceipt.events?.filter((x: any) => x.event === "AddedOwner");

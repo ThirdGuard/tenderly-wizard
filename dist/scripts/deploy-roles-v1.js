@@ -52,12 +52,10 @@ async function enableRolesModifier(safeAddr, rolesAddr) {
     const signature = (0, util_1.getPreValidatedSignatures)(caller.address);
     const invSafe = new hardhat_1.ethers.Contract(safeAddr, safe_master_copy_v1_json_1.default, caller);
     const enabled = await invSafe.isModuleEnabled(rolesAddr);
-    console.log(`ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr}? ${enabled}`);
+    console.log(`ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr} ${enabled}`);
     if (!enabled) {
         const enable = await invSafe.populateTransaction.enableModule(rolesAddr);
-        const enableTx = await invSafe.execTransaction(safeAddr, constants_1.tx.zeroValue, (_a = enable.data) !== null && _a !== void 0 ? _a : "", constants_1.tx.operation, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature, {
-            gasLimit: constants_1.GAS_LIMIT
-        });
+        const enableTx = await invSafe.execTransaction(safeAddr, constants_1.tx.zeroValue, (_a = enable.data) !== null && _a !== void 0 ? _a : "", constants_1.tx.operation, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature);
         const txReceipt = await enableTx.wait();
         const txData = (_b = txReceipt.events) === null || _b === void 0 ? void 0 : _b.find((x) => x.event == "EnabledModule");
         const moduleEnabledFromEvent = (_c = txData === null || txData === void 0 ? void 0 : txData.args) === null || _c === void 0 ? void 0 : _c.module;
@@ -78,9 +76,7 @@ async function setRolesMultisend(safeAddr, rolesAddr, chainConfig) {
         const setMsPopTx = await roles.populateTransaction.setMultisend(chainConfig.MULTISEND_ADDR);
         const safe = new hardhat_1.ethers.Contract(safeAddr, safe_master_copy_v1_json_1.default, caller);
         const signature = (0, util_1.getPreValidatedSignatures)(caller.address);
-        await safe.execTransaction(rolesAddr, constants_1.tx.zeroValue, setMsPopTx.data, constants_1.tx.operation, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature, {
-            gasLimit: constants_1.GAS_LIMIT
-        });
+        await safe.execTransaction(rolesAddr, constants_1.tx.zeroValue, setMsPopTx.data, constants_1.tx.operation, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature);
         console.info(colors_1.default.blue(`ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`));
     }
     else {
@@ -99,9 +95,7 @@ async function assignRoles(safeAddr, rolesAddr, memberAddrs, roleId, chainConfig
         return await roles.populateTransaction.assignRoles(memberAddr, [roleId], [true]);
     }));
     const metaTxs = (0, util_1.createMultisendTx)(assignRolesPopTx, chainConfig.MULTISEND_ADDR);
-    await acSafe.execTransaction(chainConfig.MULTISEND_ADDR, constants_1.tx.zeroValue, metaTxs.data, constants_1.SAFE_OPERATION_DELEGATECALL, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature, {
-        gasLimit: constants_1.GAS_LIMIT
-    });
+    await acSafe.execTransaction(chainConfig.MULTISEND_ADDR, constants_1.tx.zeroValue, metaTxs.data, constants_1.SAFE_OPERATION_DELEGATECALL, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature);
     console.info(colors_1.default.blue(`Role member: ${memberAddrs.toString()} has been assigned role id: ${constants_1.MANAGER_ROLE_ID_V1}`));
 }
 exports.assignRoles = assignRoles;
@@ -115,7 +109,6 @@ const deployAccessControlSystemV1 = async (chainId, options, deployed) => {
     // //Deploy and enable a Roles modifier on the investment safe
     const invRolesAddr = (deployed === null || deployed === void 0 ? void 0 : deployed.invRolesAddr) ||
         (await deployRoles(accessControlSafeAddr, investmentSafeAddr, investmentSafeAddr, options.proxied, chainConfig));
-    console.log({ invRolesAddr });
     await enableRolesModifier(investmentSafeAddr, invRolesAddr);
     //Set the multisend address on roles so that manager can send multisend txs later on
     await setRolesMultisend(accessControlSafeAddr, invRolesAddr, chainConfig);
@@ -138,8 +131,8 @@ const deployAccessControlSystemV1 = async (chainId, options, deployed) => {
     await (0, deploy_safe_v1_1.addSafeSigners)(investmentSafeAddr, options.sysAdminAddresses, chainConfig);
     await (0, deploy_safe_v1_1.addSafeSigners)(accessControlSafeAddr, options.sysAdminAddresses, chainConfig);
     //Remove the deployer address as owner and rewrite signing threshold
-    await (0, deploy_safe_v1_1.removeDeployerAsOwner)(investmentSafeAddr, options.invSafeThreshold);
-    await (0, deploy_safe_v1_1.removeDeployerAsOwner)(accessControlSafeAddr, options.acSafeThreshold);
+    // await removeDeployerAsOwner(investmentSafeAddr, options.invSafeThreshold);
+    // await removeDeployerAsOwner(accessControlSafeAddr, options.acSafeThreshold);
     return {
         acSafe: accessControlSafeAddr,
         invSafe: investmentSafeAddr,

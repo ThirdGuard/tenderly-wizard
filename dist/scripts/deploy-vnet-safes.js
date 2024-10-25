@@ -16,10 +16,8 @@ async function deploySafesOnVnet(chainId, rolesVersion) {
     await (0, util_1.setGas)();
     let contractsAddr;
     let deployedSnapshot;
-    console.log(`Deploying with roles version: ${rolesVersion}`);
     let base;
     if (rolesVersion === 'v1') {
-        console.log("Deploying with roles version: v1");
         base = await (0, deploy_roles_v1_1.deployAccessControlSystemV1)(chainId, {
             proxied: true,
             managerEOAs: [managerEOAs.address],
@@ -30,7 +28,6 @@ async function deploySafesOnVnet(chainId, rolesVersion) {
         });
     }
     else {
-        console.log("Deploying with roles version: v2");
         base = await (0, deploy_roles_v2_1.deployAccessControlSystemV2)(chainId, {
             proxied: true,
             managerEOAs: [managerEOAs.address],
