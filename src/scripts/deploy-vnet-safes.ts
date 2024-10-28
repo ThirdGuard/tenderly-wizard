@@ -7,10 +7,9 @@ import { deployAccessControlSystemV2 } from "./deploy-roles-v2";
 import { RolesVersion } from "../utils/types";
 import { setGas } from "../utils/util";
 
-const { VIRTUAL_MAINNET_RPC } = process.env;
-
 export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVersion) {
-    const [sysAdmins, securityEOAs, managerEOAs] = await ethers.getSigners();
+    // @note first PK is caller (_)
+    const [_, sysAdmins, securityEOAs, managerEOAs] = await ethers.getSigners();
 
     await setGas();
     let contractsAddr;

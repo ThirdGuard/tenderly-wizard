@@ -1,67 +1,63 @@
 import SAFE_MASTER_COPY_V1_ABI from "../../contracts/safe_master_copy_v1.json";
-import SAFE_MASTER_COPY_V2_ABI from "../../contracts/safe_master_copy_v2.json";
 import { Whitelist } from "../whitelist-class";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { LedgerSigner } from "@anders-t/ethers-ledger";
 // @ts-ignore
 import { ethers } from "hardhat";
-import { createMultisendTx, getPreValidatedSignatures, scopeTargets } from "../../utils/util";
-import { BASE_MULTISEND_ADDR, GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from "../../utils/constants";
-import { RolesVersion } from "../../utils/types";
+import { createMultisendTx, getPreValidatedSignatures, scopeTargetsV1 } from "../../utils/util";
+import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V1, tx } from "../../utils/constants";
+import { getChainConfig } from "../../utils/roles-chain-config";
+import { ChainConfig } from "../../utils/types";
+import { ChainId } from "zodiac-roles-sdk/.";
 
 const ROLES_FUNCTIONS_ALLOWED = [
   "revokeTarget",
   "scopeTarget",
-  "allowFunction",
-  "revokeFunction",
+  "scopeAllowFunction",
+  "scopeRevokeFunction",
   "scopeFunction",
-  //   "scopeFunctionExecutionOptions",
-  //   "scopeParameter",
-  //   "scopeParameterAsOneOf",
-  //   "unscopeParameter",
-  "allowTarget",
-];
+  "scopeFunctionExecutionOptions",
+  "scopeParameter",
+  "scopeParameterAsOneOf",
+  "unscopeParameter",
+  "allowTarget"
+]
+
 
 // this whitelisting class is used in the roles deployment so that security has the ability to scope functions
-export class AccessControllerWhitelist extends Whitelist {
-  rolesVersion: RolesVersion;
-  constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner, rolesVersion: RolesVersion) {
+export class AccessControllerWhitelistV1 extends Whitelist {
+  chainConfig: ChainConfig["v1"];
+  constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner) {
     super(acRolesAddr, caller);
-    this.rolesVersion = rolesVersion;
+    const chainId = parseInt(process.env.TENDERLY_FORK_ID || "1", 10)
+    this.chainConfig = getChainConfig(chainId as ChainId, "v1");
   }
 
   // Allow the security team to call all the functions listed in `ROLES_FUNCTIONS_ALLOWED`on the investment roles modifier
   async getFullScope(invRolesAddr: string) {
     // Nested roles usage here can be confusing. The invRoles is the target that is scoped on the acRoles
-    // Must scopeTarget before roles.allowFunction can be called
-    const getScopedTargetTxs = await scopeTargets(
-      [invRolesAddr],
-      SECURITY_ROLE_ID_V2,
-      this.roles
-    );
+    // Must scopeTarget before roles.scopeAllowFunction can be called
+    const getScopedTargetTxs = await scopeTargetsV1([invRolesAddr], SECURITY_ROLE_ID_V1, this.roles)
     // Get the sighashs that need to be whitelisted
-    const functionSigs = ROLES_FUNCTIONS_ALLOWED.map((func) =>
-      this.roles.interface.getSighash(func)
-    );
-    const getScopedAllowFunctionTxs = await this.scopeAllowFunctions(
-      invRolesAddr,
-      functionSigs,
-      SECURITY_ROLE_ID_V2
-    );
-    const txs = [...getScopedTargetTxs, ...getScopedAllowFunctionTxs];
-    return createMultisendTx(txs, BASE_MULTISEND_ADDR);
+    const functionSigs = ROLES_FUNCTIONS_ALLOWED.map(func => this.roles.interface.getSighash(func))
+    const getScopedAllowFunctionTxs = await this.scopeAllowFunctionsV1(invRolesAddr, functionSigs, SECURITY_ROLE_ID_V1)
+    const txs = [
+      ...getScopedTargetTxs,
+      ...getScopedAllowFunctionTxs
+    ];
+    return createMultisendTx(txs, this.chainConfig.MULTISEND_ADDR)
   }
 
   async build(invRolesAddr: string, accessControlSafeAddr: string) {
     const metaTx = await this.getFullScope(invRolesAddr);
     const acSafe = new ethers.Contract(
       accessControlSafeAddr,
-      this.rolesVersion === 'v1' ? SAFE_MASTER_COPY_V1_ABI : SAFE_MASTER_COPY_V2_ABI,
+      SAFE_MASTER_COPY_V1_ABI,
       this.caller
     );
     const signature = getPreValidatedSignatures(await this.caller.getAddress());
     return await acSafe.populateTransaction.execTransaction(
-      BASE_MULTISEND_ADDR,
+      this.chainConfig.MULTISEND_ADDR,
       tx.zeroValue,
       metaTx.data,
       SAFE_OPERATION_DELEGATECALL,

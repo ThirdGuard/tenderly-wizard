@@ -13,7 +13,7 @@ import { ethers } from "hardhat";
 import { ChainId } from "zodiac-roles-sdk";
 import { deployViaFactory } from "./EIP2470";
 import { MANAGER_ROLE_ID_V2, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from "../utils/constants";
-import { AccessControllerWhitelist } from "../whitelist/acs/scope-access-controller";
+import { AccessControllerWhitelistV2 } from "../whitelist/acs/scope-access-controller-v2";
 import { ChainConfig, RolesVersion } from "../utils/types";
 import { getChainConfig } from "../utils/roles-chain-config";
 
@@ -353,10 +353,9 @@ export const deployAccessControlSystemV2 = async (
   );
   // Populate this role for Security so they can call whitelisting related functions on investment roles
   const [caller] = await ethers.getSigners();
-  const accessControllerWhitelist = new AccessControllerWhitelist(
+  const accessControllerWhitelist = new AccessControllerWhitelistV2(
     acRolesAddr,
-    caller,
-    "v2"
+    caller
   );
   await accessControllerWhitelist.execute(invRolesAddr, accessControlSafeAddr);
 

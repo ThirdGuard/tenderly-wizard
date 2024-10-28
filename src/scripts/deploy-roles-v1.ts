@@ -1,7 +1,7 @@
 import SAFE_MASTER_COPY_ABI from "../contracts/safe_master_copy_v1.json";
 import SAFE_MODULE_PROXY_FACTORY_ABI from "../contracts/safe_module_proxy_factory_v1.json";
 import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
-import { AccessControllerWhitelist } from "../whitelist/acs/scope-access-controller";
+import { AccessControllerWhitelistV1 } from "../whitelist/acs/scope-access-controller-v1";
 import colors from "colors";
 import {
   addSafeSigners,
@@ -190,6 +190,9 @@ export async function assignRoles(
     tx.gasToken,
     tx.refundReceiver,
     signature,
+    {
+      gasLimit: GAS_LIMIT
+    }
   );
 
   console.info(
@@ -264,10 +267,9 @@ export const deployAccessControlSystemV1 = async (
   );
   // Populate this role for Security so they can call whitelisting related functions on investment roles
   const [caller] = await ethers.getSigners();
-  const accessControllerWhitelist = new AccessControllerWhitelist(
+  const accessControllerWhitelist = new AccessControllerWhitelistV1(
     acRolesAddr,
     caller,
-    "v1"
   );
   await accessControllerWhitelist.execute(invRolesAddr, accessControlSafeAddr);
 
@@ -286,8 +288,8 @@ export const deployAccessControlSystemV1 = async (
   await addSafeSigners(accessControlSafeAddr, options.sysAdminAddresses, chainConfig);
 
   //Remove the deployer address as owner and rewrite signing threshold
-  // await removeDeployerAsOwner(investmentSafeAddr, options.invSafeThreshold);
-  // await removeDeployerAsOwner(accessControlSafeAddr, options.acSafeThreshold);
+  await removeDeployerAsOwner(investmentSafeAddr, options.invSafeThreshold);
+  await removeDeployerAsOwner(accessControlSafeAddr, options.acSafeThreshold);
 
   return {
     acSafe: accessControlSafeAddr,

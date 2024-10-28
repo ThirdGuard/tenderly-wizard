@@ -57,7 +57,25 @@ export class Whitelist {
   }
 
   // Helper to allows function calls without param scoping
-  async scopeAllowFunctions(
+  async scopeAllowFunctionsV1(target: string, sigs: string[], roleId: number) {
+    const scopeFuncsTxs = await Promise.all(
+      sigs.map(async (sig) => {
+        // scopeAllowFunction on Roles allows a role member to call the function in question with no paramter scoping
+        const tx = await this.roles.populateTransaction.scopeAllowFunction(
+          roleId,
+          target,
+          sig,
+          ExecutionOptions.Both
+        );
+        return tx;
+      })
+    );
+    return scopeFuncsTxs;
+  }
+
+
+  // Helper to allows function calls without param scoping
+  async scopeAllowFunctionsV2(
     target: string,
     sigs: string[],
     roleId: `0x${string}`

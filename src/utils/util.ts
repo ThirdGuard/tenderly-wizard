@@ -65,14 +65,38 @@ export const getPreValidatedSignatures = (
   )}000000000000000000000000000000000000000000000000000000000000000001`;
 };
 
+
 /**
- * Helper function to scope targets in roles contract
+ * Helper function to scope targets in roles contract v1
+ * @param {string[]} targetAddrs - Array of target addresses
+ * @param {number} roleId - Role ID
+ * @param {Contract} roles - Roles contract instance
+ * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
+ */
+export async function scopeTargetsV1(
+  targetAddrs: string[],
+  roleId: number,
+  roles: Contract
+) {
+  const scopeTargetTxs = await Promise.all(
+    targetAddrs.map(async (target) => {
+      //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
+      const tx = await roles.populateTransaction.scopeTarget(roleId, target);
+      return tx;
+    })
+  );
+  return scopeTargetTxs;
+}
+
+
+/**
+ * Helper function to scope targets in roles contract v2
  * @param {string[]} targetAddrs - Array of target addresses
  * @param {`0x${string}`} roleId - Role ID
  * @param {Contract} roles - Roles contract instance
  * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
  */
-export async function scopeTargets(
+export async function scopeTargetsV2(
   targetAddrs: string[],
   roleId: `0x${string}`,
   roles: Contract,
