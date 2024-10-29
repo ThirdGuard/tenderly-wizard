@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePackageJson = exports.checkRequiredEnvVariables = exports.findWhitelistClasses = exports.findPermissionsFiles = exports.setGas = exports.setERC20TokenBalance = exports.setERC20TokenBalances = exports.encodeBytes32String = exports.numberToBytes32 = exports.getABICodedAddress = exports.scopeAllowFunctions = exports.scopeTargets = exports.getPreValidatedSignatures = exports.createMultisendTx = exports.ExecutionOptions = exports.OperationType = void 0;
+exports.updatePackageJson = exports.checkRequiredEnvVariables = exports.findWhitelistClasses = exports.findPermissionsFiles = exports.setGas = exports.setERC20TokenBalance = exports.setERC20TokenBalances = exports.encodeBytes32String = exports.numberToBytes32 = exports.getABICodedAddress = exports.scopeAllowFunctions = exports.scopeTargetsV2 = exports.scopeTargetsV1 = exports.getPreValidatedSignatures = exports.createMultisendTx = exports.ExecutionOptions = exports.OperationType = void 0;
 const ethers_1 = require("ethers");
 const ethers_multisend_1 = require("ethers-multisend");
 const utils_1 = require("ethers/lib/utils");
@@ -51,20 +51,36 @@ const getPreValidatedSignatures = (from, initialString = "0x") => {
 };
 exports.getPreValidatedSignatures = getPreValidatedSignatures;
 /**
- * Helper function to scope targets in roles contract
+ * Helper function to scope targets in roles contract v1
+ * @param {string[]} targetAddrs - Array of target addresses
+ * @param {number} roleId - Role ID
+ * @param {Contract} roles - Roles contract instance
+ * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
+ */
+async function scopeTargetsV1(targetAddrs, roleId, roles) {
+    const scopeTargetTxs = await Promise.all(targetAddrs.map(async (target) => {
+        //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
+        const tx = await roles.populateTransaction.scopeTarget(roleId, target);
+        return tx;
+    }));
+    return scopeTargetTxs;
+}
+exports.scopeTargetsV1 = scopeTargetsV1;
+/**
+ * Helper function to scope targets in roles contract v2
  * @param {string[]} targetAddrs - Array of target addresses
  * @param {`0x${string}`} roleId - Role ID
  * @param {Contract} roles - Roles contract instance
  * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
  */
-async function scopeTargets(targetAddrs, roleId, roles) {
+async function scopeTargetsV2(targetAddrs, roleId, roles) {
     const scopeTargetTxs = await Promise.all(targetAddrs.map(async (target) => {
         const tx = await roles.populateTransaction.scopeTarget(roleId, target);
         return tx;
     }));
     return scopeTargetTxs;
 }
-exports.scopeTargets = scopeTargets;
+exports.scopeTargetsV2 = scopeTargetsV2;
 /**
  * Helper to allow function calls without param scoping
  * @param {string} target - Target contract address

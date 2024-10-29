@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.executeWhitelistV2 = exports.Whitelist = exports.ExecutionOptions = void 0;
 const ethers_1 = require("ethers");
+const roles_v1_json_1 = __importDefault(require("../contracts/roles_v1.json"));
 const roles_v2_json_1 = __importDefault(require("../contracts/roles_v2.json"));
 // @ts-ignore
 const hardhat_1 = require("hardhat");
@@ -20,8 +21,8 @@ var ExecutionOptions;
     ExecutionOptions[ExecutionOptions["Both"] = 3] = "Both";
 })(ExecutionOptions = exports.ExecutionOptions || (exports.ExecutionOptions = {}));
 class Whitelist {
-    constructor(rolesAddr, caller) {
-        this.roles = new ethers_1.Contract(rolesAddr, roles_v2_json_1.default);
+    constructor(rolesAddr, rolesVersion, caller) {
+        this.roles = new ethers_1.Contract(rolesAddr, rolesVersion === "v1" ? roles_v1_json_1.default : roles_v2_json_1.default);
         this.caller = caller;
     }
     // roles.scopeTarget helper function
@@ -34,7 +35,16 @@ class Whitelist {
         return scopeTargetTxs;
     }
     // Helper to allows function calls without param scoping
-    async scopeAllowFunctions(target, sigs, roleId) {
+    async scopeAllowFunctionsV1(target, sigs, roleId) {
+        const scopeFuncsTxs = await Promise.all(sigs.map(async (sig) => {
+            // scopeAllowFunction on Roles allows a role member to call the function in question with no paramter scoping
+            const tx = await this.roles.populateTransaction.scopeAllowFunction(roleId, target, sig, ExecutionOptions.Both);
+            return tx;
+        }));
+        return scopeFuncsTxs;
+    }
+    // Helper to allows function calls without param scoping
+    async scopeAllowFunctionsV2(target, sigs, roleId) {
         const scopeFuncsTxs = await Promise.all(sigs.map(async (sig) => {
             // allowFunction on Roles allows a role member to call the function in question with no paramter scoping
             const tx = await this.roles.populateTransaction.allowFunction(roleId, target, sig, ExecutionOptions.Both);

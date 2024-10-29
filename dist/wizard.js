@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.start = void 0;
 const terminal_kit_1 = require("terminal-kit");
 const child_process_1 = require("child_process");
-const virtual_test_net_1 = __importDefault(require("./scripts/virtual-test-net")); // Import the VirtualTestNet class
+const virtual_test_net_1 = __importDefault(require("./scripts/virtual-test-net"));
 const util_1 = require("./utils/util");
 async function getTestnetList() {
     const vnets = await virtual_test_net_1.default.listVirtualTestnets(); // Get the list of virtual testnets

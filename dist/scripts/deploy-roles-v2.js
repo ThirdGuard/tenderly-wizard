@@ -14,7 +14,7 @@ const deploy_safe_v2_1 = require("./deploy-safe-v2");
 const hardhat_1 = require("hardhat");
 const EIP2470_1 = require("./EIP2470");
 const constants_1 = require("../utils/constants");
-const scope_access_controller_1 = require("../whitelist/acs/scope-access-controller");
+const scope_access_controller_v2_1 = require("../whitelist/acs/scope-access-controller-v2");
 const roles_chain_config_1 = require("../utils/roles-chain-config");
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 const ZeroHash = "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -147,7 +147,7 @@ const deployAccessControlSystemV2 = async (chainId, options, deployed) => {
     await assignRoles(accessControlSafeAddr, acRolesAddr, options.securityEOAs, constants_1.SECURITY_ROLE_ID_V2, chainConfig);
     // Populate this role for Security so they can call whitelisting related functions on investment roles
     const [caller] = await hardhat_1.ethers.getSigners();
-    const accessControllerWhitelist = new scope_access_controller_1.AccessControllerWhitelist(acRolesAddr, caller, "v2");
+    const accessControllerWhitelist = new scope_access_controller_v2_1.AccessControllerWhitelistV2(acRolesAddr, caller);
     await accessControllerWhitelist.execute(invRolesAddr, accessControlSafeAddr);
     //Grant a role to the investment managers EOAs
     //the idea would be that each strategy would be transacted on by 1 EOA

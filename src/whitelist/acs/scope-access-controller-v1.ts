@@ -28,7 +28,7 @@ const ROLES_FUNCTIONS_ALLOWED = [
 export class AccessControllerWhitelistV1 extends Whitelist {
   chainConfig: ChainConfig["v1"];
   constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner) {
-    super(acRolesAddr, caller);
+    super(acRolesAddr, "v1", caller);
     const chainId = parseInt(process.env.TENDERLY_FORK_ID || "1", 10)
     this.chainConfig = getChainConfig(chainId as ChainId, "v1");
   }

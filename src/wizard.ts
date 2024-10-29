@@ -1,7 +1,6 @@
 import { terminal } from 'terminal-kit';
-import { exec, execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
-import VirtualTestNet from './scripts/virtual-test-net'; // Import the VirtualTestNet class
-import path from 'path';
+import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
+import VirtualTestNet from './scripts/virtual-test-net';
 import { updatePackageJson } from './utils/util';
 
 async function getTestnetList() {

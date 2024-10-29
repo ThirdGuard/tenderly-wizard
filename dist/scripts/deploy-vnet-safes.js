@@ -10,9 +10,9 @@ const virtual_test_net_1 = __importDefault(require("./virtual-test-net"));
 const deploy_roles_v1_1 = require("./deploy-roles-v1");
 const deploy_roles_v2_1 = require("./deploy-roles-v2");
 const util_1 = require("../utils/util");
-const { VIRTUAL_MAINNET_RPC } = process.env;
 async function deploySafesOnVnet(chainId, rolesVersion) {
-    const [sysAdmins, securityEOAs, managerEOAs] = await hardhat_1.ethers.getSigners();
+    // @note first PK is caller (_)
+    const [_, sysAdmins, securityEOAs, managerEOAs] = await hardhat_1.ethers.getSigners();
     await (0, util_1.setGas)();
     let contractsAddr;
     let deployedSnapshot;

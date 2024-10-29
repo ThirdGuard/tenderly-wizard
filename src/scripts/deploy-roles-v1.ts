@@ -8,13 +8,14 @@ import {
   deploySafe,
   removeDeployerAsOwner,
 } from "./deploy-safe-v1";
-import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1, GAS_LIMIT } from "../utils/constants";
+import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1, GAS_LIMIT, MANAGER_ROLE_ID_V2 } from "../utils/constants";
 // @ts-ignore
 import { ethers } from "hardhat";
 import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
 import { ChainConfig } from "../utils/types";
 import { getChainConfig } from "../utils/roles-chain-config";
 import { ChainId } from "zodiac-roles-sdk/.";
+import { constants, Contract, utils } from "ethers";
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 export async function deployRoles(
@@ -26,19 +27,19 @@ export async function deployRoles(
 ) {
   const [caller] = await ethers.getSigners();
   if (proxied) {
-    const abiCoder = ethers.utils.defaultAbiCoder;
+    const abiCoder = utils.defaultAbiCoder;
     const encoded = abiCoder.encode(
       ["address", "address", "address"],
       [owner, avatar, target]
     );
-    const rolesMaster = new ethers.Contract(
+    const rolesMaster = new Contract(
       chainConfig.ROLES_MASTER_COPY_ADDR,
       ROLES_V1_MASTER_COPY_ABI,
       caller
     );
     const initParams = await rolesMaster.populateTransaction.setUp(encoded);
     const tsSalt = new Date().getTime();
-    const safeModuleProxyFactory = new ethers.Contract(
+    const safeModuleProxyFactory = new Contract(
       chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR,
       SAFE_MODULE_PROXY_FACTORY_ABI,
       caller
@@ -77,7 +78,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
   const [caller] = await ethers.getSigners();
   const signature = getPreValidatedSignatures(caller.address);
 
-  const invSafe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
+  const invSafe = new Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
   const enabled = await invSafe.isModuleEnabled(rolesAddr);
   console.log(
     `ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr} ${enabled}`
@@ -116,18 +117,18 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
 // sets the address of the multisend contract
 export async function setRolesMultisend(safeAddr: string, rolesAddr: string, chainConfig: ChainConfig["v1"]) {
   const [caller] = await ethers.getSigners();
-  const roles = new ethers.Contract(
+  const roles = new Contract(
     rolesAddr,
     ROLES_V1_MASTER_COPY_ABI,
     caller
   );
   const multisendOnRecord = await roles.multisend();
   //If no MS on record, submit a tx to write one on record
-  if (multisendOnRecord === ethers.constants.AddressZero) {
+  if (multisendOnRecord === constants.AddressZero) {
     const setMsPopTx = await roles.populateTransaction.setMultisend(
       chainConfig.MULTISEND_ADDR
     );
-    const safe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
+    const safe = new Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
     const signature = getPreValidatedSignatures(caller.address);
     await safe.execTransaction(
       rolesAddr,
@@ -161,13 +162,13 @@ export async function assignRoles(
 ) {
   const [caller] = await ethers.getSigners();
   // assign manager a role (becomes a member of role:manager_role_id)
-  const roles = new ethers.Contract(
+  const roles = new Contract(
     rolesAddr,
     ROLES_V1_MASTER_COPY_ABI,
     caller
   );
   const signature = getPreValidatedSignatures(caller.address);
-  const acSafe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
+  const acSafe = new Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
 
   const assignRolesPopTx = await Promise.all(
     memberAddrs.map(async (memberAddr) => {
@@ -189,15 +190,12 @@ export async function assignRoles(
     tx.gasPrice,
     tx.gasToken,
     tx.refundReceiver,
-    signature,
-    {
-      gasLimit: GAS_LIMIT
-    }
+    signature
   );
 
   console.info(
     colors.blue(
-      `Role member: ${memberAddrs.toString()} has been assigned role id: ${MANAGER_ROLE_ID_V1}`
+      `Role member: ${memberAddrs.toString()} has been assigned role id: ${roleId}`
     )
   );
 }
