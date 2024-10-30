@@ -42,9 +42,9 @@ export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVer
 
     // add to .env
     VirtualTestNet.addToEnvFile('TENDERLY_SNAPSHOT', deployedSnapshot);
-    VirtualTestNet.addToEnvFile('ACCESS_CONTROL_SAFE', base?.acSafe);
-    VirtualTestNet.addToEnvFile('INVESTMENT_SAFE', base?.invSafe);
-    VirtualTestNet.addToEnvFile('INVESTMENT_ROLES', base?.invRoles);
+    VirtualTestNet.addToEnvFile('ACCESS_CONTROL_SAFE_ADDRESS', base?.acSafe);
+    VirtualTestNet.addToEnvFile('INVESTMENT_SAFE_ADDRESS', base?.invSafe);
+    VirtualTestNet.addToEnvFile('INVESTMENT_ROLES_ADDRESS', base?.invRoles);
     VirtualTestNet.addToEnvFile('ACCESS_CONTROL_ROLES', base?.acRoles);
 
     contractsAddr = base;

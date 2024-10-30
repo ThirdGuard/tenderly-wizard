@@ -17,7 +17,7 @@ This guide covers how to develop, pack, and test the tenderly-wizard package loc
 
 2. Install dependencies:
    ```
-   npm install
+   yarn install
    ```
 
 3. Make your changes to the source code in the `src` directory.

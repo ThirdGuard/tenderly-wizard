@@ -5,9 +5,7 @@
     "main": "src/index.ts",
     "types": "src/index.ts",
     "type": "commonjs",
-    "bin": {
-        "tenderly-wizard": "./bin/cli.js"
-    },
+    "bin": "./bin/cli.js",
     "scripts": {
         "tenderly-wizard": "ts-node src/index.ts",
         "start": "ts-node src/index.ts",

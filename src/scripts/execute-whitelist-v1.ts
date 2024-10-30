@@ -8,13 +8,13 @@ export async function whitelistSafesV1(whitelistDirectory: string = 'src/whiteli
     const absoluteWhitelistDirectory = path.resolve(callerDir, whitelistDirectory);
     console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory)
 
-    const ok = checkRequiredEnvVariables(["ACCESS_CONTROL_SAFE_ADDRESS", "INVESTMENT_SAFE_ADDRESS", "INVESTMENT_ROLES_ADDRESS", "ACCESS_CONTROL_ROLES_ADDRESS"]);
+    const ok = checkRequiredEnvVariables(["ACCESS_CONTROL_SAFE_ADDRESS", "INVESTMENT_SAFE_ADDRESS", "INVESTMENT_ROLES_ADDRESS", "ACCESS_CONTROL_ROLES"]);
     if (!ok) {
         process.exit(1);
     }
 
     // @note the safes and roles addresses are read from the .env file
-    const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = process.env;
+    const { ACCESS_CONTROL_ROLES, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = process.env;
 
     // @todo get caller address
     const [caller] = await ethers.getSigners();
@@ -41,6 +41,6 @@ export async function whitelistSafesV1(whitelistDirectory: string = 'src/whiteli
         const whitelistClassInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, caller);
 
         // execute the whitelist
-        await whitelistClassInstance.execute(ACCESS_CONTROL_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS);
+        await whitelistClassInstance.execute(ACCESS_CONTROL_ROLES, INVESTMENT_SAFE_ADDRESS);
     }
 } 

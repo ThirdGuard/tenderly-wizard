@@ -150,7 +150,7 @@ export async function executeWhitelistV2(
   const multiSendTx = encodeMulti(
     calls.map((data: `0x${string}`) => {
       return {
-        to: process.env.INVESTMENT_ROLES as string,
+        to: process.env.INVESTMENT_ROLES_ADDRESS as string,
         value: "0",
         data,
       };
