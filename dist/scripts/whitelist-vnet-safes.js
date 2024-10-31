@@ -10,6 +10,7 @@ async function main() {
     // }
     // await whitelistSafes(ROLES_DIRECTORY);
     const { ROLES_VERSION } = process.env;
+    console.log("ROLES_VERSION: ", ROLES_VERSION);
     if (ROLES_VERSION === "v1") {
         await (0, execute_whitelist_v1_1.whitelistSafesV1)();
     }

@@ -45,7 +45,7 @@ export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVer
     VirtualTestNet.addToEnvFile('ACCESS_CONTROL_SAFE_ADDRESS', base?.acSafe);
     VirtualTestNet.addToEnvFile('INVESTMENT_SAFE_ADDRESS', base?.invSafe);
     VirtualTestNet.addToEnvFile('INVESTMENT_ROLES_ADDRESS', base?.invRoles);
-    VirtualTestNet.addToEnvFile('ACCESS_CONTROL_ROLES', base?.acRoles);
+    VirtualTestNet.addToEnvFile('ACCESS_CONTROL_ROLES_ADDRESS', base?.acRoles);
 
     contractsAddr = base;
     return base;

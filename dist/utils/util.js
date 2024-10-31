@@ -269,6 +269,7 @@ function updatePackageJson() {
         Object.assign(packageJson.scripts, scriptsToAdd);
         fs_1.default.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
         console.log('Scripts added to package.json successfully.');
+        return scriptsToAdd;
     }
     else {
         console.error('package.json not found in the current working directory.');

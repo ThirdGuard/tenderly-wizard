@@ -14,8 +14,8 @@ const deploy_safe_v2_1 = require("./deploy-safe-v2");
 const hardhat_1 = require("hardhat");
 const EIP2470_1 = require("./EIP2470");
 const constants_1 = require("../utils/constants");
-const scope_access_controller_v2_1 = require("../whitelist/acs/scope-access-controller-v2");
 const roles_chain_config_1 = require("../utils/roles-chain-config");
+const scope_access_controller_v2_1 = require("../whitelist/acs/scope-access-controller-v2");
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 const ZeroHash = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const SaltZero = "0x0000000000000000000000000000000000000000000000000000000000000000";

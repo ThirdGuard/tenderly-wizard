@@ -26,7 +26,9 @@ This guide covers how to develop, pack, and test the tenderly-wizard package loc
 
 1. Update the version in `package.json` if necessary.
 
-2. Pack the package:
+2. Run `yarn build` to build the package.
+
+3. Pack the package:
    ```
    npm pack
    ```

@@ -140,7 +140,7 @@ export async function executeWhitelistV2(
   // Apply the targets
   const calls = await applyTargets(MANAGER_ROLE_ID_V2, targets, {
     chainId,
-    address: process.env.ACCESS_CONTROL_ROLES as `0x${string}`,
+    address: process.env.ACCESS_CONTROL_ROLES_ADDRESS as `0x${string}`,
     mode: "replace", // or "extend" or "remove"
     log: console.debug,
     currentTargets: [],
@@ -159,7 +159,7 @@ export async function executeWhitelistV2(
 
   // Security needs to indirectly execute this bundle via acRoles
   const acRoles = new Contract(
-    process.env.ACCESS_CONTROL_ROLES!,
+    process.env.ACCESS_CONTROL_ROLES_ADDRESS!,
     ROLES_V2_MASTER_COPY_ABI,
     securityEOAs
   );

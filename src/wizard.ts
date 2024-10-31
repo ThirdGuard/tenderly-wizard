@@ -42,8 +42,9 @@ async function getTestnetList() {
 
 export async function start() {
     // update target repo's package.json with scripts
+    let scripts;
     if (!process.env.IS_DEV) {
-        updatePackageJson()
+        scripts = updatePackageJson()
     }
 
     const rolesVersions = ["V1", "V2"];
@@ -163,7 +164,7 @@ export async function start() {
             console.log("\nApplying whitelist...");
             // const output = execSync(`npm run deploy:whitelist`, { stdio: 'pipe', encoding: 'utf8', maxBuffer: 1024 * 1024 * 10 }).toString()
 
-            const output = executeWithLogs(`npm run deploy:whitelist`)
+            const output = executeWithLogs(`yarn deploy:whitelist`)
             // console.log(output)
             if (!output.success) {
                 console.error('Error details:', output.error);

@@ -11,6 +11,8 @@ async function main() {
 
     const { ROLES_VERSION } = process.env;
 
+    console.log("ROLES_VERSION: ", ROLES_VERSION);
+
     if (ROLES_VERSION === "v1") {
         await whitelistSafesV1();
     } else if (ROLES_VERSION === "v2") {

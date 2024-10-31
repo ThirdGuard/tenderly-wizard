@@ -76,7 +76,7 @@ async function executeWhitelistV2(permissions, chainId, rolesVersion) {
     // Apply the targets
     const calls = await (0, zodiac_roles_sdk_1.applyTargets)(constants_1.MANAGER_ROLE_ID_V2, targets, {
         chainId,
-        address: process.env.ACCESS_CONTROL_ROLES,
+        address: process.env.ACCESS_CONTROL_ROLES_ADDRESS,
         mode: "replace",
         log: console.debug,
         currentTargets: [],
@@ -84,13 +84,13 @@ async function executeWhitelistV2(permissions, chainId, rolesVersion) {
     console.log(`${calls.length} permissions to execute`);
     const multiSendTx = (0, ethers_multisend_1.encodeMulti)(calls.map((data) => {
         return {
-            to: process.env.INVESTMENT_ROLES,
+            to: process.env.INVESTMENT_ROLES_ADDRESS,
             value: "0",
             data,
         };
     }));
     // Security needs to indirectly execute this bundle via acRoles
-    const acRoles = new ethers_1.Contract(process.env.ACCESS_CONTROL_ROLES, roles_v2_json_1.default, securityEOAs);
+    const acRoles = new ethers_1.Contract(process.env.ACCESS_CONTROL_ROLES_ADDRESS, roles_v2_json_1.default, securityEOAs);
     // role members wishing to transact as the Safe will always have to call via execTransactionWithRole
     return await acRoles.execTransactionWithRole(chainConfig.MULTISEND_ADDR, constants_1.ZERO_VALUE, multiSendTx.data, constants_1.SAFE_OPERATION_DELEGATECALL, constants_1.SECURITY_ROLE_ID_V2, true);
 }

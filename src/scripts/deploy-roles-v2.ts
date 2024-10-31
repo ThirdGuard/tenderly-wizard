@@ -13,9 +13,9 @@ import { ethers } from "hardhat";
 import { ChainId } from "zodiac-roles-sdk";
 import { deployViaFactory } from "./EIP2470";
 import { MANAGER_ROLE_ID_V2, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from "../utils/constants";
-import { AccessControllerWhitelistV2 } from "../whitelist/acs/scope-access-controller-v2";
 import { ChainConfig, RolesVersion } from "../utils/types";
 import { getChainConfig } from "../utils/roles-chain-config";
+import { AccessControllerWhitelistV2 } from "../whitelist/acs/scope-access-controller-v2";
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 
