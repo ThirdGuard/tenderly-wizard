@@ -108,8 +108,6 @@ export async function start() {
 
         // overwrite Snapshot in .env
         const output = execSync(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString()
-
-        // log terminal output
         console.log(output)
 
         console.log(`Testnet ${testnet.selectedText} activated successfully`);
@@ -164,13 +162,17 @@ export async function start() {
             console.log("\nApplying whitelist...");
             // const output = execSync(`npm run deploy:whitelist`, { stdio: 'pipe', encoding: 'utf8', maxBuffer: 1024 * 1024 * 10 }).toString()
 
-            const output = executeWithLogs(`npm run deploy:whitelist`)
+            const output = executeWithLogs(`npm run deploy:whitelist && npm run save:vnet-snapshot`)
             console.log(output)
             if (!output.success) {
                 console.error('Error details:', output.error);
                 console.error('Error output:', output.output);
+            } else {
+                console.log("\nApplied whitelist successfully");
+
+                // const output = execSync(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString()
+                // console.log(output)
             }
-            console.log("\nApplied whitelist successfully");
         }
     }
 

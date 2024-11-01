@@ -100,7 +100,6 @@ async function start() {
         virtual_test_net_1.default.addToEnvFile('TENDERLY_FORK_ID', (_d = (_c = testNet === null || testNet === void 0 ? void 0 : testNet.network_id) === null || _c === void 0 ? void 0 : _c.toString()) !== null && _d !== void 0 ? _d : '1');
         // overwrite Snapshot in .env
         const output = (0, child_process_1.execSync)(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString();
-        // log terminal output
         console.log(output);
         console.log(`Testnet ${testnet.selectedText} activated successfully`);
     }
@@ -145,13 +144,17 @@ async function start() {
         if (confirmDeploy === null || confirmDeploy === void 0 ? void 0 : confirmDeploy.valueOf()) {
             console.log("\nApplying whitelist...");
             // const output = execSync(`npm run deploy:whitelist`, { stdio: 'pipe', encoding: 'utf8', maxBuffer: 1024 * 1024 * 10 }).toString()
-            const output = executeWithLogs(`npm run deploy:whitelist`);
+            const output = executeWithLogs(`npm run deploy:whitelist && npm run save:vnet-snapshot`);
             console.log(output);
             if (!output.success) {
                 console.error('Error details:', output.error);
                 console.error('Error output:', output.output);
             }
-            console.log("\nApplied whitelist successfully");
+            else {
+                console.log("\nApplied whitelist successfully");
+                // const output = execSync(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString()
+                // console.log(output)
+            }
         }
     }
     if (action.selectedIndex == 6) {
