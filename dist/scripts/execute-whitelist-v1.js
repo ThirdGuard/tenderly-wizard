@@ -8,6 +8,7 @@ const path_1 = __importDefault(require("path"));
 // @ts-ignore
 const hardhat_1 = require("hardhat");
 const util_1 = require("../utils/util");
+const env_config_1 = __importDefault(require("../env-config"));
 async function whitelistSafesV1(whitelistDirectory = 'src/whitelist') {
     const callerDir = process.cwd();
     const absoluteWhitelistDirectory = path_1.default.resolve(callerDir, whitelistDirectory);
@@ -17,7 +18,7 @@ async function whitelistSafesV1(whitelistDirectory = 'src/whitelist') {
         process.exit(1);
     }
     // @note the safes and roles addresses are read from the .env file
-    const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = process.env;
+    const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = env_config_1.default;
     // @todo get caller address
     // [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
     const [caller, sysAdmins, securityEOAs, managerEOAs] = await hardhat_1.ethers.getSigners();

@@ -11,6 +11,7 @@ const hardhat_1 = require("hardhat");
 const util_1 = require("../../utils/util");
 const constants_1 = require("../../utils/constants");
 const roles_chain_config_1 = require("../../utils/roles-chain-config");
+const env_config_1 = __importDefault(require("../../env-config"));
 const ROLES_FUNCTIONS_ALLOWED = [
     "revokeTarget",
     "scopeTarget",
@@ -27,7 +28,7 @@ const ROLES_FUNCTIONS_ALLOWED = [
 class AccessControllerWhitelistV1 extends whitelist_class_1.Whitelist {
     constructor(acRolesAddr, caller) {
         super(acRolesAddr, "v1", caller);
-        const chainId = parseInt(process.env.TENDERLY_FORK_ID || "1", 10);
+        const chainId = env_config_1.default.TENDERLY_FORK_ID;
         this.chainConfig = (0, roles_chain_config_1.getChainConfig)(chainId, "v1");
     }
     // Allow the security team to call all the functions listed in `ROLES_FUNCTIONS_ALLOWED`on the investment roles modifier

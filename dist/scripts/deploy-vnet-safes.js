@@ -10,6 +10,7 @@ const virtual_test_net_1 = __importDefault(require("./virtual-test-net"));
 const deploy_roles_v1_1 = require("./deploy-roles-v1");
 const deploy_roles_v2_1 = require("./deploy-roles-v2");
 const util_1 = require("../utils/util");
+const env_config_1 = __importDefault(require("../env-config"));
 async function deploySafesOnVnet(chainId, rolesVersion) {
     // @note first PK is caller (_)
     const [_, sysAdmins, securityEOAs, managerEOAs] = await hardhat_1.ethers.getSigners();
@@ -50,10 +51,10 @@ async function deploySafesOnVnet(chainId, rolesVersion) {
 }
 exports.deploySafesOnVnet = deploySafesOnVnet;
 async function main() {
-    const { ROLES_VERSION: rolesVersion } = process.env;
+    const { ROLES_VERSION: rolesVersion } = env_config_1.default;
     console.log(`Deploying with roles version: ${rolesVersion}`);
     // @note tenderly fork ID defaults to 1 if not set in .env
-    const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10);
+    const chainId = env_config_1.default.TENDERLY_FORK_ID;
     await deploySafesOnVnet(chainId, rolesVersion);
 }
 main().catch((error) => {

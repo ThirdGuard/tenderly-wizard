@@ -1,13 +1,11 @@
-import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+import config from "../env-config";
 
-dotenv.config();
 
 export class VirtualTestNet {
     async deleteVirtualTestNet(testnetId: string): Promise<void> {
-        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } =
-            process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = config;
 
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
@@ -42,8 +40,7 @@ export class VirtualTestNet {
 
     async createVirtualTestNet(testnetName: string, network_id: number = 1): Promise<{ admin_rpc: string; vnet_id: string } | void> {
         //get envs
-        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } =
-            process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = config;
         const url = `https://api.tenderly.co/api/v1/account/${TENDERLY_ACCOUNT}/project/${TENDERLY_PROJECT_ID}/vnets`;
         const headers_ = {
             Accept: "application/json",
@@ -96,8 +93,7 @@ export class VirtualTestNet {
         sourceTestnetId: string,
         newTestnetName: string
     ): Promise<{ admin_rpc: string; vnet_id: string }> {
-        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } =
-            process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = config;
 
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
@@ -151,8 +147,7 @@ export class VirtualTestNet {
     }
 
     async listVirtualTestnets(): Promise<{ admin_rpc: string; vnet_id: string; displayName: string; network_id: number }[]> {
-        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } =
-            process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = config;
 
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
@@ -232,7 +227,7 @@ export class VirtualTestNet {
     //     ];
 
     //     const missingVariables = requiredVariables.filter(
-    //         (variable) => !process.env[variable],
+    //         (variable) => !config[variable],
     //     );
 
     //     if (missingVariables.length > 0) {
@@ -243,17 +238,17 @@ export class VirtualTestNet {
     //         return false;
     //     }
 
-    //     if (process.env.TENDERLY_PROJECT_ID !== "project") {
+    //     if (config.TENDERLY_PROJECT_ID !== "project") {
     //         console.error('TENDERLY_PROJECT_ID should be set to "project"');
     //         return false;
     //     }
 
-    //     if (process.env.TENDERLY_ACCOUNT !== "Abujari") {
+    //     if (config.TENDERLY_ACCOUNT !== "Abujari") {
     //         console.error('TENDERLY_ACCOUNT should be set to "Abujari"');
     //         return false;
     //     }
 
-    //     if (process.env.TENDERLY_CHAIN_ID !== "31337") {
+    //     if (config.TENDERLY_CHAIN_ID !== "31337") {
     //         console.error("TENDERLY_CHAIN_ID should be set to 31337");
     //         return false;
     //     }

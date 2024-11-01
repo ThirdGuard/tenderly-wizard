@@ -9,6 +9,7 @@ import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from 
 import { ChainConfig } from "../../utils/types";
 import { ChainId } from "zodiac-roles-sdk/.";
 import { getChainConfig } from "../../utils/roles-chain-config";
+import config from "../../env-config";
 
 const ROLES_FUNCTIONS_ALLOWED = [
   "revokeTarget",
@@ -24,7 +25,7 @@ export class AccessControllerWhitelistV2 extends Whitelist {
   chainConfig: ChainConfig["v2"];
   constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner) {
     super(acRolesAddr, "v2", caller);
-    const chainId = parseInt(process.env.TENDERLY_FORK_ID || "1", 10)
+    const chainId = config.TENDERLY_FORK_ID
     this.chainConfig = getChainConfig(chainId as ChainId, "v2");
   }
 

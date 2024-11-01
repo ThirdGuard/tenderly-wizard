@@ -8,6 +8,7 @@ import path from "path";
 import { ethers, network } from "hardhat";
 import { Project, ClassDeclaration, SyntaxKind } from 'ts-morph';
 import { execSync } from "child_process";
+import config from "../env-config";
 
 export enum OperationType {
   Call,
@@ -205,7 +206,7 @@ export const setERC20TokenBalance = async (
  * @returns {Promise<void>}
  */
 export async function setGas() {
-  const { VIRTUAL_MAINNET_RPC } = process.env;
+  const { VIRTUAL_MAINNET_RPC } = config;
   let caller: SignerWithAddress;
   let manager: SignerWithAddress;
   let dummyOwnerOne: SignerWithAddress;
@@ -309,7 +310,7 @@ export function findWhitelistClasses(whitelistDir: string): { path: string, clas
  * @returns {boolean} True if all required variables are present, false otherwise
  */
 export function checkRequiredEnvVariables(requiredVariables: string[]) {
-  const missingVariables = requiredVariables.filter((variable) => !process.env[variable]);
+  const missingVariables = requiredVariables.filter((variable) => !(variable in config));
 
   console.log({ missingVariables });
 

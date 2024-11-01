@@ -6,6 +6,7 @@ import { deployAccessControlSystemV1 } from "./deploy-roles-v1";
 import { deployAccessControlSystemV2 } from "./deploy-roles-v2";
 import { RolesVersion } from "../utils/types";
 import { setGas } from "../utils/util";
+import config from "../env-config";
 
 export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVersion) {
     // @note first PK is caller (_)
@@ -52,12 +53,11 @@ export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVer
 }
 
 async function main() {
-    const { ROLES_VERSION: rolesVersion } = process.env;
+    const { ROLES_VERSION: rolesVersion } = config;
     console.log(`Deploying with roles version: ${rolesVersion}`);
 
     // @note tenderly fork ID defaults to 1 if not set in .env
-    const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10)
-
+    const chainId = config.TENDERLY_FORK_ID
 
     await deploySafesOnVnet(chainId as ChainId, rolesVersion as RolesVersion);
 }

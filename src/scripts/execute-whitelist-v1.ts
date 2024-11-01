@@ -2,6 +2,7 @@ import path from "path";
 // @ts-ignore
 import { ethers } from "hardhat";
 import { checkRequiredEnvVariables, findWhitelistClasses } from "../utils/util";
+import config from "../env-config";
 
 export async function whitelistSafesV1(whitelistDirectory: string = 'src/whitelist') {
     const callerDir = process.cwd();
@@ -14,7 +15,7 @@ export async function whitelistSafesV1(whitelistDirectory: string = 'src/whiteli
     }
 
     // @note the safes and roles addresses are read from the .env file
-    const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = process.env;
+    const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = config;
 
     // @todo get caller address
     // [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();

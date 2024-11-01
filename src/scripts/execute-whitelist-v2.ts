@@ -5,6 +5,7 @@ import { RolesVersion } from "../utils/types";
 import { executeWhitelistV2 } from "../whitelist/whitelist-class";
 import { findPermissionsFiles, setGas } from '../utils/util';
 import path from "path";
+import config from "../env-config";
 
 export async function whitelistSafesV2(rolesDirectory: string = path.join(__dirname, 'src', 'roles')) {
     // find all files named permissions.ts in the src/roles directory
@@ -25,10 +26,10 @@ export async function whitelistSafesV2(rolesDirectory: string = path.join(__dirn
     await setGas();
 
     // get roles version from .env
-    const rolesVersion = process.env.ROLES_VERSION as RolesVersion;
+    const rolesVersion = config.ROLES_VERSION as RolesVersion;
 
     // get chain
-    const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10) as ChainId
+    const chainId = config.TENDERLY_FORK_ID as ChainId
 
     // iterate all permissions files
     for (const file of permissionsFiles) {

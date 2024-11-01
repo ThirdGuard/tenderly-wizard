@@ -13,6 +13,7 @@ const path_1 = __importDefault(require("path"));
 const hardhat_1 = require("hardhat");
 const ts_morph_1 = require("ts-morph");
 const child_process_1 = require("child_process");
+const env_config_1 = __importDefault(require("../env-config"));
 var OperationType;
 (function (OperationType) {
     OperationType[OperationType["Call"] = 0] = "Call";
@@ -151,7 +152,7 @@ exports.setERC20TokenBalance = setERC20TokenBalance;
  * @returns {Promise<void>}
  */
 async function setGas() {
-    const { VIRTUAL_MAINNET_RPC } = process.env;
+    const { VIRTUAL_MAINNET_RPC } = env_config_1.default;
     let caller;
     let manager;
     let dummyOwnerOne;
@@ -240,7 +241,7 @@ exports.findWhitelistClasses = findWhitelistClasses;
  * @returns {boolean} True if all required variables are present, false otherwise
  */
 function checkRequiredEnvVariables(requiredVariables) {
-    const missingVariables = requiredVariables.filter((variable) => !process.env[variable]);
+    const missingVariables = requiredVariables.filter((variable) => !(variable in env_config_1.default));
     console.log({ missingVariables });
     if (missingVariables.length > 0) {
         console.log(`Missing required environment variables: ${missingVariables.join(", ")}`);

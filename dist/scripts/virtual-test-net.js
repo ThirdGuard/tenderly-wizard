@@ -4,13 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VirtualTestNet = void 0;
-const dotenv_1 = __importDefault(require("dotenv"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-dotenv_1.default.config();
+const env_config_1 = __importDefault(require("../env-config"));
 class VirtualTestNet {
     async deleteVirtualTestNet(testnetId) {
-        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = env_config_1.default;
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
         }
@@ -39,7 +38,7 @@ class VirtualTestNet {
     }
     async createVirtualTestNet(testnetName, network_id = 1) {
         //get envs
-        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = env_config_1.default;
         const url = `https://api.tenderly.co/api/v1/account/${TENDERLY_ACCOUNT}/project/${TENDERLY_PROJECT_ID}/vnets`;
         const headers_ = {
             Accept: "application/json",
@@ -86,7 +85,7 @@ class VirtualTestNet {
         }
     }
     async forkVirtualTestNet(sourceTestnetId, newTestnetName) {
-        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = env_config_1.default;
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
         }
@@ -128,7 +127,7 @@ class VirtualTestNet {
     }
     async listVirtualTestnets() {
         var _a;
-        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = process.env;
+        const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = env_config_1.default;
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
         }

@@ -8,6 +8,7 @@ const hardhat_1 = require("hardhat");
 const whitelist_class_1 = require("../whitelist/whitelist-class");
 const util_1 = require("../utils/util");
 const path_1 = __importDefault(require("path"));
+const env_config_1 = __importDefault(require("../env-config"));
 async function whitelistSafesV2(rolesDirectory = path_1.default.join(__dirname, 'src', 'roles')) {
     // find all files named permissions.ts in the src/roles directory
     let permissionsFiles = [];
@@ -25,9 +26,9 @@ async function whitelistSafesV2(rolesDirectory = path_1.default.join(__dirname, 
     // set gas for all accounts
     await (0, util_1.setGas)();
     // get roles version from .env
-    const rolesVersion = process.env.ROLES_VERSION;
+    const rolesVersion = env_config_1.default.ROLES_VERSION;
     // get chain
-    const chainId = parseInt(process.env.TENDERLY_FORK_ID || '1', 10);
+    const chainId = env_config_1.default.TENDERLY_FORK_ID;
     // iterate all permissions files
     for (const file of permissionsFiles) {
         const { default: permissions, chainId: permissionsChainId } = require(file);

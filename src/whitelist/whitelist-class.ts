@@ -26,6 +26,7 @@ import {
 } from "../utils/constants";
 import { getChainConfig } from "../utils/roles-chain-config";
 import { RolesVersion } from "../utils/types";
+import config from "../env-config";
 
 export enum ExecutionOptions {
   None,
@@ -140,7 +141,7 @@ export async function executeWhitelistV2(
   // Apply the targets
   const calls = await applyTargets(MANAGER_ROLE_ID_V2, targets, {
     chainId,
-    address: process.env.ACCESS_CONTROL_ROLES_ADDRESS as `0x${string}`,
+    address: config.ACCESS_CONTROL_ROLES_ADDRESS as `0x${string}`,
     mode: "replace", // or "extend" or "remove"
     log: console.debug,
     currentTargets: [],
@@ -150,7 +151,7 @@ export async function executeWhitelistV2(
   const multiSendTx = encodeMulti(
     calls.map((data: `0x${string}`) => {
       return {
-        to: process.env.INVESTMENT_ROLES_ADDRESS as string,
+        to: config.INVESTMENT_ROLES_ADDRESS as string,
         value: "0",
         data,
       };
@@ -159,7 +160,7 @@ export async function executeWhitelistV2(
 
   // Security needs to indirectly execute this bundle via acRoles
   const acRoles = new Contract(
-    process.env.ACCESS_CONTROL_ROLES_ADDRESS!,
+    config.ACCESS_CONTROL_ROLES_ADDRESS!,
     ROLES_V2_MASTER_COPY_ABI,
     securityEOAs
   );
