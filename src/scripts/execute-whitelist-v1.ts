@@ -31,8 +31,6 @@ export async function whitelistSafesV1(whitelistDirectory: string = 'src/whiteli
         process.exit(1);
     }
 
-    console.log("whitelists: ", whitelists)
-
     // @todo iterate over all whitelists and execute them
     for (const whitelist of whitelists) {
         const { className, path: whitelistPath } = whitelist;

@@ -47,7 +47,7 @@ async function start() {
     // update target repo's package.json with scripts
     let scripts;
     if (!process.env.IS_DEV) {
-        scripts = (0, util_1.updatePackageJson)();
+        (0, util_1.updatePackageJson)();
     }
     const rolesVersions = ["V1", "V2"];
     terminal_kit_1.terminal.grabInput(true);
@@ -145,8 +145,8 @@ async function start() {
         if (confirmDeploy === null || confirmDeploy === void 0 ? void 0 : confirmDeploy.valueOf()) {
             console.log("\nApplying whitelist...");
             // const output = execSync(`npm run deploy:whitelist`, { stdio: 'pipe', encoding: 'utf8', maxBuffer: 1024 * 1024 * 10 }).toString()
-            const output = executeWithLogs(`yarn deploy:whitelist`);
-            // console.log(output)
+            const output = executeWithLogs(`npm run deploy:whitelist`);
+            console.log(output);
             if (!output.success) {
                 console.error('Error details:', output.error);
                 console.error('Error output:', output.output);

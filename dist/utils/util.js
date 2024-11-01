@@ -226,6 +226,10 @@ function findWhitelistClasses(whitelistDir) {
             }
         });
     });
+    // Filter out AccessControllerWhitelist classes
+    const filteredExtensions = whitelistExtensions.filter(extension => !extension.className.includes('AccessControllerWhitelist'));
+    whitelistExtensions.length = 0;
+    whitelistExtensions.push(...filteredExtensions);
     console.log('Classes extending Whitelist:', whitelistExtensions);
     return whitelistExtensions;
 }
