@@ -384,12 +384,13 @@ export async function predictRolesModAddress(signer: any, owner: string, avatar:
   )
 }
 
-const addresses = {
-  deployer: "0xdef1dddddddddddddddddddddddddddddddddddd",
-  avatar: "0xdef1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-  owner: "0xdef1010101010101010101010101010101010101",
-  member: "0xdef1123412341234123412341234123412341234",
-  other: "0xdef10f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
-}
-
+export async function predictSafeAddress(safeProxyFactory: Contract, safeMasterCopy: string, data: string, saltNonce: number) {
+  return await safeProxyFactory.calculateCreateProxyWithNonceAddress(
+    safeMasterCopy,
+    data,
+    saltNonce,
+    {
+      gasLimit: BigNumber.from("3000000")
+    }
+  )
 }

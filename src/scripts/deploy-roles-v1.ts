@@ -4,7 +4,7 @@ import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
 import { AccessControllerWhitelistV1 } from "../whitelist/acs/scope-access-controller-v1";
 import colors from "colors";
 import { addSafeSigners, deploySafe, removeDeployerAsOwner } from "./deploy-safe-v1";
-import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1 } from "../utils/constants";
+import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1, SALTS } from "../utils/constants";
 // @ts-ignore
 import { ethers } from "hardhat";
 import { createMultisendTx, getPreValidatedSignatures, predictRolesModAddress, SALT } from "../utils/util";
@@ -31,9 +31,9 @@ export async function deployRoles(
     //   [owner, avatar, target]
     // );
 
-    console.log("owner:", owner);
-    console.log("avatar:", avatar);
-    console.log("target:", target);
+    // console.log("owner:", owner);
+    // console.log("avatar:", avatar);
+    // console.log("target:", target);
 
     // get expected Module Address and transaction
     const { expectedModuleAddress, transaction } = await deployAndSetUpModule(
@@ -251,9 +251,11 @@ export const deployAccessControlSystemV1 = async (
   // get chain config for multichain deploy
   const chainConfig = getChainConfig(chainId, "v1");
 
+  console.log(SALTS.safes)
+  
   //Deploy both safes
-  const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafe(chainConfig));
-  const investmentSafeAddr = deployed?.invSafeAddr || (await deploySafe(chainConfig));
+  const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafe(chainConfig, SALTS.safes.accessControl));
+  const investmentSafeAddr = deployed?.invSafeAddr || (await deploySafe(chainConfig, SALTS.safes.investment));
 
   // //Deploy and enable a Roles modifier on the investment safe
   const invRolesAddr =

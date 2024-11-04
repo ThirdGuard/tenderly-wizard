@@ -25,9 +25,9 @@ async function deployRoles(owner, avatar, target, proxied, chainId, chainConfig)
         //   ["address", "address", "address"],
         //   [owner, avatar, target]
         // );
-        console.log("owner:", owner);
-        console.log("avatar:", avatar);
-        console.log("target:", target);
+        // console.log("owner:", owner);
+        // console.log("avatar:", avatar);
+        // console.log("target:", target);
         // get expected Module Address and transaction
         const { expectedModuleAddress, transaction } = await (0, zodiac_1.deployAndSetUpModule)(zodiac_1.KnownContracts.ROLES_V1, {
             types: ["address", "address", "address"],
@@ -140,9 +140,10 @@ exports.assignRoles = assignRoles;
 const deployAccessControlSystemV1 = async (chainId, options, deployed) => {
     // get chain config for multichain deploy
     const chainConfig = (0, roles_chain_config_1.getChainConfig)(chainId, "v1");
+    console.log(constants_1.SALTS.safes);
     //Deploy both safes
-    const accessControlSafeAddr = deployed?.acSafeAddr || (await (0, deploy_safe_v1_1.deploySafe)(chainConfig));
-    const investmentSafeAddr = deployed?.invSafeAddr || (await (0, deploy_safe_v1_1.deploySafe)(chainConfig));
+    const accessControlSafeAddr = deployed?.acSafeAddr || (await (0, deploy_safe_v1_1.deploySafe)(chainConfig, constants_1.SALTS.safes.accessControl));
+    const investmentSafeAddr = deployed?.invSafeAddr || (await (0, deploy_safe_v1_1.deploySafe)(chainConfig, constants_1.SALTS.safes.investment));
     // //Deploy and enable a Roles modifier on the investment safe
     const invRolesAddr = deployed?.invRolesAddr ||
         (await deployRoles(accessControlSafeAddr, investmentSafeAddr, investmentSafeAddr, options.proxied, chainId, chainConfig));

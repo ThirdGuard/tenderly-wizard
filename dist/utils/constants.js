@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.USDT_ADDR = exports.BASE_MULTISEND_SELECTOR = exports.BASE_DEFAULT_UNWRAPPER_ADDR = exports.BASE_DEFAULT_FALLBACK_HANDLER_ADDRESS = exports.BASE_MULTISEND_ADDR = exports.BASE_PERMISSIONS_LIB = exports.BASE_ROLES_V2_MASTER_COPY_ADDR = exports.BASE_SAFE_MODULE_PROXY_FACTORY_ADDR = exports.BASE_SAFE_PROXY_FACTORY_ADDR = exports.BASE_SAFE_MASTER_COPY_ADDR = exports.MULTISEND_SELECTOR = exports.DEFAULT_UNWRAPPER_ADDR = exports.DEFAULT_FALLBACK_HANDLER_ADDRESS = exports.MULTISEND_ADDR = exports.PERMISSIONS_LIB = exports.ROLES_V2_MASTER_COPY_ADDR = exports.SAFE_PROXY_FACTORY_ADDR = exports.SAFE_MODULE_PROXY_FACTORY_ADDR = exports.SAFE_MASTER_COPY_ADDR = exports.DEFAULT_FALLBACK_HANDLER_V1_ADDR = exports.MULTISEND_V1_ADDR = exports.PERMISSIONS_V1_LIB = exports.ROLES_V1_MASTER_COPY_ADDR = exports.SAFE_MODULE_PROXY_FACTORY_V1_ADDR = exports.SAFE_PROXY_FACTORY_V1_ADDR = exports.SAFE_MASTER_COPY_V1_ADDR = exports.tx = exports.APPROVAL_SIG = exports.EMPTY_LIMIT_DATA = exports.EMPTY_BYTES = exports.GAS_LIMIT = exports.ONE_OF = exports.ANY = exports.GREATER_THAN = exports.LESS_THAN = exports.EQUAL_TO = exports.TYPE_DYNAMIC32 = exports.TYPE_DYNAMIC = exports.TYPE_STATIC = exports.OPTIONS_DELEGATECALL = exports.OPTIONS_SEND = exports.OPTIONS_NONE = exports.ZERO_VALUE = exports.SAFE_OPERATION_CALL = exports.SAFE_OPERATION_DELEGATECALL = exports.SECURITY_ROLE_ID_V2 = exports.MANAGER_ROLE_ID_V2 = exports.SECURITY_ROLE_ID_V1 = exports.MANAGER_ROLE_ID_V1 = exports.AMOUNTS = void 0;
-exports.BASE_USDC_DOLLA_AMM_ADDR = exports.BASE_AERODROME_GUAGE_ADDR = exports.BASE_AERODROME_DEFAULT_FACTORY_ADDR = exports.BASE_AERODROME_ROUTER_ADDR = exports.BASE_AERO_ADDR = exports.BASE_USDC_ADDR = exports.BASE_DOLA_ADDR = exports.CowswapOrderSigner = exports.GPv2VaultRelayer_ETH = exports.PENDLE_TOKEN_ADDR = exports.PENDLE_SDK_API_URL = exports.MARKET_ETHENA_SUSDE_24_OCT_2024_ADDR = exports.PENDLE_ROUTER_V4_ADDR = exports.CURVE_USDC_USDE_ADDR = exports.YT_ETHENA_SUSDE_24_OCT_2024_ADDR = exports.PT_ETHENA_SUSDE_24_OCT_2024_ADDR = exports.SY_SUSDE_ADDR = exports.SUSDE_ADDR = exports.USDE_ADDR = exports.PSM_USDC_ADDR = exports.JOIN_PSM_USDC_ADDR = exports.SDAI_ADDR = exports.CURVE_3POOL_ADDR = exports.DAI_ADDR = exports.USDC_ADDR = void 0;
+exports.BASE_MULTISEND_SELECTOR = exports.BASE_DEFAULT_UNWRAPPER_ADDR = exports.BASE_DEFAULT_FALLBACK_HANDLER_ADDRESS = exports.BASE_MULTISEND_ADDR = exports.BASE_PERMISSIONS_LIB = exports.BASE_ROLES_V2_MASTER_COPY_ADDR = exports.BASE_SAFE_MODULE_PROXY_FACTORY_ADDR = exports.BASE_SAFE_PROXY_FACTORY_ADDR = exports.BASE_SAFE_MASTER_COPY_ADDR = exports.MULTISEND_SELECTOR = exports.DEFAULT_UNWRAPPER_ADDR = exports.DEFAULT_FALLBACK_HANDLER_ADDRESS = exports.MULTISEND_ADDR = exports.PERMISSIONS_LIB = exports.ROLES_V2_MASTER_COPY_ADDR = exports.SAFE_PROXY_FACTORY_ADDR = exports.SAFE_MODULE_PROXY_FACTORY_ADDR = exports.SAFE_MASTER_COPY_ADDR = exports.DEFAULT_FALLBACK_HANDLER_V1_ADDR = exports.MULTISEND_V1_ADDR = exports.PERMISSIONS_V1_LIB = exports.ROLES_V1_MASTER_COPY_ADDR = exports.SAFE_MODULE_PROXY_FACTORY_V1_ADDR = exports.SAFE_PROXY_FACTORY_V1_ADDR = exports.SAFE_MASTER_COPY_V1_ADDR = exports.tx = exports.APPROVAL_SIG = exports.EMPTY_LIMIT_DATA = exports.EMPTY_BYTES = exports.GAS_LIMIT = exports.ONE_OF = exports.ANY = exports.GREATER_THAN = exports.LESS_THAN = exports.EQUAL_TO = exports.TYPE_DYNAMIC32 = exports.TYPE_DYNAMIC = exports.TYPE_STATIC = exports.OPTIONS_DELEGATECALL = exports.OPTIONS_SEND = exports.OPTIONS_NONE = exports.ZERO_VALUE = exports.SAFE_OPERATION_CALL = exports.SAFE_OPERATION_DELEGATECALL = exports.SECURITY_ROLE_ID_V2 = exports.MANAGER_ROLE_ID_V2 = exports.SECURITY_ROLE_ID_V1 = exports.MANAGER_ROLE_ID_V1 = exports.SALTS = exports.AMOUNTS = void 0;
+exports.BASE_USDC_DOLLA_AMM_ADDR = exports.BASE_AERODROME_GUAGE_ADDR = exports.BASE_AERODROME_DEFAULT_FACTORY_ADDR = exports.BASE_AERODROME_ROUTER_ADDR = exports.BASE_AERO_ADDR = exports.BASE_USDC_ADDR = exports.BASE_DOLA_ADDR = exports.CowswapOrderSigner = exports.GPv2VaultRelayer_ETH = exports.PENDLE_TOKEN_ADDR = exports.PENDLE_SDK_API_URL = exports.MARKET_ETHENA_SUSDE_24_OCT_2024_ADDR = exports.PENDLE_ROUTER_V4_ADDR = exports.CURVE_USDC_USDE_ADDR = exports.YT_ETHENA_SUSDE_24_OCT_2024_ADDR = exports.PT_ETHENA_SUSDE_24_OCT_2024_ADDR = exports.SY_SUSDE_ADDR = exports.SUSDE_ADDR = exports.USDE_ADDR = exports.PSM_USDC_ADDR = exports.JOIN_PSM_USDC_ADDR = exports.SDAI_ADDR = exports.CURVE_3POOL_ADDR = exports.DAI_ADDR = exports.USDC_ADDR = exports.USDT_ADDR = void 0;
+const ethers_1 = require("ethers");
 const util_1 = require("./util");
 exports.AMOUNTS = {
     one: "1",
@@ -11,6 +12,12 @@ exports.AMOUNTS = {
     ten_thousand: "10000",
     hundred_thousand: "100000",
     million: "1000000",
+};
+exports.SALTS = {
+    safes: {
+        investment: parseInt((0, util_1.encodeBytes32String)("investment.salt").slice(2, 14), 16),
+        accessControl: parseInt((0, util_1.encodeBytes32String)("accessControl.salt").slice(2, 14), 16)
+    }
 };
 exports.MANAGER_ROLE_ID_V1 = 1;
 exports.SECURITY_ROLE_ID_V1 = 1;
@@ -30,9 +37,8 @@ exports.LESS_THAN = 1;
 exports.GREATER_THAN = 2;
 exports.ANY = 0;
 exports.ONE_OF = 3;
-const hre = require("hardhat");
-exports.GAS_LIMIT = hre.ethers.BigNumber.from("3000000");
-exports.EMPTY_BYTES = hre.ethers.utils.hexZeroPad("0x", 32);
+exports.GAS_LIMIT = ethers_1.BigNumber.from("3000000");
+exports.EMPTY_BYTES = ethers_1.utils.hexZeroPad("0x", 32);
 exports.EMPTY_LIMIT_DATA = {
     limitRouter: "0x0000000000000000000000000000000000000000",
     epsSkipMarket: "0",
@@ -40,17 +46,15 @@ exports.EMPTY_LIMIT_DATA = {
     flashFills: [],
     optData: "0x",
 };
-exports.APPROVAL_SIG = hre.ethers.utils
-    .id("approve(address,uint256)")
-    .substring(0, 10);
+exports.APPROVAL_SIG = ethers_1.utils.id("approve(address,uint256)").substring(0, 10);
 exports.tx = {
     zeroValue: 0,
     operation: 0,
     avatarTxGas: 0,
     baseGas: 0,
     gasPrice: 0,
-    gasToken: hre.ethers.constants.AddressZero,
-    refundReceiver: hre.ethers.constants.AddressZero,
+    gasToken: ethers_1.constants.AddressZero,
+    refundReceiver: ethers_1.constants.AddressZero,
 };
 // Roles V1
 // MAINNET safe & roles specific addresses

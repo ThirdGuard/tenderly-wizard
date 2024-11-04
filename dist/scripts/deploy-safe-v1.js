@@ -11,18 +11,24 @@ const colors_1 = __importDefault(require("colors"));
 const hardhat_1 = require("hardhat");
 const util_1 = require("../utils/util");
 const constants_1 = require("../utils/constants");
-async function deploySafe(chainConfig) {
+async function deploySafe(chainConfig, saltNonce) {
     const [caller] = await hardhat_1.ethers.getSigners();
     const safeMaster = new hardhat_1.ethers.Contract(chainConfig.SAFE_MASTER_COPY_ADDR, safe_master_copy_v1_json_1.default, caller);
     const initializer = await safeMaster.populateTransaction.setup([caller.address], 1, //threshold
     hardhat_1.ethers.constants.AddressZero, "0x", chainConfig.DEFAULT_FALLBACK_HANDLER_ADDRESS, hardhat_1.ethers.constants.AddressZero, 0, hardhat_1.ethers.constants.AddressZero);
-    const saltNonce = Date.now();
     const safeProxyFactory = new hardhat_1.ethers.Contract(chainConfig.SAFE_PROXY_FACTORY_ADDR, safe_proxy_factory_v1_json_1.default, caller);
-    const txResponse = await safeProxyFactory.createProxyWithNonce(chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce);
+    const txResponse = await safeProxyFactory.createProxyWithNonce(chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce, {
+        gasLimit: constants_1.GAS_LIMIT
+    });
     const txReceipt = await txResponse.wait();
     const txData = txReceipt.events?.find((x) => x.event == "ProxyCreation");
     const deployedSafeAddress = txData?.args?.proxy; //?? ethers.constants.AddressZero
-    console.info(colors_1.default.green(`✅ Safe was deployed to ${deployedSafeAddress}`));
+    // @todo check calculated safe address
+    // check if address is matching predicted address before processing transaction
+    if (deployedSafeAddress !== (await (0, util_1.predictSafeAddress)(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce))) {
+        throw new Error(`Safe address deployment unexpected, expected ${await (0, util_1.predictSafeAddress)(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce)}, actual: ${deployedSafeAddress} `);
+    }
+    console.info(colors_1.default.green(`✅ Safe was deployed to ${deployedSafeAddress} `));
     return deployedSafeAddress;
 }
 exports.deploySafe = deploySafe;
@@ -45,7 +51,7 @@ async function addSafeSigners(safeAddr, newOwners, chainConfig) {
         const txReceipt = await addSignersTx.wait();
         const txData = txReceipt.events?.filter((x) => x.event === "AddedOwner");
         const ownersAddedFromEvent = txData.map((log) => log.args);
-        console.info(`\n🔑 New owners added: ${ownersAddedFromEvent.join(", ")} on Safe: ${safeAddr}`);
+        console.info(`\n🔑 New owners added: ${ownersAddedFromEvent.join(", ")} on Safe: ${safeAddr} `);
     }
     else {
         console.info(`No new owners were added to Safe: ${safeAddr} as at least one owner you tried to add is already an owner on this Safe`);
@@ -67,7 +73,7 @@ async function removeDeployerAsOwner(safeAddr, threshold) {
         const removeOwnersPopTx = await safe.populateTransaction.removeOwner(prevOwner, caller.address, threshold);
         const signature = (0, util_1.getPreValidatedSignatures)(caller.address);
         await safe.connect(caller).execTransaction(safeAddr, constants_1.tx.zeroValue, removeOwnersPopTx.data, constants_1.tx.operation, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature);
-        console.info(`\n🔒 Deployer: ${caller.address} was removed as an owner on Safe: ${safeAddr}`);
+        console.info(`\n🔒 Deployer: ${caller.address} was removed as an owner on Safe: ${safeAddr} `);
     }
     else {
         console.info(`Deployer ${caller.address} is not an owner on Safe: ${safeAddr} so we can't remove them as an owner`);

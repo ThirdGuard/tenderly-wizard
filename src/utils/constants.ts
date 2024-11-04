@@ -1,3 +1,4 @@
+import { BigNumber, constants, utils } from "ethers";
 import { encodeBytes32String } from "./util";
 
 export const AMOUNTS = {
@@ -8,6 +9,13 @@ export const AMOUNTS = {
     ten_thousand: "10000",
     hundred_thousand: "100000",
     million: "1000000",
+}
+
+export const SALTS = {
+    safes: {
+        investment: parseInt(encodeBytes32String("investment.salt").slice(2, 14), 16),
+        accessControl: parseInt(encodeBytes32String("accessControl.salt").slice(2, 14), 16)
+    }
 }
 
 export const MANAGER_ROLE_ID_V1 = 1;
@@ -31,11 +39,9 @@ export const GREATER_THAN = 2;
 export const ANY = 0;
 export const ONE_OF = 3;
 
-const hre = require("hardhat");
+export const GAS_LIMIT = BigNumber.from("3000000");
 
-export const GAS_LIMIT = hre.ethers.BigNumber.from("3000000");
-
-export const EMPTY_BYTES = hre.ethers.utils.hexZeroPad("0x", 32);
+export const EMPTY_BYTES = utils.hexZeroPad("0x", 32);
 export const EMPTY_LIMIT_DATA = {
     limitRouter: "0x0000000000000000000000000000000000000000",
     epsSkipMarket: "0",
@@ -43,9 +49,7 @@ export const EMPTY_LIMIT_DATA = {
     flashFills: [],
     optData: "0x",
 };
-export const APPROVAL_SIG = hre.ethers.utils
-    .id("approve(address,uint256)")
-    .substring(0, 10);
+export const APPROVAL_SIG = utils.id("approve(address,uint256)").substring(0, 10);
 
 export const tx = {
     zeroValue: 0,
@@ -53,8 +57,8 @@ export const tx = {
     avatarTxGas: 0,
     baseGas: 0,
     gasPrice: 0,
-    gasToken: hre.ethers.constants.AddressZero,
-    refundReceiver: hre.ethers.constants.AddressZero,
+    gasToken: constants.AddressZero,
+    refundReceiver: constants.AddressZero,
 };
 
 // Roles V1
