@@ -12,7 +12,6 @@ const colors_1 = __importDefault(require("colors"));
 const hardhat_1 = require("hardhat");
 const constants_1 = require("../utils/constants");
 async function deploySafeV2(chainConfig) {
-    var _a, _b;
     const [caller] = await hardhat_1.ethers.getSigners();
     const safeMaster = new hardhat_1.ethers.Contract(chainConfig.SAFE_MASTER_COPY_ADDR, safe_master_copy_v2_json_1.default, caller);
     const initializer = await safeMaster.populateTransaction.setup([caller.address], 1, //threshold
@@ -21,15 +20,14 @@ async function deploySafeV2(chainConfig) {
     const safeProxyFactory = new hardhat_1.ethers.Contract(chainConfig.SAFE_PROXY_FACTORY_ADDR, safe_proxy_factory_v2_json_1.default, caller);
     const txResponse = await safeProxyFactory.createProxyWithNonce(chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce);
     const txReceipt = await txResponse.wait();
-    const txData = (_a = txReceipt.events) === null || _a === void 0 ? void 0 : _a.find((x) => x.event == "ProxyCreation");
-    const deployedSafeAddress = (_b = txData === null || txData === void 0 ? void 0 : txData.args) === null || _b === void 0 ? void 0 : _b.proxy; //?? hre.ethers.constants.AddressZero
+    const txData = txReceipt.events?.find((x) => x.event == "ProxyCreation");
+    const deployedSafeAddress = txData?.args?.proxy; //?? hre.ethers.constants.AddressZero
     console.info(colors_1.default.green(`✅ Safe was deployed to ${deployedSafeAddress}`));
     return deployedSafeAddress;
 }
 exports.deploySafeV2 = deploySafeV2;
 // adds signers to a safe (only if they are uniquely new signers)
 async function addSafeSigners(safeAddr, newOwners, chainConfig) {
-    var _a;
     const [caller] = await hardhat_1.ethers.getSigners();
     const safe = new hardhat_1.ethers.Contract(safeAddr, safe_master_copy_v2_json_1.default, caller);
     //check the owners being added are not already owners
@@ -47,7 +45,7 @@ async function addSafeSigners(safeAddr, newOwners, chainConfig) {
             .connect(caller)
             .execTransaction(chainConfig.MULTISEND_ADDR, constants_1.tx.zeroValue, metaTxs.data, constants_1.SAFE_OPERATION_DELEGATECALL, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature);
         const txReceipt = await addSignersTx.wait();
-        const txData = (_a = txReceipt.events) === null || _a === void 0 ? void 0 : _a.filter((x) => x.event === "AddedOwner");
+        const txData = txReceipt.events?.filter((x) => x.event === "AddedOwner");
         const ownersAddedFromEvent = txData.map((log) => log.args);
         console.info(`\n🔑 New owners added: ${ownersAddedFromEvent.join(", ")} on Safe: ${safeAddr}`);
     }

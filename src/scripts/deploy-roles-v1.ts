@@ -3,19 +3,16 @@ import SAFE_MODULE_PROXY_FACTORY_ABI from "../contracts/safe_module_proxy_factor
 import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
 import { AccessControllerWhitelistV1 } from "../whitelist/acs/scope-access-controller-v1";
 import colors from "colors";
-import {
-  addSafeSigners,
-  deploySafe,
-  removeDeployerAsOwner,
-} from "./deploy-safe-v1";
-import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1, GAS_LIMIT, MANAGER_ROLE_ID_V2 } from "../utils/constants";
+import { addSafeSigners, deploySafe, removeDeployerAsOwner } from "./deploy-safe-v1";
+import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1 } from "../utils/constants";
 // @ts-ignore
 import { ethers } from "hardhat";
-import { createMultisendTx, getPreValidatedSignatures } from "../utils/util";
+import { createMultisendTx, getPreValidatedSignatures, predictRolesModAddress, SALT } from "../utils/util";
 import { ChainConfig } from "../utils/types";
 import { getChainConfig } from "../utils/roles-chain-config";
 import { ChainId } from "zodiac-roles-sdk/.";
 import { constants, Contract, utils } from "ethers";
+import { ContractAddresses, ContractFactories, KnownContracts, calculateProxyAddress, deployAndSetUpModule } from "@gnosis-guild/zodiac"
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 export async function deployRoles(
@@ -23,44 +20,78 @@ export async function deployRoles(
   avatar: string,
   target: string,
   proxied: boolean,
+  chainId: ChainId,
   chainConfig: ChainConfig["v1"]
 ) {
   const [caller] = await ethers.getSigners();
   if (proxied) {
-    const abiCoder = utils.defaultAbiCoder;
-    const encoded = abiCoder.encode(
-      ["address", "address", "address"],
-      [owner, avatar, target]
-    );
-    const rolesMaster = new Contract(
-      chainConfig.ROLES_MASTER_COPY_ADDR,
-      ROLES_V1_MASTER_COPY_ABI,
-      caller
-    );
-    const initParams = await rolesMaster.populateTransaction.setUp(encoded);
-    const tsSalt = new Date().getTime();
-    const safeModuleProxyFactory = new Contract(
-      chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR,
-      SAFE_MODULE_PROXY_FACTORY_ABI,
-      caller
-    );
-    const deployModTx = await safeModuleProxyFactory.deployModule(
-      chainConfig.ROLES_MASTER_COPY_ADDR,
-      initParams.data as string,
-      tsSalt
-    );
-    const txReceipt = await deployModTx.wait();
-    const txData = txReceipt.events?.find(
-      (x: any) => x.event == "ModuleProxyCreation"
-    );
-    const rolesModAddress = txData?.args?.proxy;
-    console.info(
-      colors.green(
-        `✅ Roles was deployed via proxy factory to ${rolesModAddress}`
+    // const abiCoder = utils.defaultAbiCoder;
+    // const encoded = abiCoder.encode(
+    //   ["address", "address", "address"],
+    //   [owner, avatar, target]
+    // );
+
+    console.log("owner:", owner);
+    console.log("avatar:", avatar);
+    console.log("target:", target);
+
+    // get expected Module Address and transaction
+    const { expectedModuleAddress, transaction } = await deployAndSetUpModule(
+      KnownContracts.ROLES_V1,
+      {
+        types: ["address", "address", "address"],
+        values: [owner, avatar, target],
+      },
+      caller.provider,
+      chainId,
+      SALT
+    )
+
+    const adx = await predictRolesModAddress(caller, owner, avatar, target)
+    console.log(`prediected roles address: ${adx}`)
+
+    // check if address is matching predicted address before processing transaction
+    if (expectedModuleAddress !== (await predictRolesModAddress(caller, owner, avatar, target))) {
+      throw new Error(
+        `Roles mod address deployment unexpected, expected ${predictRolesModAddress(caller, owner, avatar, target)}, actual: ${expectedModuleAddress}`
       )
-    );
-    return rolesModAddress;
+    }
+
+    // const rolesMaster = new Contract(
+    //   chainConfig.ROLES_MASTER_COPY_ADDR,
+    //   ROLES_V1_MASTER_COPY_ABI,
+    //   caller
+    // );
+    // const initParams = await rolesMaster.populateTransaction.setUp(encoded);
+    // const tsSalt = new Date().getTime(); // salt must be the same
+    // const safeModuleProxyFactory = new Contract(
+    //   chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR,
+    //   SAFE_MODULE_PROXY_FACTORY_ABI,
+    //   caller
+    // );
+    // const deployModTx = await safeModuleProxyFactory.deployModule(
+    //   chainConfig.ROLES_MASTER_COPY_ADDR,
+    //   initParams.data as string,
+    //   tsSalt
+    // );
+    // const txReceipt = await deployModTx.wait();
+    // const txData = txReceipt.events?.find(
+    //   (x: any) => x.event == "ModuleProxyCreation"
+    // );
+    // const rolesModAddress = txData?.args?.proxy;
+
+    try {
+      await caller.sendTransaction(transaction)
+      console.info(
+        colors.green(`✅ Roles was deployed via proxy factory to ${expectedModuleAddress}`)
+      );
+      return expectedModuleAddress;
+    } catch (e: any) {
+      console.error(e)
+      throw new Error(`Roles mod address deployment failed: ${e}`)
+    }
   }
+
   const Permissions = await ethers.getContractFactory("Permissions");
   const permissions = await Permissions.deploy();
   const Roles = await ethers.getContractFactory("Roles", {
@@ -80,8 +111,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
 
   const invSafe = new Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
   const enabled = await invSafe.isModuleEnabled(rolesAddr);
-  console.log(
-    `ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr} ${enabled}`
+  console.log(`ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr} ${enabled}`
   );
   if (!enabled) {
     const enable = await invSafe.populateTransaction.enableModule(rolesAddr);
@@ -233,7 +263,8 @@ export const deployAccessControlSystemV1 = async (
       investmentSafeAddr,
       investmentSafeAddr,
       options.proxied,
-      chainConfig
+      chainId,
+      chainConfig,
     ));
 
   await enableRolesModifier(investmentSafeAddr, invRolesAddr);
@@ -248,6 +279,7 @@ export const deployAccessControlSystemV1 = async (
       accessControlSafeAddr,
       accessControlSafeAddr,
       options.proxied,
+      chainId,
       chainConfig
     ));
   await enableRolesModifier(accessControlSafeAddr, acRolesAddr);

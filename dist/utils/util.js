@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePackageJson = exports.checkRequiredEnvVariables = exports.findWhitelistClasses = exports.findPermissionsFiles = exports.setGas = exports.setERC20TokenBalance = exports.setERC20TokenBalances = exports.encodeBytes32String = exports.numberToBytes32 = exports.getABICodedAddress = exports.scopeAllowFunctions = exports.scopeTargetsV2 = exports.scopeTargetsV1 = exports.getPreValidatedSignatures = exports.createMultisendTx = exports.ExecutionOptions = exports.OperationType = void 0;
+exports.predictRolesModAddress = exports.updatePackageJson = exports.checkRequiredEnvVariables = exports.findWhitelistClasses = exports.findPermissionsFiles = exports.setGas = exports.setERC20TokenBalance = exports.setERC20TokenBalances = exports.encodeBytes32String = exports.numberToBytes32 = exports.getABICodedAddress = exports.scopeAllowFunctions = exports.scopeTargetsV2 = exports.scopeTargetsV1 = exports.getPreValidatedSignatures = exports.createMultisendTx = exports.ExecutionOptions = exports.OperationType = exports.SALT = void 0;
 const ethers_1 = require("ethers");
 const ethers_multisend_1 = require("ethers-multisend");
 const utils_1 = require("ethers/lib/utils");
@@ -14,6 +14,8 @@ const hardhat_1 = require("hardhat");
 const ts_morph_1 = require("ts-morph");
 const child_process_1 = require("child_process");
 const env_config_1 = __importDefault(require("../env-config"));
+const zodiac_1 = require("@gnosis-guild/zodiac");
+exports.SALT = "0x0000000000000000000000000000000000000000000000000000000000000000";
 var OperationType;
 (function (OperationType) {
     OperationType[OperationType["Call"] = 0] = "Call";
@@ -219,11 +221,10 @@ function findWhitelistClasses(whitelistDir) {
     project.getSourceFiles().forEach(sourceFile => {
         const classes = sourceFile.getDescendantsOfKind(ts_morph_1.SyntaxKind.ClassDeclaration);
         classes.forEach((classDeclaration) => {
-            var _a;
             const heritage = classDeclaration.getHeritageClauses();
             if (heritage.some(clause => clause.getTypeNodes().some(node => node.getText().includes('Whitelist')))) {
                 const absolutePath = sourceFile.getFilePath();
-                whitelistExtensions.push({ path: absolutePath, className: (_a = classDeclaration.getName()) !== null && _a !== void 0 ? _a : '' });
+                whitelistExtensions.push({ path: absolutePath, className: classDeclaration.getName() ?? '' });
             }
         });
     });
@@ -261,7 +262,7 @@ function updatePackageJson() {
     const appPath = (0, child_process_1.execSync)(`readlink -f ${tenderlyWizardPath}`).toString().trim().replace(/(.*tenderly-wizard).*/, '$1');
     console.log("appPath: ", appPath);
     const scriptsToAdd = {
-        "deploy:vnet": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
+        "deploy:safes": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
         "deploy:whitelist": `hardhat run ${appPath}/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
         "save:vnet-snapshot": `hardhat run ${appPath}/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
     };
@@ -281,3 +282,27 @@ function updatePackageJson() {
     }
 }
 exports.updatePackageJson = updatePackageJson;
+async function predictRolesModAddress(signer, owner, avatar, target) {
+    const encodedInitParams = utils_1.defaultAbiCoder.encode(["address", "address", "address"], [owner, avatar, target]);
+    const moduleSetupData = zodiac_1.ContractFactories[zodiac_1.KnownContracts.ROLES_V1]
+        .createInterface()
+        .encodeFunctionData("setUp", [encodedInitParams]);
+    return (0, zodiac_1.calculateProxyAddress)(zodiac_1.ContractFactories[zodiac_1.KnownContracts.FACTORY].connect(zodiac_1.ContractAddresses[1][zodiac_1.KnownContracts.FACTORY], signer), zodiac_1.ContractAddresses[1][zodiac_1.KnownContracts.ROLES_V1], moduleSetupData, exports.SALT);
+}
+exports.predictRolesModAddress = predictRolesModAddress;
+const addresses = {
+    deployer: "0xdef1dddddddddddddddddddddddddddddddddddd",
+    avatar: "0xdef1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    owner: "0xdef1010101010101010101010101010101010101",
+    member: "0xdef1123412341234123412341234123412341234",
+    other: "0xdef10f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+};
+async function setupAvatar(avatar = addresses.avatar) {
+    // bytecode for TestAvatar contract: https://github.com/gnosisguild/zodiac-modifier-roles/blob/main/packages/evm/contracts/test/TestAvatar.sol
+    const testAvatarDeployedBytecode = "0x608060405260043610610036575f3560e01c8063468721a7146100415780635229073f14610075578063c55cbe89146100a2575f80fd5b3661003d57005b5f80fd5b34801561004c575f80fd5b5061006061005b366004610383565b6100c3565b60405190151581526020015b60405180910390f35b348015610080575f80fd5b5061009461008f36600461042f565b61019a565b60405161006c929190610528565b3480156100ad575f80fd5b506100c16100bc366004610383565b610270565b005b5f8160ff1660010361013157856001600160a01b031684846040516100e9929190610563565b5f60405180830381855af49150503d805f8114610121576040519150601f19603f3d011682016040523d82523d5f602084013e610126565b606091505b505080915050610191565b856001600160a01b031685858560405161014c929190610563565b5f6040518083038185875af1925050503d805f8114610186576040519150601f19603f3d011682016040523d82523d5f602084013e61018b565b606091505b50909150505b95945050505050565b5f60608260ff1660010361020857856001600160a01b0316846040516101c09190610572565b5f60405180830381855af49150503d805f81146101f8576040519150601f19603f3d011682016040523d82523d5f602084013e6101fd565b606091505b505080925050610267565b856001600160a01b031685856040516102219190610572565b5f6040518083038185875af1925050503d805f811461025b576040519150601f19603f3d011682016040523d82523d5f602084013e610260565b606091505b5090925090505b94509492505050565b5f60608260ff166001036102e057866001600160a01b03168585604051610298929190610563565b5f60405180830381855af49150503d805f81146102d0576040519150601f19603f3d011682016040523d82523d5f602084013e6102d5565b606091505b505080925050610341565b866001600160a01b03168686866040516102fb929190610563565b5f6040518083038185875af1925050503d805f8114610335576040519150601f19603f3d011682016040523d82523d5f602084013e61033a565b606091505b5090925090505b8161034e57805160208201fd5b50505050505050565b6001600160a01b038116811461036b575f80fd5b50565b803560ff8116811461037e575f80fd5b919050565b5f805f805f60808688031215610397575f80fd5b85356103a281610357565b945060208601359350604086013567ffffffffffffffff808211156103c5575f80fd5b818801915088601f8301126103d8575f80fd5b8135818111156103e6575f80fd5b8960208285010111156103f7575f80fd5b60208301955080945050505061040f6060870161036e565b90509295509295909350565b634e487b7160e01b5f52604160045260245ffd5b5f805f8060808587031215610442575f80fd5b843561044d81610357565b935060208501359250604085013567ffffffffffffffff80821115610470575f80fd5b818701915087601f830112610483575f80fd5b8135818111156104955761049561041b565b604051601f8201601f19908116603f011681019083821181831017156104bd576104bd61041b565b816040528281528a60208487010111156104d5575f80fd5b826020860160208301375f6020848301015280965050505050506104fb6060860161036e565b905092959194509250565b5f5b83811015610520578181015183820152602001610508565b50505f910152565b8215158152604060208201525f825180604084015261054e816060850160208701610506565b601f01601f1916919091016060019392505050565b818382375f9101908152919050565b5f8251610583818460208701610506565b919091019291505056fea2646970667358221220f7fa93e870069255e4379b0c8b48991326a11d431c7f43bcab2c693743e5a60164736f6c63430008150033";
+    await hardhat_1.network.provider.send("tenderly_setCode", [
+        avatar,
+        testAvatarDeployedBytecode,
+    ]);
+    console.log(`Successfully initilized avatar at ${avatar}`);
+}

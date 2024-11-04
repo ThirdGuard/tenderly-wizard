@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { BigNumber, BigNumberish, Contract, PopulatedTransaction, utils } from "ethers";
 import { MetaTransaction, encodeMulti } from "ethers-multisend";
-import { formatBytes32String } from "ethers/lib/utils";
+import { defaultAbiCoder, formatBytes32String } from "ethers/lib/utils";
 import fs from 'fs';
 import path from "path";
 // @ts-ignore
@@ -9,6 +9,9 @@ import { ethers, network } from "hardhat";
 import { Project, ClassDeclaration, SyntaxKind } from 'ts-morph';
 import { execSync } from "child_process";
 import config from "../env-config";
+import { calculateProxyAddress, ContractAddresses, ContractFactories, KnownContracts } from "@gnosis-guild/zodiac";
+
+export const SALT = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
 export enum OperationType {
   Call,
@@ -335,7 +338,7 @@ export function updatePackageJson() {
   console.log("appPath: ", appPath)
 
   const scriptsToAdd = {
-    "deploy:vnet": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
+    "deploy:safes": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
     "deploy:whitelist": `hardhat run ${appPath}/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
     "save:vnet-snapshot": `hardhat run ${appPath}/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
   };
@@ -358,4 +361,35 @@ export function updatePackageJson() {
   } else {
     console.error('package.json not found in the current working directory.');
   }
+}
+
+export async function predictRolesModAddress(signer: any, owner: string, avatar: string, target: String) {
+  const encodedInitParams = defaultAbiCoder.encode(
+    ["address", "address", "address"],
+    [owner, avatar, target]
+  )
+
+  const moduleSetupData = ContractFactories[KnownContracts.ROLES_V1]
+    .createInterface()
+    .encodeFunctionData("setUp", [encodedInitParams])
+
+  return calculateProxyAddress(
+    ContractFactories[KnownContracts.FACTORY].connect(
+      ContractAddresses[1][KnownContracts.FACTORY],
+      signer,
+    ) as any,
+    ContractAddresses[1][KnownContracts.ROLES_V1],
+    moduleSetupData,
+    SALT
+  )
+}
+
+const addresses = {
+  deployer: "0xdef1dddddddddddddddddddddddddddddddddddd",
+  avatar: "0xdef1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  owner: "0xdef1010101010101010101010101010101010101",
+  member: "0xdef1123412341234123412341234123412341234",
+  other: "0xdef10f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+}
+
 }

@@ -20,7 +20,6 @@ const scope_access_controller_v2_1 = require("../whitelist/acs/scope-access-cont
 const ZeroHash = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const SaltZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
 async function deployRolesV2(owner, avatar, target, proxied, chainConfig) {
-    var _a, _b;
     const [caller] = await hardhat_1.ethers.getSigners();
     if (proxied) {
         const abiCoder = hardhat_1.ethers.utils.defaultAbiCoder;
@@ -31,8 +30,8 @@ async function deployRolesV2(owner, avatar, target, proxied, chainConfig) {
         const safeModuleProxyFactory = new hardhat_1.ethers.Contract(chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR, safe_module_proxy_factory_v2_json_1.default, caller);
         const deployModTx = await safeModuleProxyFactory.deployModule(chainConfig.ROLES_MASTER_COPY_ADDR, initParams.data, tsSalt);
         const txReceipt = await deployModTx.wait();
-        const txData = (_a = txReceipt.events) === null || _a === void 0 ? void 0 : _a.find((x) => x.event == "ModuleProxyCreation");
-        const rolesModAddress = (_b = txData === null || txData === void 0 ? void 0 : txData.args) === null || _b === void 0 ? void 0 : _b.proxy;
+        const txData = txReceipt.events?.find((x) => x.event == "ModuleProxyCreation");
+        const rolesModAddress = txData?.args?.proxy;
         console.info(colors_1.default.green(`✅ Roles was deployed via proxy factory to ${rolesModAddress}`));
         return rolesModAddress;
     }
@@ -59,7 +58,6 @@ async function deployRolesV2(owner, avatar, target, proxied, chainConfig) {
 exports.deployRolesV2 = deployRolesV2;
 //If the roles module is not already enabled on Safe, enable it
 async function enableRolesModifier(safeAddr, rolesAddr) {
-    var _a, _b, _c;
     const [caller] = await hardhat_1.ethers.getSigners();
     const signature = (0, util_1.getPreValidatedSignatures)(caller.address);
     //investment safe
@@ -67,10 +65,10 @@ async function enableRolesModifier(safeAddr, rolesAddr) {
     const enabled = await invSafe.isModuleEnabled(rolesAddr);
     if (!enabled) {
         const enable = await invSafe.populateTransaction.enableModule(rolesAddr);
-        const enableTx = await invSafe.execTransaction(safeAddr, constants_1.tx.zeroValue, (_a = enable.data) !== null && _a !== void 0 ? _a : "", constants_1.tx.operation, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature);
+        const enableTx = await invSafe.execTransaction(safeAddr, constants_1.tx.zeroValue, enable.data ?? "", constants_1.tx.operation, constants_1.tx.avatarTxGas, constants_1.tx.baseGas, constants_1.tx.gasPrice, constants_1.tx.gasToken, constants_1.tx.refundReceiver, signature);
         const txReceipt = await enableTx.wait();
-        const txData = (_b = txReceipt.events) === null || _b === void 0 ? void 0 : _b.find((x) => x.event == "EnabledModule");
-        const moduleEnabledFromEvent = (_c = txData === null || txData === void 0 ? void 0 : txData.args) === null || _c === void 0 ? void 0 : _c.module;
+        const txData = txReceipt.events?.find((x) => x.event == "EnabledModule");
+        const moduleEnabledFromEvent = txData?.args?.module;
         console.info(colors_1.default.blue(`ℹ️  Roles modifier: ${moduleEnabledFromEvent} has been enabled on safe: ${safeAddr}`));
     }
     else {
@@ -127,17 +125,17 @@ const deployAccessControlSystemV2 = async (chainId, options, deployed) => {
     // get chain config for multichain deploy
     const chainConfig = (0, roles_chain_config_1.getChainConfig)(chainId, "v2");
     //Deploy both safes
-    const accessControlSafeAddr = (deployed === null || deployed === void 0 ? void 0 : deployed.acSafeAddr) || (await (0, deploy_safe_v2_1.deploySafeV2)(chainConfig));
-    const investmentSafeAddr = (deployed === null || deployed === void 0 ? void 0 : deployed.invSafeAddr) || (await (0, deploy_safe_v2_1.deploySafeV2)(chainConfig));
+    const accessControlSafeAddr = deployed?.acSafeAddr || (await (0, deploy_safe_v2_1.deploySafeV2)(chainConfig));
+    const investmentSafeAddr = deployed?.invSafeAddr || (await (0, deploy_safe_v2_1.deploySafeV2)(chainConfig));
     // //Deploy and enable a Roles modifier on the investment safe
-    const invRolesAddr = (deployed === null || deployed === void 0 ? void 0 : deployed.invRolesAddr) ||
+    const invRolesAddr = deployed?.invRolesAddr ||
         (await deployRolesV2(accessControlSafeAddr, investmentSafeAddr, investmentSafeAddr, options.proxied, chainConfig));
     await enableRolesModifier(investmentSafeAddr, invRolesAddr);
     //Set the multisend address on roles so that manager can send multisend txs later on
     // await setRolesMultisend(accessControlSafeAddr, invRolesAddr);
     await setRolesUnwrapper(accessControlSafeAddr, invRolesAddr, chainConfig);
     //Deploy and enable a Roles modifier on the access control safe
-    const acRolesAddr = (deployed === null || deployed === void 0 ? void 0 : deployed.acRolesAddr) ||
+    const acRolesAddr = deployed?.acRolesAddr ||
         (await deployRolesV2(accessControlSafeAddr, accessControlSafeAddr, accessControlSafeAddr, options.proxied, chainConfig));
     await enableRolesModifier(accessControlSafeAddr, acRolesAddr);
     // //Set the multisend address on roles so that manager can send multisend txs later on

@@ -27,7 +27,7 @@ async function deployViaFactory(initCode, salt, deployer, displayName, gasLimit 
     const receipt = await (await factory.deploy(initCode, salt, {
         gasLimit: gasLimit * gasLimitFactor,
     })).wait();
-    if ((receipt === null || receipt === void 0 ? void 0 : receipt.status) == 1) {
+    if (receipt?.status == 1) {
         console.log(`\x1B[32m✔ ${displayName || "Singleton"} deployed to: ${computedAddress} 🎉\x1B[0m `);
     }
     else {
@@ -62,7 +62,7 @@ async function maybeDeployFactory(signer) {
         });
         // deploy the singleton factory
         const receipt = await (await provider.sendTransaction(factoryInfo.transaction)).wait();
-        if ((receipt === null || receipt === void 0 ? void 0 : receipt.status) != 1) {
+        if (receipt?.status != 1) {
             throw Error("EIP2470 SingletonFactory could not be deployed to correct address, deployment haulted.");
         }
     }

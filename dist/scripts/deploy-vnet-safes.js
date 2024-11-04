@@ -42,10 +42,10 @@ async function deploySafesOnVnet(chainId, rolesVersion) {
     console.log("deployedSnapshot: ", deployedSnapshot);
     // add to .env
     virtual_test_net_1.default.addToEnvFile('TENDERLY_SNAPSHOT', deployedSnapshot);
-    virtual_test_net_1.default.addToEnvFile('ACCESS_CONTROL_SAFE_ADDRESS', base === null || base === void 0 ? void 0 : base.acSafe);
-    virtual_test_net_1.default.addToEnvFile('INVESTMENT_SAFE_ADDRESS', base === null || base === void 0 ? void 0 : base.invSafe);
-    virtual_test_net_1.default.addToEnvFile('INVESTMENT_ROLES_ADDRESS', base === null || base === void 0 ? void 0 : base.invRoles);
-    virtual_test_net_1.default.addToEnvFile('ACCESS_CONTROL_ROLES_ADDRESS', base === null || base === void 0 ? void 0 : base.acRoles);
+    virtual_test_net_1.default.addToEnvFile('ACCESS_CONTROL_SAFE_ADDRESS', base?.acSafe);
+    virtual_test_net_1.default.addToEnvFile('INVESTMENT_SAFE_ADDRESS', base?.invSafe);
+    virtual_test_net_1.default.addToEnvFile('INVESTMENT_ROLES_ADDRESS', base?.invRoles);
+    virtual_test_net_1.default.addToEnvFile('ACCESS_CONTROL_ROLES_ADDRESS', base?.acRoles);
     contractsAddr = base;
     return base;
 }

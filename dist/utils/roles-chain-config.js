@@ -50,8 +50,7 @@ const chainConfigs = {
     // @note Add configurations for other chains here
 };
 function getChainConfig(chainId, rolesVersion) {
-    var _a;
-    const config = (_a = chainConfigs[chainId]) === null || _a === void 0 ? void 0 : _a[rolesVersion];
+    const config = chainConfigs[chainId]?.[rolesVersion];
     if (!config) {
         throw new Error(`No configuration found for chain ID ${chainId} and roles version ${rolesVersion}`);
     }

@@ -134,7 +134,7 @@ export async function start() {
         const confirmDeploy = await terminal.yesOrNo().promise;
         if (confirmDeploy?.valueOf()) {
             console.log("\nDeploying default safes...");
-            const output = execSync(`npm run deploy:vnet`, { stdio: 'pipe' }).toString()
+            const output = execSync(`npm run deploy:safes`, { stdio: 'pipe' }).toString()
             console.log(output)
             console.log("\nDeployed default safes successfully");
         }

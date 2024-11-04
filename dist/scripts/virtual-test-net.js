@@ -126,7 +126,6 @@ class VirtualTestNet {
         }
     }
     async listVirtualTestnets() {
-        var _a;
         const { TENDERLY_ACCESS_TOKEN, TENDERLY_ACCOUNT, TENDERLY_PROJECT_ID } = env_config_1.default;
         if (!TENDERLY_ACCESS_TOKEN || !TENDERLY_ACCOUNT || !TENDERLY_PROJECT_ID) {
             throw new Error("Missing required Tenderly environment variables");
@@ -148,7 +147,7 @@ class VirtualTestNet {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const result = await response.json();
-            return (((_a = result === null || result === void 0 ? void 0 : result.containers) === null || _a === void 0 ? void 0 : _a.map((container) => {
+            return (result?.containers?.map((container) => {
                 return {
                     vnet_id: container.id,
                     displayName: container.displayName,
@@ -158,7 +157,7 @@ class VirtualTestNet {
                     fork_of: container.metadata.origin_container_display_name || null,
                     network_id: container.networkConfig.networkId,
                 };
-            })) || []);
+            }) || []);
         }
         catch (error) {
             console.error("Error Getting Virtual TestNets:", error);
@@ -167,7 +166,7 @@ class VirtualTestNet {
     }
     async getTestnet(name) {
         const vnets = (await this.listVirtualTestnets()) || [];
-        return vnets.find((vnet) => (vnet === null || vnet === void 0 ? void 0 : vnet.displayName) == name);
+        return vnets.find((vnet) => vnet?.displayName == name);
     }
     async addToEnvFile(key, value) {
         const envPath = path_1.default.resolve(process.cwd(), ".env");
