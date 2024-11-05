@@ -384,6 +384,16 @@ export async function predictRolesModAddress(signer: any, owner: string, avatar:
   )
 }
 
+/**
+ * Predicts the address of a Safe proxy that will be deployed through a Safe proxy factory
+ * @param {Contract} safeProxyFactory - Instance of the Safe proxy factory contract
+ * @param {string} safeMasterCopy - Address of the Safe master copy implementation
+ * @param {string} data - Initialization data for the Safe proxy
+ * @param {number} saltNonce - Nonce used as salt for address calculation
+ * @returns {Promise<string>} The predicted address of the Safe proxy
+ * @description Uses the proxy factory's calculateCreateProxyWithNonceAddress method to predict
+ * the deterministic address where a Safe proxy will be deployed based on the initialization parameters
+ */
 export async function predictSafeAddress(safeProxyFactory: Contract, safeMasterCopy: string, data: string, saltNonce: number) {
   return await safeProxyFactory.calculateCreateProxyWithNonceAddress(
     safeMasterCopy,
@@ -396,6 +406,13 @@ export async function predictSafeAddress(safeProxyFactory: Contract, safeMasterC
 }
 
 
+/**
+ * Sets the current block number to a target block number by increasing blocks
+ * @param {number} targetBlock - The desired block number to reach
+ * @returns {Promise<void>} A promise that resolves when blocks have been increased
+ * @description This function is useful for testing scenarios that require being at a specific block number.
+ * It calculates the difference between current and target block numbers and increases blocks accordingly.
+ */
 export async function setUniformBlockNumber(targetBlock: number) {
   const currentBlock = await network.provider.send("eth_blockNumber");
   const currentBlockDecimal = parseInt(currentBlock, 16);
