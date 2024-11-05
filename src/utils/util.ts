@@ -394,3 +394,19 @@ export async function predictSafeAddress(safeProxyFactory: Contract, safeMasterC
     }
   )
 }
+
+
+export async function setUniformBlockNumber(targetBlock: number) {
+  const currentBlock = await network.provider.send("eth_blockNumber");
+  const currentBlockDecimal = parseInt(currentBlock, 16);
+  const blocksToIncrease = targetBlock - currentBlockDecimal;
+
+  console.log("targetBlock:", targetBlock);
+  console.log("currentBlock:", currentBlockDecimal);
+  console.log("blocksToIncrease:", blocksToIncrease);
+
+  await network.provider.request({
+    method: "evm_increaseBlocks",
+    params: [ethers.utils.hexValue(blocksToIncrease)]
+  });
+}

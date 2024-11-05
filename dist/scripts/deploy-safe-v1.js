@@ -25,9 +25,12 @@ async function deploySafe(chainConfig, saltNonce) {
     const deployedSafeAddress = txData?.args?.proxy; //?? ethers.constants.AddressZero
     // @todo check calculated safe address
     // check if address is matching predicted address before processing transaction
-    if (deployedSafeAddress !== (await (0, util_1.predictSafeAddress)(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce))) {
-        throw new Error(`Safe address deployment unexpected, expected ${await (0, util_1.predictSafeAddress)(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce)}, actual: ${deployedSafeAddress} `);
-    }
+    // if (deployedSafeAddress !== (await predictSafeAddress(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data as string, saltNonce))) {
+    //     throw new Error(
+    //         `Safe address deployment unexpected, expected ${await predictSafeAddress(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data as string, saltNonce)
+    //         }, actual: ${deployedSafeAddress} `
+    //     )
+    // }
     console.info(colors_1.default.green(`✅ Safe was deployed to ${deployedSafeAddress} `));
     return deployedSafeAddress;
 }

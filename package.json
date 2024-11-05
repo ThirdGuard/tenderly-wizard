@@ -30,7 +30,7 @@
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
     "@tenderly/api-client": "^1.0.0",
     "@tenderly/hardhat-tenderly": "^1.8.0",
-    "@thirdguard/config": "^1.1.1",
+    "@thirdguard/config": "^1.1.4",
     "@typechain/hardhat": "^6.1.6",
     "chai": "4.2.0",
     "colors": "^1.4.0",

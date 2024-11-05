@@ -19,7 +19,7 @@ async function getTestnetList() {
 
         // selet chain
         // @audit add more chains
-        terminal.red("Select a Chain: \n");
+        terminal.yellow("\n\nSelect a Chain: \n");
         const chains = ["Ethereum", "Base", "Polygon"];
         const chainSelection = await terminal.singleColumnMenu(chains).promise;
 

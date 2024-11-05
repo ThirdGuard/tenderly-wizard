@@ -20,8 +20,8 @@ const {
     INFURA_KEY,
     MNEMONIC,
     ETHERSCAN_API_KEY,
-    PK,
-    PK_ADDR,
+    CALLER_PK,
+    CALLER_PK_ADDR,
     LEDGER_ADDRESS,
     VIRTUAL_MAINNET_RPC,
     TENDERLY_PROJECT_ID,
@@ -29,9 +29,9 @@ const {
 } = envConfig;
 
 const sharedNetworkConfig: HttpNetworkUserConfig = {};
-if (PK) {
+if (CALLER_PK) {
     (sharedNetworkConfig.accounts as any) = [
-        PK,
+        CALLER_PK,
         '0x6afd3b6cafa60dcc9c0d715aa19a6443e3f88870e42f1bdd6c2609eb28f1cb51',
         '0x63c78aab65242db8fb8673a83f327b7b64433e804cf321aa8222b82ad9b01f99',
         '0x49efed4ae9f6ae4fb1e4bb3271b6dd4afb03de67c108a277a13225c7658140c0',

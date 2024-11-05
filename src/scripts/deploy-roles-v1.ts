@@ -6,8 +6,8 @@ import colors from "colors";
 import { addSafeSigners, deploySafe, removeDeployerAsOwner } from "./deploy-safe-v1";
 import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1, SALTS } from "../utils/constants";
 // @ts-ignore
-import { ethers } from "hardhat";
-import { createMultisendTx, getPreValidatedSignatures, predictRolesModAddress, SALT } from "../utils/util";
+import { ethers, network } from "hardhat";
+import { createMultisendTx, getPreValidatedSignatures, predictRolesModAddress, SALT, setUniformBlockNumber } from "../utils/util";
 import { ChainConfig } from "../utils/types";
 import { getChainConfig } from "../utils/roles-chain-config";
 import { ChainId } from "zodiac-roles-sdk/.";
@@ -252,7 +252,9 @@ export const deployAccessControlSystemV1 = async (
   const chainConfig = getChainConfig(chainId, "v1");
 
   console.log(SALTS.safes)
-  
+
+  // await setUniformBlockNumber(31120366);
+
   //Deploy both safes
   const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafe(chainConfig, SALTS.safes.accessControl));
   const investmentSafeAddr = deployed?.invSafeAddr || (await deploySafe(chainConfig, SALTS.safes.investment));
