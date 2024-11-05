@@ -169,6 +169,7 @@ class VirtualTestNet {
         return vnets.find((vnet) => vnet?.displayName == name);
     }
     async addToEnvFile(key, value) {
+        // write to .env file
         const envPath = path_1.default.resolve(process.cwd(), ".env");
         let envContent = "";
         if (fs_1.default.existsSync(envPath)) {
@@ -182,6 +183,8 @@ class VirtualTestNet {
             envContent += `\n${key}=${value}`;
         }
         fs_1.default.writeFileSync(envPath, envContent.trim() + "\n");
+        // change .env in current session
+        process.env[key] = value;
         console.log(`Environment variable ${key} has been added/updated in .env file.`);
     }
 }

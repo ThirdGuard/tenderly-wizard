@@ -199,6 +199,7 @@ export class VirtualTestNet {
     }
 
     async addToEnvFile(key: string, value: string): Promise<void> {
+        // write to .env file
         const envPath = path.resolve(process.cwd(), ".env");
 
         let envContent = "";
@@ -214,50 +215,12 @@ export class VirtualTestNet {
         }
 
         fs.writeFileSync(envPath, envContent.trim() + "\n");
-        console.log(
-            `Environment variable ${key} has been added/updated in .env file.`
-        );
+
+        // change .env in current session
+        process.env[key] = value;
+
+        console.log(`Environment variable ${key} has been added/updated in .env file.`);
     }
-
-    // checkTenderlyEnvVariables(): boolean {
-    //     const requiredVariables = [
-    //         "TENDERLY_PROJECT_ID",
-    //         "TENDERLY_ACCOUNT",
-    //         "TENDERLY_ACCESS_TOKEN",
-    //     ];
-
-    //     const missingVariables = requiredVariables.filter(
-    //         (variable) => !config[variable],
-    //     );
-
-    //     if (missingVariables.length > 0) {
-    //         console.error(
-    //             "The following required Tenderly environment variables are missing:",
-    //         );
-    //         missingVariables.forEach((variable) => console.error(`- ${variable}`));
-    //         return false;
-    //     }
-
-    //     if (config.TENDERLY_PROJECT_ID !== "project") {
-    //         console.error('TENDERLY_PROJECT_ID should be set to "project"');
-    //         return false;
-    //     }
-
-    //     if (config.TENDERLY_ACCOUNT !== "Abujari") {
-    //         console.error('TENDERLY_ACCOUNT should be set to "Abujari"');
-    //         return false;
-    //     }
-
-    //     if (config.TENDERLY_CHAIN_ID !== "31337") {
-    //         console.error("TENDERLY_CHAIN_ID should be set to 31337");
-    //         return false;
-    //     }
-
-    //     console.log(
-    //         "All required Tenderly environment variables are present and correct.",
-    //     );
-    //     return true;
-    // }
 
     // removeEnvKeys() {
     //     const envPath = path.resolve(process.cwd(), ".env");

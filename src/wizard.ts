@@ -1,40 +1,49 @@
-import { terminal } from 'terminal-kit';
+import { Terminal, terminal } from 'terminal-kit';
 import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import VirtualTestNet from './scripts/virtual-test-net';
-import { updatePackageJson } from './utils/util';
+import { stripAnsi, updatePackageJson } from './utils/util';
+
+const rolesVersions = ["V1", "V2"];
 
 async function getTestnetList() {
     const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
     const testnets = vnets.map(vnet => vnet.displayName);
-    testnets.push("+CREATE TESTNET+");
+    testnets.unshift("\n");
+    testnets.unshift("========================");
+    testnets.unshift("+CREATE TESTNET+");
+    testnets.unshift("+CREATE TESTNET & SETUP+")
+    testnets.push("\n");
+    testnets.push("========================");
     testnets.push("-EXIT-")
     terminal.reset("Select Testnet:");
     const testnet = await terminal.singleColumnMenu(testnets).promise;
-    if (testnet.selectedText == "-EXIT-") {
+    if (testnet.selectedText == "-EXIT-" || testnet.selectedText == "\n" || testnet.selectedText == "========================") {
         terminal.processExit(0);
     }
+
     if (testnet.selectedText == "+CREATE TESTNET+") {
-        terminal.reset("Enter the name of the new testnet: ");
-        const newTestnet = await terminal.inputField().promise;
+        const result = await createNewTestnet(terminal);
+        testnet.selectedText = result.testnetName;
+        terminal.processExit(0);
+    }
 
-        // selet chain
-        // @audit add more chains
-        terminal.yellow("\n\nSelect a Chain: \n");
-        const chains = ["Ethereum", "Base", "Polygon"];
-        const chainSelection = await terminal.singleColumnMenu(chains).promise;
+    if (testnet.selectedText == "+CREATE TESTNET & SETUP+") {
+        // create new testnet
+        const result = await createNewTestnet(terminal);
+        testnet.selectedText = result.testnetName;
 
-        let chain = 1
-        if (chainSelection.selectedIndex == 1) {
-            chain = 8453
-        } else if (chainSelection.selectedIndex == 2) {
-            chain = 137
-        }
-        console.log(`create testnet: ${newTestnet}`);
-        const result = await VirtualTestNet.createVirtualTestNet(newTestnet as string, chain);
-        testnet.selectedText = newTestnet as string;
+        // deploy safes
+        const outputSafes = execSync(`npm run deploy:safes`, { stdio: 'pipe' }).toString()
+        console.log(outputSafes)
 
-        // set env variables
-        await VirtualTestNet.addToEnvFile('TENDERLY_FORK_ID', chain.toString());
+        // apply whitelist
+        const outputWhitelist = execSync(`npm run deploy:whitelist`, { stdio: 'pipe' }).toString()
+        console.log(outputWhitelist)
+
+        // save snapshot
+        const outputSnapshot = execSync(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString()
+        console.log(outputSnapshot)
+
         terminal.processExit(0);
     }
     return testnet;
@@ -46,8 +55,6 @@ export async function start() {
     if (!process.env.IS_DEV) {
         updatePackageJson()
     }
-
-    const rolesVersions = ["V1", "V2"];
 
     terminal.grabInput(true);
     terminal.on('key', (name: any, matches: any, data: any) => {
@@ -116,18 +123,7 @@ export async function start() {
     // deploy safes
     if (action.selectedIndex == 4) {
         // select roles version
-        terminal.red("Select roles version: ")
-        const roleVersionSelection = await terminal.singleColumnMenu(rolesVersions).promise;
-
-        // apply roles V1
-        let rolesVersion = 'v1'
-        if (roleVersionSelection.selectedIndex == 1) {
-            // apply roles v2
-            rolesVersion = 'v2'
-        }
-
-        // set roles version in .env
-        await VirtualTestNet.addToEnvFile('ROLES_VERSION', rolesVersion)
+        await selectRolesVersion(terminal);
 
         // confirmation
         console.log("Are you sure you want to deploy default safes to this testnet (Y/N):", testnet.selectedText);
@@ -142,18 +138,7 @@ export async function start() {
 
     if (action.selectedIndex == 5) {
         // select roles version
-        terminal.red("Select roles version: ")
-        const roleVersionSelection = await terminal.singleColumnMenu(rolesVersions).promise;
-
-        // apply roles V1
-        let rolesVersion = 'v1'
-        if (roleVersionSelection.selectedIndex == 1) {
-            // apply roles v2
-            rolesVersion = 'v2'
-        }
-
-        // set roles version in .env
-        await VirtualTestNet.addToEnvFile('ROLES_VERSION', rolesVersion)
+        await selectRolesVersion(terminal)
 
         // confirmation
         console.log("Are you sure you want to apply whitelist to the default safes on this testnet (Y/N):", testnet.selectedText);
@@ -197,7 +182,7 @@ function executeWithLogs(command: string, options = {}) {
         const output = execSync(command, defaultOptions);
         return {
             success: true,
-            output,
+            output: stripAnsi(output.toString()),
             error: null
         };
     } catch (error: any) {
@@ -217,5 +202,53 @@ function executeWithLogs(command: string, options = {}) {
     }
 }
 
-// start();
+async function createNewTestnet(terminal: Terminal) {
+    terminal.reset("Enter the name of the new testnet: ");
+    const newTestnet = await terminal.inputField().promise;
 
+    // select chain
+    // @audit add more chains  
+    terminal.yellow("\n\nSelect a Chain: \n");
+    const chains = ["Ethereum", "Base", "Polygon"];
+    const chainSelection = await terminal.singleColumnMenu(chains).promise;
+
+    let chain = 1
+    if (chainSelection.selectedIndex == 1) {
+        chain = 8453
+    } else if (chainSelection.selectedIndex == 2) {
+        chain = 137
+    }
+
+    // select roles version
+    await selectRolesVersion(terminal);
+
+    console.log(`create testnet: ${newTestnet}`);
+    const result = await VirtualTestNet.createVirtualTestNet(newTestnet as string, chain);
+
+    // set env variables
+    await VirtualTestNet.addToEnvFile('TENDERLY_FORK_ID', chain.toString());
+
+    // get snapshot
+    const outputSnapshot = execSync(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString()
+    console.log(outputSnapshot)
+
+    return {
+        testnetName: newTestnet as string,
+        result
+    };
+}
+
+async function selectRolesVersion(terminal: Terminal): Promise<string> {
+    terminal.red("Select roles version: ")
+    const roleVersionSelection = await terminal.singleColumnMenu(rolesVersions).promise;
+
+    // Default to v1
+    let rolesVersion = 'v1'
+    if (roleVersionSelection.selectedIndex == 1) {
+        rolesVersion = 'v2'
+    }
+
+    // Update .env file
+    await VirtualTestNet.addToEnvFile('ROLES_VERSION', rolesVersion)
+    return rolesVersion;
+}

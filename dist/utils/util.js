@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setUniformBlockNumber = exports.predictSafeAddress = exports.predictRolesModAddress = exports.updatePackageJson = exports.checkRequiredEnvVariables = exports.findWhitelistClasses = exports.findPermissionsFiles = exports.setGas = exports.setERC20TokenBalance = exports.setERC20TokenBalances = exports.encodeBytes32String = exports.numberToBytes32 = exports.getABICodedAddress = exports.scopeAllowFunctions = exports.scopeTargetsV2 = exports.scopeTargetsV1 = exports.getPreValidatedSignatures = exports.createMultisendTx = exports.ExecutionOptions = exports.OperationType = exports.SALT = void 0;
+exports.stripAnsi = exports.setUniformBlockNumber = exports.predictSafeAddress = exports.predictRolesModAddress = exports.updatePackageJson = exports.checkRequiredEnvVariables = exports.findWhitelistClasses = exports.findPermissionsFiles = exports.setGas = exports.setERC20TokenBalance = exports.setERC20TokenBalances = exports.encodeBytes32String = exports.numberToBytes32 = exports.getABICodedAddress = exports.scopeAllowFunctions = exports.scopeTargetsV2 = exports.scopeTargetsV1 = exports.getPreValidatedSignatures = exports.createMultisendTx = exports.ExecutionOptions = exports.OperationType = exports.SALT = void 0;
 const ethers_1 = require("ethers");
 const ethers_multisend_1 = require("ethers-multisend");
 const utils_1 = require("ethers/lib/utils");
@@ -327,3 +327,20 @@ async function setUniformBlockNumber(targetBlock) {
     });
 }
 exports.setUniformBlockNumber = setUniformBlockNumber;
+/**
+ * Removes ANSI escape codes from a string
+ * @param {string} str - The input string containing ANSI escape codes
+ * @returns {string} The cleaned string with all ANSI escape codes removed
+ * @description This function removes all ANSI escape sequences (color codes, cursor movements, etc.)
+ * from a string, making it suitable for logging or processing without formatting characters.
+ * Useful when working with terminal output that needs to be cleaned of formatting.
+ */
+function stripAnsi(str) {
+    // Pattern to match all ANSI escape codes
+    const pattern = [
+        '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
+        '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))'
+    ].join('|');
+    return str.replace(new RegExp(pattern, 'g'), '');
+}
+exports.stripAnsi = stripAnsi;

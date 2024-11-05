@@ -10,7 +10,6 @@ import { Project, ClassDeclaration, SyntaxKind } from 'ts-morph';
 import { execSync } from "child_process";
 import config from "../env-config";
 import { calculateProxyAddress, ContractAddresses, ContractFactories, KnownContracts } from "@gnosis-guild/zodiac";
-import { ChainId } from "zodiac-roles-sdk/.";
 import { RolesVersion } from "./types";
 
 export const SALT = "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -430,4 +429,23 @@ export async function setUniformBlockNumber(targetBlock: number) {
     method: "evm_increaseBlocks",
     params: [ethers.utils.hexValue(blocksToIncrease)]
   });
+}
+
+/**
+ * Removes ANSI escape codes from a string
+ * @param {string} str - The input string containing ANSI escape codes
+ * @returns {string} The cleaned string with all ANSI escape codes removed
+ * @description This function removes all ANSI escape sequences (color codes, cursor movements, etc.) 
+ * from a string, making it suitable for logging or processing without formatting characters.
+ * Useful when working with terminal output that needs to be cleaned of formatting.
+ */
+
+export function stripAnsi(str: string): string {
+  // Pattern to match all ANSI escape codes
+  const pattern = [
+    '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
+    '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))'
+  ].join('|');
+
+  return str.replace(new RegExp(pattern, 'g'), '');
 }
