@@ -18,8 +18,7 @@ export async function whitelistSafesV1(whitelistDirectory: string = 'src/whiteli
     const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = config;
 
     // @todo get caller address
-    // [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
-    const [caller, sysAdmins, securityEOAs, managerEOAs] = await ethers.getSigners();
+    const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
 
 
     // grab all files from src/whitelist and those that are extensions of the whitelist class should be extracted into a new array
@@ -40,7 +39,7 @@ export async function whitelistSafesV1(whitelistDirectory: string = 'src/whiteli
         const whitelistClass = require(whitelistPath)[className]
 
         // instantiate the whitelist class
-        const whitelistClassInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, securityEOAs);
+        const whitelistClassInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, security);
 
         // execute the whitelist
         await whitelistClassInstance.execute(ACCESS_CONTROL_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS);

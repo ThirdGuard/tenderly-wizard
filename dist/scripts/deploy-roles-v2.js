@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deployAccessControlSystemV2 = exports.assignRoles = exports.setRolesUnwrapper = exports.setRolesMultisend = exports.enableRolesModifier = exports.deployRolesV2 = void 0;
 const safe_master_copy_v2_json_1 = __importDefault(require("../contracts/safe_master_copy_v2.json"));
-const safe_module_proxy_factory_v2_json_1 = __importDefault(require("../contracts/safe_module_proxy_factory_v2.json"));
 const roles_v2_json_1 = __importDefault(require("../contracts/roles_v2.json"));
 const util_1 = require("../utils/util");
 const colors_1 = __importDefault(require("colors"));
@@ -16,24 +15,65 @@ const EIP2470_1 = require("./EIP2470");
 const constants_1 = require("../utils/constants");
 const roles_chain_config_1 = require("../utils/roles-chain-config");
 const scope_access_controller_v2_1 = require("../whitelist/acs/scope-access-controller-v2");
+const zodiac_1 = require("@gnosis-guild/zodiac");
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 const ZeroHash = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const SaltZero = "0x0000000000000000000000000000000000000000000000000000000000000000";
-async function deployRolesV2(owner, avatar, target, proxied, chainConfig) {
+async function deployRolesV2(owner, avatar, target, proxied, chainId, chainConfig) {
     const [caller] = await hardhat_1.ethers.getSigners();
     if (proxied) {
-        const abiCoder = hardhat_1.ethers.utils.defaultAbiCoder;
-        const encoded = abiCoder.encode(["address", "address", "address"], [owner, avatar, target]);
-        const rolesMaster = new hardhat_1.ethers.Contract(chainConfig.ROLES_MASTER_COPY_ADDR, roles_v2_json_1.default, caller);
-        const initParams = await rolesMaster.populateTransaction.setUp(encoded);
-        const tsSalt = new Date().getTime();
-        const safeModuleProxyFactory = new hardhat_1.ethers.Contract(chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR, safe_module_proxy_factory_v2_json_1.default, caller);
-        const deployModTx = await safeModuleProxyFactory.deployModule(chainConfig.ROLES_MASTER_COPY_ADDR, initParams.data, tsSalt);
-        const txReceipt = await deployModTx.wait();
-        const txData = txReceipt.events?.find((x) => x.event == "ModuleProxyCreation");
-        const rolesModAddress = txData?.args?.proxy;
-        console.info(colors_1.default.green(`✅ Roles was deployed via proxy factory to ${rolesModAddress}`));
-        return rolesModAddress;
+        // const abiCoder = ethers.utils.defaultAbiCoder;
+        // const encoded = abiCoder.encode(
+        //   ["address", "address", "address"],
+        //   [owner, avatar, target],
+        // );
+        const { expectedModuleAddress, transaction } = await (0, zodiac_1.deployAndSetUpModule)(zodiac_1.KnownContracts.ROLES_V2, {
+            types: ["address", "address", "address"],
+            values: [owner, avatar, target],
+        }, caller.provider, chainId, util_1.SALT);
+        const predictedRolesAddress = await (0, util_1.predictRolesModAddress)(caller, owner, avatar, target, "v2");
+        console.log(`prediected roles address: ${predictedRolesAddress}`);
+        // check if address is matching predicted address before processing transaction
+        if (expectedModuleAddress !== predictedRolesAddress) {
+            throw new Error(`Roles mod address deployment unexpected, expected ${util_1.predictRolesModAddress}, actual: ${expectedModuleAddress}`);
+        }
+        // const rolesMaster = new ethers.Contract(
+        //   chainConfig.ROLES_MASTER_COPY_ADDR,
+        //   ROLES_V2_MASTER_COPY_ABI,
+        //   caller,
+        // );
+        // const initParams = await rolesMaster.populateTransaction.setUp(encoded);
+        // const tsSalt = new Date().getTime();
+        // const safeModuleProxyFactory = new ethers.Contract(
+        //   chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR,
+        //   SAFE_MODULE_PROXY_FACTORY_ABI,
+        //   caller,
+        // );
+        // const deployModTx = await safeModuleProxyFactory.deployModule(
+        //   chainConfig.ROLES_MASTER_COPY_ADDR,
+        //   initParams.data as string,
+        //   tsSalt,
+        // );
+        // const txReceipt = await deployModTx.wait();
+        // const txData = txReceipt.events?.find(
+        //   (x: any) => x.event == "ModuleProxyCreation",
+        // );
+        // const rolesModAddress = txData?.args?.proxy;
+        // console.info(
+        //   colors.green(
+        //     `✅ Roles was deployed via proxy factory to ${rolesModAddress}`,
+        //   ),
+        // );
+        // return rolesModAddress;
+        try {
+            await caller.sendTransaction(transaction);
+            console.info(colors_1.default.green(`✅ Roles was deployed via proxy factory to ${expectedModuleAddress}`));
+            return expectedModuleAddress;
+        }
+        catch (e) {
+            console.error(e);
+            throw new Error(`Roles mod address deployment failed: ${e}`);
+        }
     }
     //   const Permissions = await ethers.getContractFactory("Permissions");
     //   const permissions = await Permissions.deploy();
@@ -48,10 +88,9 @@ async function deployRolesV2(owner, avatar, target, proxied, chainConfig) {
             Packer: packerLibraryAddress,
         },
     });
-    console.log(owner);
     const roles = await Roles.deploy(owner, avatar, target);
     await roles.connect(caller).deployed();
-    //   const rolesAddress = await deployRolesV2(owner, avatar, target, proxied);
+    //  const rolesAddress = await deployRolesV2(owner, avatar, target, proxied);
     console.info("Modifier deployed to:", roles.address, "\n");
     return roles.address;
 }
@@ -125,18 +164,18 @@ const deployAccessControlSystemV2 = async (chainId, options, deployed) => {
     // get chain config for multichain deploy
     const chainConfig = (0, roles_chain_config_1.getChainConfig)(chainId, "v2");
     //Deploy both safes
-    const accessControlSafeAddr = deployed?.acSafeAddr || (await (0, deploy_safe_v2_1.deploySafeV2)(chainConfig));
-    const investmentSafeAddr = deployed?.invSafeAddr || (await (0, deploy_safe_v2_1.deploySafeV2)(chainConfig));
+    const accessControlSafeAddr = deployed?.acSafeAddr || (await (0, deploy_safe_v2_1.deploySafeV2)(chainConfig, constants_1.SALTS.safes.accessControl));
+    const investmentSafeAddr = deployed?.invSafeAddr || (await (0, deploy_safe_v2_1.deploySafeV2)(chainConfig, constants_1.SALTS.safes.investment));
     // //Deploy and enable a Roles modifier on the investment safe
     const invRolesAddr = deployed?.invRolesAddr ||
-        (await deployRolesV2(accessControlSafeAddr, investmentSafeAddr, investmentSafeAddr, options.proxied, chainConfig));
+        (await deployRolesV2(accessControlSafeAddr, investmentSafeAddr, investmentSafeAddr, options.proxied, chainId, chainConfig));
     await enableRolesModifier(investmentSafeAddr, invRolesAddr);
     //Set the multisend address on roles so that manager can send multisend txs later on
     // await setRolesMultisend(accessControlSafeAddr, invRolesAddr);
     await setRolesUnwrapper(accessControlSafeAddr, invRolesAddr, chainConfig);
     //Deploy and enable a Roles modifier on the access control safe
     const acRolesAddr = deployed?.acRolesAddr ||
-        (await deployRolesV2(accessControlSafeAddr, accessControlSafeAddr, accessControlSafeAddr, options.proxied, chainConfig));
+        (await deployRolesV2(accessControlSafeAddr, accessControlSafeAddr, accessControlSafeAddr, options.proxied, chainId, chainConfig));
     await enableRolesModifier(accessControlSafeAddr, acRolesAddr);
     // //Set the multisend address on roles so that manager can send multisend txs later on
     // await setRolesMultisend(accessControlSafeAddr, acRolesAddr);

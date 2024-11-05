@@ -11,14 +11,15 @@ const colors_1 = __importDefault(require("colors"));
 // @ts-ignore
 const hardhat_1 = require("hardhat");
 const constants_1 = require("../utils/constants");
-async function deploySafeV2(chainConfig) {
+async function deploySafeV2(chainConfig, saltNonce) {
     const [caller] = await hardhat_1.ethers.getSigners();
     const safeMaster = new hardhat_1.ethers.Contract(chainConfig.SAFE_MASTER_COPY_ADDR, safe_master_copy_v2_json_1.default, caller);
     const initializer = await safeMaster.populateTransaction.setup([caller.address], 1, //threshold
     hardhat_1.ethers.constants.AddressZero, "0x", chainConfig.DEFAULT_FALLBACK_HANDLER_ADDRESS, hardhat_1.ethers.constants.AddressZero, 0, hardhat_1.ethers.constants.AddressZero);
-    const saltNonce = Date.now();
     const safeProxyFactory = new hardhat_1.ethers.Contract(chainConfig.SAFE_PROXY_FACTORY_ADDR, safe_proxy_factory_v2_json_1.default, caller);
-    const txResponse = await safeProxyFactory.createProxyWithNonce(chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce);
+    const txResponse = await safeProxyFactory.createProxyWithNonce(chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data, saltNonce, {
+        gasLimit: constants_1.GAS_LIMIT
+    });
     const txReceipt = await txResponse.wait();
     const txData = txReceipt.events?.find((x) => x.event == "ProxyCreation");
     const deployedSafeAddress = txData?.args?.proxy; //?? hre.ethers.constants.AddressZero

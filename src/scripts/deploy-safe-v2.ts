@@ -7,13 +7,9 @@ import { ethers } from "hardhat";
 import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, tx } from "../utils/constants";
 import { ChainConfig } from "../utils/types";
 
-export async function deploySafeV2(chainConfig: ChainConfig["v2"]) {
+export async function deploySafeV2(chainConfig: ChainConfig["v2"], saltNonce: number) {
   const [caller] = await ethers.getSigners();
-  const safeMaster = new ethers.Contract(
-    chainConfig.SAFE_MASTER_COPY_ADDR,
-    SAFE_MASTER_COPY_ABI,
-    caller,
-  );
+  const safeMaster = new ethers.Contract(chainConfig.SAFE_MASTER_COPY_ADDR, SAFE_MASTER_COPY_ABI, caller);
   const initializer = await safeMaster.populateTransaction.setup(
     [caller.address],
     1, //threshold
@@ -24,16 +20,14 @@ export async function deploySafeV2(chainConfig: ChainConfig["v2"]) {
     0,
     ethers.constants.AddressZero,
   );
-  const saltNonce = Date.now();
-  const safeProxyFactory = new ethers.Contract(
-    chainConfig.SAFE_PROXY_FACTORY_ADDR,
-    SAFE_PROXY_FACTORY_ABI,
-    caller,
-  );
+  const safeProxyFactory = new ethers.Contract(chainConfig.SAFE_PROXY_FACTORY_ADDR, SAFE_PROXY_FACTORY_ABI, caller);
   const txResponse = await safeProxyFactory.createProxyWithNonce(
     chainConfig.SAFE_MASTER_COPY_ADDR,
     initializer.data as string,
     saltNonce,
+    {
+      gasLimit: GAS_LIMIT
+    }
   );
   const txReceipt = await txResponse.wait();
   const txData = txReceipt.events?.find((x: any) => x.event == "ProxyCreation");
@@ -82,13 +76,9 @@ export async function addSafeSigners(safeAddr: string, newOwners: string[], chai
       (x: any) => x.event === "AddedOwner",
     );
     const ownersAddedFromEvent = txData.map((log: any) => log.args);
-    console.info(
-      `\n🔑 New owners added: ${ownersAddedFromEvent.join(", ")} on Safe: ${safeAddr}`,
-    );
+    console.info(`\n🔑 New owners added: ${ownersAddedFromEvent.join(", ")} on Safe: ${safeAddr}`);
   } else {
-    console.info(
-      `No new owners were added to Safe: ${safeAddr} as at least one owner you tried to add is already an owner on this Safe`,
-    );
+    console.info(`No new owners were added to Safe: ${safeAddr} as at least one owner you tried to add is already an owner on this Safe`);
   }
 }
 
@@ -128,12 +118,8 @@ export async function removeDeployerAsOwner(safeAddr: string, threshold: number)
           gasLimit: GAS_LIMIT,
         },
       );
-    console.info(
-      `\n🔒 Deployer: ${caller.address} was removed as an owner on Safe: ${safeAddr}`,
-    );
+    console.info(`\n🔒 Deployer: ${caller.address} was removed as an owner on Safe: ${safeAddr}`);
   } else {
-    console.info(
-      `Deployer ${caller.address} is not an owner on Safe: ${safeAddr} so we can't remove them as an owner`,
-    );
+    console.info(`Deployer ${caller.address} is not an owner on Safe: ${safeAddr} so we can't remove them as an owner`);
   }
 }

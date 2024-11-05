@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.predictSafeAddress = exports.predictRolesModAddress = exports.updatePackageJson = exports.checkRequiredEnvVariables = exports.findWhitelistClasses = exports.findPermissionsFiles = exports.setGas = exports.setERC20TokenBalance = exports.setERC20TokenBalances = exports.encodeBytes32String = exports.numberToBytes32 = exports.getABICodedAddress = exports.scopeAllowFunctions = exports.scopeTargetsV2 = exports.scopeTargetsV1 = exports.getPreValidatedSignatures = exports.createMultisendTx = exports.ExecutionOptions = exports.OperationType = exports.SALT = void 0;
+exports.setUniformBlockNumber = exports.predictSafeAddress = exports.predictRolesModAddress = exports.updatePackageJson = exports.checkRequiredEnvVariables = exports.findWhitelistClasses = exports.findPermissionsFiles = exports.setGas = exports.setERC20TokenBalance = exports.setERC20TokenBalances = exports.encodeBytes32String = exports.numberToBytes32 = exports.getABICodedAddress = exports.scopeAllowFunctions = exports.scopeTargetsV2 = exports.scopeTargetsV1 = exports.getPreValidatedSignatures = exports.createMultisendTx = exports.ExecutionOptions = exports.OperationType = exports.SALT = void 0;
 const ethers_1 = require("ethers");
 const ethers_multisend_1 = require("ethers-multisend");
 const utils_1 = require("ethers/lib/utils");
@@ -282,17 +282,48 @@ function updatePackageJson() {
     }
 }
 exports.updatePackageJson = updatePackageJson;
-async function predictRolesModAddress(signer, owner, avatar, target) {
+async function predictRolesModAddress(signer, owner, avatar, target, rolesVersion) {
     const encodedInitParams = utils_1.defaultAbiCoder.encode(["address", "address", "address"], [owner, avatar, target]);
-    const moduleSetupData = zodiac_1.ContractFactories[zodiac_1.KnownContracts.ROLES_V1]
+    const rolesContract = rolesVersion == "v1" ? zodiac_1.KnownContracts.ROLES_V1 : zodiac_1.KnownContracts.ROLES_V2;
+    const moduleSetupData = zodiac_1.ContractFactories[rolesContract]
         .createInterface()
         .encodeFunctionData("setUp", [encodedInitParams]);
-    return (0, zodiac_1.calculateProxyAddress)(zodiac_1.ContractFactories[zodiac_1.KnownContracts.FACTORY].connect(zodiac_1.ContractAddresses[1][zodiac_1.KnownContracts.FACTORY], signer), zodiac_1.ContractAddresses[1][zodiac_1.KnownContracts.ROLES_V1], moduleSetupData, exports.SALT);
+    return (0, zodiac_1.calculateProxyAddress)(zodiac_1.ContractFactories[zodiac_1.KnownContracts.FACTORY].connect(zodiac_1.ContractAddresses[1][zodiac_1.KnownContracts.FACTORY], signer), zodiac_1.ContractAddresses[1][rolesContract], moduleSetupData, exports.SALT);
 }
 exports.predictRolesModAddress = predictRolesModAddress;
+/**
+ * Predicts the address of a Safe proxy that will be deployed through a Safe proxy factory
+ * @param {Contract} safeProxyFactory - Instance of the Safe proxy factory contract
+ * @param {string} safeMasterCopy - Address of the Safe master copy implementation
+ * @param {string} data - Initialization data for the Safe proxy
+ * @param {number} saltNonce - Nonce used as salt for address calculation
+ * @returns {Promise<string>} The predicted address of the Safe proxy
+ * @description Uses the proxy factory's calculateCreateProxyWithNonceAddress method to predict
+ * the deterministic address where a Safe proxy will be deployed based on the initialization parameters
+ */
 async function predictSafeAddress(safeProxyFactory, safeMasterCopy, data, saltNonce) {
     return await safeProxyFactory.calculateCreateProxyWithNonceAddress(safeMasterCopy, data, saltNonce, {
         gasLimit: ethers_1.BigNumber.from("3000000")
     });
 }
 exports.predictSafeAddress = predictSafeAddress;
+/**
+ * Sets the current block number to a target block number by increasing blocks
+ * @param {number} targetBlock - The desired block number to reach
+ * @returns {Promise<void>} A promise that resolves when blocks have been increased
+ * @description This function is useful for testing scenarios that require being at a specific block number.
+ * It calculates the difference between current and target block numbers and increases blocks accordingly.
+ */
+async function setUniformBlockNumber(targetBlock) {
+    const currentBlock = await hardhat_1.network.provider.send("eth_blockNumber");
+    const currentBlockDecimal = parseInt(currentBlock, 16);
+    const blocksToIncrease = targetBlock - currentBlockDecimal;
+    console.log("targetBlock:", targetBlock);
+    console.log("currentBlock:", currentBlockDecimal);
+    console.log("blocksToIncrease:", blocksToIncrease);
+    await hardhat_1.network.provider.request({
+        method: "evm_increaseBlocks",
+        params: [hardhat_1.ethers.utils.hexValue(blocksToIncrease)]
+    });
+}
+exports.setUniformBlockNumber = setUniformBlockNumber;

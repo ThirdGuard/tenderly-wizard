@@ -20,8 +20,7 @@ async function whitelistSafesV1(whitelistDirectory = 'src/whitelist') {
     // @note the safes and roles addresses are read from the .env file
     const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = env_config_1.default;
     // @todo get caller address
-    // [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
-    const [caller, sysAdmins, securityEOAs, managerEOAs] = await hardhat_1.ethers.getSigners();
+    const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await hardhat_1.ethers.getSigners();
     // grab all files from src/whitelist and those that are extensions of the whitelist class should be extracted into a new array
     let whitelists = [];
     try {
@@ -38,7 +37,7 @@ async function whitelistSafesV1(whitelistDirectory = 'src/whitelist') {
         // import the whitelist class
         const whitelistClass = require(whitelistPath)[className];
         // instantiate the whitelist class
-        const whitelistClassInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, securityEOAs);
+        const whitelistClassInstance = new whitelistClass(INVESTMENT_ROLES_ADDRESS, security);
         // execute the whitelist
         await whitelistClassInstance.execute(ACCESS_CONTROL_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS);
     }

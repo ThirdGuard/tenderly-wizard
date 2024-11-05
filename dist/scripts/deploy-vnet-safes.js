@@ -12,23 +12,24 @@ const deploy_roles_v2_1 = require("./deploy-roles-v2");
 const util_1 = require("../utils/util");
 const env_config_1 = __importDefault(require("../env-config"));
 async function deploySafesOnVnet(chainId, rolesVersion) {
-    // @note first PK is caller (_)
-    const [_, sysAdmins, securityEOAs, managerEOAs] = await hardhat_1.ethers.getSigners();
     await (0, util_1.setGas)();
     let contractsAddr;
     let deployedSnapshot;
     let base;
     if (rolesVersion === 'v1') {
+        const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await hardhat_1.ethers.getSigners();
         base = await (0, deploy_roles_v1_1.deployAccessControlSystemV1)(chainId, {
             proxied: true,
-            managerEOAs: [managerEOAs.address],
-            securityEOAs: [securityEOAs.address],
+            managerEOAs: [manager.address],
+            securityEOAs: [security.address],
             invSafeThreshold: 1,
             acSafeThreshold: 1,
-            sysAdminAddresses: [sysAdmins.address],
+            sysAdminAddresses: [dummyOwnerOne.address, dummyOwnerTwo.address, dummyOwnerThree.address],
         });
     }
     else {
+        // @note first PK is caller (_)
+        const [_, sysAdmins, securityEOAs, managerEOAs] = await hardhat_1.ethers.getSigners();
         base = await (0, deploy_roles_v2_1.deployAccessControlSystemV2)(chainId, {
             proxied: true,
             managerEOAs: [managerEOAs.address],

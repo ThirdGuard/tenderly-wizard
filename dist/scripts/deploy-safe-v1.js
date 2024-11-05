@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeDeployerAsOwner = exports.addSafeSigners = exports.deploySafe = void 0;
+exports.removeDeployerAsOwner = exports.addSafeSigners = exports.deploySafeV1 = void 0;
 const safe_master_copy_v1_json_1 = __importDefault(require("../contracts/safe_master_copy_v1.json"));
 const safe_proxy_factory_v1_json_1 = __importDefault(require("../contracts/safe_proxy_factory_v1.json"));
 const colors_1 = __importDefault(require("colors"));
@@ -11,7 +11,7 @@ const colors_1 = __importDefault(require("colors"));
 const hardhat_1 = require("hardhat");
 const util_1 = require("../utils/util");
 const constants_1 = require("../utils/constants");
-async function deploySafe(chainConfig, saltNonce) {
+async function deploySafeV1(chainConfig, saltNonce) {
     const [caller] = await hardhat_1.ethers.getSigners();
     const safeMaster = new hardhat_1.ethers.Contract(chainConfig.SAFE_MASTER_COPY_ADDR, safe_master_copy_v1_json_1.default, caller);
     const initializer = await safeMaster.populateTransaction.setup([caller.address], 1, //threshold
@@ -23,18 +23,10 @@ async function deploySafe(chainConfig, saltNonce) {
     const txReceipt = await txResponse.wait();
     const txData = txReceipt.events?.find((x) => x.event == "ProxyCreation");
     const deployedSafeAddress = txData?.args?.proxy; //?? ethers.constants.AddressZero
-    // @todo check calculated safe address
-    // check if address is matching predicted address before processing transaction
-    // if (deployedSafeAddress !== (await predictSafeAddress(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data as string, saltNonce))) {
-    //     throw new Error(
-    //         `Safe address deployment unexpected, expected ${await predictSafeAddress(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data as string, saltNonce)
-    //         }, actual: ${deployedSafeAddress} `
-    //     )
-    // }
     console.info(colors_1.default.green(`✅ Safe was deployed to ${deployedSafeAddress} `));
     return deployedSafeAddress;
 }
-exports.deploySafe = deploySafe;
+exports.deploySafeV1 = deploySafeV1;
 // adds signers to a safe (only if they are uniquely new signers)
 async function addSafeSigners(safeAddr, newOwners, chainConfig) {
     const [caller] = await hardhat_1.ethers.getSigners();

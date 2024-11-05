@@ -7,7 +7,7 @@ import { createMultisendTx, getPreValidatedSignatures, predictSafeAddress } from
 import { ChainConfig } from "../utils/types";
 import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, tx } from "../utils/constants";
 
-export async function deploySafe(chainConfig: ChainConfig["v1"], saltNonce: number) {
+export async function deploySafeV1(chainConfig: ChainConfig["v1"], saltNonce: number) {
     const [caller] = await ethers.getSigners()
     const safeMaster = new ethers.Contract(chainConfig.SAFE_MASTER_COPY_ADDR, SAFE_MASTER_COPY_ABI, caller)
     const initializer = await safeMaster.populateTransaction.setup(
@@ -20,10 +20,6 @@ export async function deploySafe(chainConfig: ChainConfig["v1"], saltNonce: numb
         0,
         ethers.constants.AddressZero
     )
-    console.log("caller: ", caller.address)
-    console.log("saltNonce: ", saltNonce)
-    console.log("initializer.data: ", initializer.data)
-
     const safeProxyFactory = new ethers.Contract(chainConfig.SAFE_PROXY_FACTORY_ADDR, SAFE_PROXY_FACTORY_ABI, caller)
     const txResponse = await safeProxyFactory.createProxyWithNonce(
         chainConfig.SAFE_MASTER_COPY_ADDR,
@@ -35,19 +31,7 @@ export async function deploySafe(chainConfig: ChainConfig["v1"], saltNonce: numb
     );
     const txReceipt = await txResponse.wait();
     const txData = txReceipt.events?.find((x: any) => x.event == "ProxyCreation")
-
     const deployedSafeAddress = txData?.args?.proxy //?? ethers.constants.AddressZero
-
-    // @todo check calculated safe address
-
-    // check if address is matching predicted address before processing transaction
-    // if (deployedSafeAddress !== (await predictSafeAddress(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data as string, saltNonce))) {
-    //     throw new Error(
-    //         `Safe address deployment unexpected, expected ${await predictSafeAddress(safeProxyFactory, chainConfig.SAFE_MASTER_COPY_ADDR, initializer.data as string, saltNonce)
-    //         }, actual: ${deployedSafeAddress} `
-    //     )
-    // }
-
     console.info(colors.green(`✅ Safe was deployed to ${deployedSafeAddress} `))
     return deployedSafeAddress
 }

@@ -20,24 +20,16 @@ const zodiac_1 = require("@gnosis-guild/zodiac");
 async function deployRoles(owner, avatar, target, proxied, chainId, chainConfig) {
     const [caller] = await hardhat_1.ethers.getSigners();
     if (proxied) {
-        // const abiCoder = utils.defaultAbiCoder;
-        // const encoded = abiCoder.encode(
-        //   ["address", "address", "address"],
-        //   [owner, avatar, target]
-        // );
-        // console.log("owner:", owner);
-        // console.log("avatar:", avatar);
-        // console.log("target:", target);
         // get expected Module Address and transaction
         const { expectedModuleAddress, transaction } = await (0, zodiac_1.deployAndSetUpModule)(zodiac_1.KnownContracts.ROLES_V1, {
             types: ["address", "address", "address"],
             values: [owner, avatar, target],
         }, caller.provider, chainId, util_1.SALT);
-        const adx = await (0, util_1.predictRolesModAddress)(caller, owner, avatar, target);
-        console.log(`prediected roles address: ${adx}`);
+        const predictedRolesAddress = await (0, util_1.predictRolesModAddress)(caller, owner, avatar, target, "v1");
+        console.log(`prediected roles address: ${predictedRolesAddress}`);
         // check if address is matching predicted address before processing transaction
-        if (expectedModuleAddress !== (await (0, util_1.predictRolesModAddress)(caller, owner, avatar, target))) {
-            throw new Error(`Roles mod address deployment unexpected, expected ${(0, util_1.predictRolesModAddress)(caller, owner, avatar, target)}, actual: ${expectedModuleAddress}`);
+        if (expectedModuleAddress !== predictedRolesAddress) {
+            throw new Error(`Roles mod address deployment unexpected, expected ${util_1.predictRolesModAddress}, actual: ${expectedModuleAddress}`);
         }
         // const rolesMaster = new Contract(
         //   chainConfig.ROLES_MASTER_COPY_ADDR,
@@ -140,10 +132,9 @@ exports.assignRoles = assignRoles;
 const deployAccessControlSystemV1 = async (chainId, options, deployed) => {
     // get chain config for multichain deploy
     const chainConfig = (0, roles_chain_config_1.getChainConfig)(chainId, "v1");
-    console.log(constants_1.SALTS.safes);
     //Deploy both safes
-    const accessControlSafeAddr = deployed?.acSafeAddr || (await (0, deploy_safe_v1_1.deploySafe)(chainConfig, constants_1.SALTS.safes.accessControl));
-    const investmentSafeAddr = deployed?.invSafeAddr || (await (0, deploy_safe_v1_1.deploySafe)(chainConfig, constants_1.SALTS.safes.investment));
+    const accessControlSafeAddr = deployed?.acSafeAddr || (await (0, deploy_safe_v1_1.deploySafeV1)(chainConfig, constants_1.SALTS.safes.accessControl));
+    const investmentSafeAddr = deployed?.invSafeAddr || (await (0, deploy_safe_v1_1.deploySafeV1)(chainConfig, constants_1.SALTS.safes.investment));
     // //Deploy and enable a Roles modifier on the investment safe
     const invRolesAddr = deployed?.invRolesAddr ||
         (await deployRoles(accessControlSafeAddr, investmentSafeAddr, investmentSafeAddr, options.proxied, chainId, chainConfig));

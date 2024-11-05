@@ -23,7 +23,7 @@ async function getTestnetList() {
         const newTestnet = await terminal_kit_1.terminal.inputField().promise;
         // selet chain
         // @audit add more chains
-        terminal_kit_1.terminal.red("Select a Chain: \n");
+        terminal_kit_1.terminal.yellow("\n\nSelect a Chain: \n");
         const chains = ["Ethereum", "Base", "Polygon"];
         const chainSelection = await terminal_kit_1.terminal.singleColumnMenu(chains).promise;
         let chain = 1;

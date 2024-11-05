@@ -10,6 +10,8 @@ import { Project, ClassDeclaration, SyntaxKind } from 'ts-morph';
 import { execSync } from "child_process";
 import config from "../env-config";
 import { calculateProxyAddress, ContractAddresses, ContractFactories, KnownContracts } from "@gnosis-guild/zodiac";
+import { ChainId } from "zodiac-roles-sdk/.";
+import { RolesVersion } from "./types";
 
 export const SALT = "0x0000000000000000000000000000000000000000000000000000000000000000"
 
@@ -363,13 +365,15 @@ export function updatePackageJson() {
   }
 }
 
-export async function predictRolesModAddress(signer: any, owner: string, avatar: string, target: String) {
+export async function predictRolesModAddress(signer: any, owner: string, avatar: string, target: string, rolesVersion: RolesVersion) {
   const encodedInitParams = defaultAbiCoder.encode(
     ["address", "address", "address"],
     [owner, avatar, target]
   )
 
-  const moduleSetupData = ContractFactories[KnownContracts.ROLES_V1]
+  const rolesContract = rolesVersion == "v1" ? KnownContracts.ROLES_V1 : KnownContracts.ROLES_V2
+
+  const moduleSetupData = ContractFactories[rolesContract]
     .createInterface()
     .encodeFunctionData("setUp", [encodedInitParams])
 
@@ -378,7 +382,7 @@ export async function predictRolesModAddress(signer: any, owner: string, avatar:
       ContractAddresses[1][KnownContracts.FACTORY],
       signer,
     ) as any,
-    ContractAddresses[1][KnownContracts.ROLES_V1],
+    ContractAddresses[1][rolesContract],
     moduleSetupData,
     SALT
   )

@@ -3,7 +3,7 @@ import SAFE_MODULE_PROXY_FACTORY_ABI from "../contracts/safe_module_proxy_factor
 import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
 import { AccessControllerWhitelistV1 } from "../whitelist/acs/scope-access-controller-v1";
 import colors from "colors";
-import { addSafeSigners, deploySafe, removeDeployerAsOwner } from "./deploy-safe-v1";
+import { addSafeSigners, deploySafeV1, removeDeployerAsOwner } from "./deploy-safe-v1";
 import { tx, SAFE_OPERATION_DELEGATECALL, MANAGER_ROLE_ID_V1, SECURITY_ROLE_ID_V1, SALTS } from "../utils/constants";
 // @ts-ignore
 import { ethers, network } from "hardhat";
@@ -25,16 +25,6 @@ export async function deployRoles(
 ) {
   const [caller] = await ethers.getSigners();
   if (proxied) {
-    // const abiCoder = utils.defaultAbiCoder;
-    // const encoded = abiCoder.encode(
-    //   ["address", "address", "address"],
-    //   [owner, avatar, target]
-    // );
-
-    // console.log("owner:", owner);
-    // console.log("avatar:", avatar);
-    // console.log("target:", target);
-
     // get expected Module Address and transaction
     const { expectedModuleAddress, transaction } = await deployAndSetUpModule(
       KnownContracts.ROLES_V1,
@@ -47,13 +37,13 @@ export async function deployRoles(
       SALT
     )
 
-    const adx = await predictRolesModAddress(caller, owner, avatar, target)
-    console.log(`prediected roles address: ${adx}`)
+    const predictedRolesAddress = await predictRolesModAddress(caller, owner, avatar, target, "v1")
+    console.log(`prediected roles address: ${predictedRolesAddress}`)
 
     // check if address is matching predicted address before processing transaction
-    if (expectedModuleAddress !== (await predictRolesModAddress(caller, owner, avatar, target))) {
+    if (expectedModuleAddress !== predictedRolesAddress) {
       throw new Error(
-        `Roles mod address deployment unexpected, expected ${predictRolesModAddress(caller, owner, avatar, target)}, actual: ${expectedModuleAddress}`
+        `Roles mod address deployment unexpected, expected ${predictRolesModAddress}, actual: ${expectedModuleAddress}`
       )
     }
 
@@ -251,13 +241,9 @@ export const deployAccessControlSystemV1 = async (
   // get chain config for multichain deploy
   const chainConfig = getChainConfig(chainId, "v1");
 
-  console.log(SALTS.safes)
-
-  // await setUniformBlockNumber(31120366);
-
   //Deploy both safes
-  const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafe(chainConfig, SALTS.safes.accessControl));
-  const investmentSafeAddr = deployed?.invSafeAddr || (await deploySafe(chainConfig, SALTS.safes.investment));
+  const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafeV1(chainConfig, SALTS.safes.accessControl));
+  const investmentSafeAddr = deployed?.invSafeAddr || (await deploySafeV1(chainConfig, SALTS.safes.investment));
 
   // //Deploy and enable a Roles modifier on the investment safe
   const invRolesAddr =
