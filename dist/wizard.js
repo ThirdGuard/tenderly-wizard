@@ -8,28 +8,36 @@ const terminal_kit_1 = require("terminal-kit");
 const child_process_1 = require("child_process");
 const virtual_test_net_1 = __importDefault(require("./scripts/virtual-test-net"));
 const util_1 = require("./utils/util");
+const colors_1 = __importDefault(require("colors"));
 const rolesVersions = ["V1", "V2"];
 async function getTestnetList() {
+    terminal_kit_1.terminal.reset("========================\n");
+    terminal_kit_1.terminal.black(" 🧙 TENDERLY WIZARD 🧙\n");
+    terminal_kit_1.terminal.black("========================\n");
     const vnets = await virtual_test_net_1.default.listVirtualTestnets(); // Get the list of virtual testnets
-    const testnets = vnets.map(vnet => vnet.displayName);
+    const testnets = vnets.map(vnet => " 🌐 " + vnet.displayName);
+    testnets.unshift("\n");
+    testnets.unshift(colors_1.default.blue("Select an existing Testnet:"));
     testnets.unshift("\n");
     testnets.unshift("========================");
-    testnets.unshift("+CREATE TESTNET+");
-    testnets.unshift("+CREATE TESTNET & SETUP+");
+    testnets.unshift(colors_1.default.green("➕ CREATE TESTNET"));
+    testnets.unshift(colors_1.default.green("➕ CREATE TESTNET & SETUP"));
     testnets.push("\n");
     testnets.push("========================");
-    testnets.push("-EXIT-");
-    terminal_kit_1.terminal.reset("Select Testnet:");
-    const testnet = await terminal_kit_1.terminal.singleColumnMenu(testnets).promise;
-    if (testnet.selectedText == "-EXIT-" || testnet.selectedText == "\n" || testnet.selectedText == "========================") {
+    testnets.push(colors_1.default.red("🛑 EXIT"));
+    testnets.push("========================");
+    // terminal.reset("========================");
+    let testnet = await terminal_kit_1.terminal.singleColumnMenu(testnets).promise;
+    console.log(testnet.selectedText = testnet.selectedText.replace(" 🌐 ", ""));
+    if (testnet.selectedText == colors_1.default.red("🛑 EXIT") || testnet.selectedText == "\n" || testnet.selectedText == "========================" || testnet.selectedText == colors_1.default.blue("Select Testnet:")) {
         terminal_kit_1.terminal.processExit(0);
     }
-    if (testnet.selectedText == "+CREATE TESTNET+") {
+    if (testnet.selectedText == colors_1.default.green("➕ CREATE TESTNET")) {
         const result = await createNewTestnet(terminal_kit_1.terminal);
         testnet.selectedText = result.testnetName;
         terminal_kit_1.terminal.processExit(0);
     }
-    if (testnet.selectedText == "+CREATE TESTNET & SETUP+") {
+    if (testnet.selectedText == colors_1.default.green("➕ CREATE TESTNET & SETUP")) {
         // create new testnet
         const result = await createNewTestnet(terminal_kit_1.terminal);
         testnet.selectedText = result.testnetName;
@@ -44,7 +52,7 @@ async function getTestnetList() {
         console.log(outputSnapshot);
         terminal_kit_1.terminal.processExit(0);
     }
-    return testnet;
+    return { ...testnet, };
 }
 async function start() {
     // update target repo's package.json with scripts
@@ -66,7 +74,7 @@ async function start() {
     console.log(`VIRTUAL_MAINNET_RPC=${vnet?.admin_rpc}`);
     console.log(`TENDERLY_TESTNET_UUID=${vnet?.vnet_id}`);
     console.log(`Select Action for ${testnet.selectedText}:`);
-    const action = await terminal_kit_1.terminal.singleColumnMenu(["Fork", "Delete", "Snapshot", "Activate", "Deploy Safes", "Apply Whitelist", "Back"]).promise;
+    const action = await terminal_kit_1.terminal.singleColumnMenu(["Fork", colors_1.default.red("Delete"), "Snapshot", "Activate", "Deploy Safes", "Apply Whitelist", colors_1.default.blue("Back")]).promise;
     // fork testnet
     if (action.selectedIndex == 0) {
         terminal_kit_1.terminal.reset("Enter the name of the fork name: ");
