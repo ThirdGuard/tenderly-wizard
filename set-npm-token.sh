@@ -8,7 +8,7 @@ if [ -z "$1" ]; then
 fi
 
 # Export NPM token to environment
-export NPM_TOKEN="$1"
+export NPM_TOKEN=$1
 
 # Print confirmation message
 echo "NPM_TOKEN has been set successfully"

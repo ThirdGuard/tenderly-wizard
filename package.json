@@ -7,7 +7,6 @@
   "type": "commonjs",
   "bin": "./bin/cli.js",
   "scripts": {
-    "tenderly-wizard": "ts-node src/index.ts",
     "start": "ts-node src/index.ts",
     "build": "tsc",
     "deploy:safes": "hardhat run src/scripts/deploy-vnet-safes.ts --network virtual_mainnet",
