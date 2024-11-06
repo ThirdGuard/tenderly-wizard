@@ -90,7 +90,12 @@ tenderly-wizard
 - For verbose logging, run:
   ```
   NODE_DEBUG=module tenderly-wizard
+
   ```
+
+## Gotchas
+- The `Apply Whitelist` option will only work if the Safe and Role contracts have been deployed and configured. 
+- The `Apply Whitelist` command will only work in the [access-control-safes](https://github.com/ThirdGuard/access-control-safes) or [access-control-safes-v2](https://github.com/ThirdGuard/access-control-safes-v2) repos, depending on the roles version selected.
 
 ## Notes
 
