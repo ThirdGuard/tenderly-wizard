@@ -58,7 +58,7 @@ async function getTestnetList() {
 
         terminal.processExit(0);
     }
-    return { ...testnet, };
+    return testnet;
 }
 
 export async function start() {
