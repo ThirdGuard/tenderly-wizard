@@ -9,15 +9,16 @@ async function getTestnetList() {
     const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
     const testnets = vnets.map(vnet => vnet.displayName);
     testnets.unshift("\n");
+    testnets.unshift("Select Testnet:");
     testnets.unshift("========================");
     testnets.unshift("+CREATE TESTNET+");
     testnets.unshift("+CREATE TESTNET & SETUP+")
     testnets.push("\n");
     testnets.push("========================");
     testnets.push("-EXIT-")
-    terminal.reset("Select Testnet:");
+    terminal.reset("========================");
     const testnet = await terminal.singleColumnMenu(testnets).promise;
-    if (testnet.selectedText == "-EXIT-" || testnet.selectedText == "\n" || testnet.selectedText == "========================") {
+    if (testnet.selectedText == "-EXIT-" || testnet.selectedText == "\n" || testnet.selectedText == "========================" || testnet.selectedText == "Select Testnet:") {
         terminal.processExit(0);
     }
 
