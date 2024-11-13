@@ -52,7 +52,7 @@ async function getTestnetList() {
         console.log(outputSnapshot);
         terminal_kit_1.terminal.processExit(0);
     }
-    return { ...testnet, };
+    return testnet;
 }
 async function start() {
     // update target repo's package.json with scripts

@@ -193,7 +193,7 @@ function findPermissionsFiles(dir) {
     let results = [];
     const files = fs_1.default.readdirSync(dir);
     for (const file of files) {
-        const filePath = path_1.default.join(dir, file);
+        const filePath = path_1.default.join(__dirname, dir, file);
         const stat = fs_1.default.statSync(filePath);
         if (stat.isDirectory()) {
             results = results.concat(findPermissionsFiles(filePath));
@@ -256,15 +256,16 @@ exports.checkRequiredEnvVariables = checkRequiredEnvVariables;
  * Updates package.json with new scripts
  * @returns {void}
  */
+// "save:vnet-snapshot": "hardhat run /Users/michaellungu/.nvm/versions/node/v20.13.0/bin/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet"
 function updatePackageJson() {
     const tenderlyWizardPath = (0, child_process_1.execSync)('which tenderly-wizard').toString().trim();
     console.log("tenderlyWizardPath: ", tenderlyWizardPath);
-    const appPath = (0, child_process_1.execSync)(`readlink -f ${tenderlyWizardPath}`).toString().trim().replace(/(.*tenderly-wizard).*/, '$1');
+    const appPath = path_1.default.resolve(tenderlyWizardPath, '..').replace(/(.*tenderly-wizard).*/, '$1');
     console.log("appPath: ", appPath);
     const scriptsToAdd = {
-        "deploy:safes": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
-        "deploy:whitelist": `hardhat run ${appPath}/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
-        "save:vnet-snapshot": `hardhat run ${appPath}/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
+        "deploy:safes": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
+        "deploy:whitelist": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
+        "save:vnet-snapshot": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
     };
     const packageJsonPath = path_1.default.join(process.cwd(), 'package.json');
     if (fs_1.default.existsSync(packageJsonPath)) {

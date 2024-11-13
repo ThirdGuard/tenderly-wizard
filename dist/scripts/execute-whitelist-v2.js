@@ -7,9 +7,8 @@ exports.whitelistSafesV2 = void 0;
 const hardhat_1 = require("hardhat");
 const whitelist_class_1 = require("../whitelist/whitelist-class");
 const util_1 = require("../utils/util");
-const path_1 = __importDefault(require("path"));
 const env_config_1 = __importDefault(require("../env-config"));
-async function whitelistSafesV2(rolesDirectory = path_1.default.join(__dirname, 'src', 'roles')) {
+async function whitelistSafesV2(rolesDirectory = 'src/roles') {
     // find all files named permissions.ts in the src/roles directory
     let permissionsFiles = [];
     try {

@@ -7,7 +7,7 @@ import { findPermissionsFiles, setGas } from '../utils/util';
 import path from "path";
 import config from "../env-config";
 
-export async function whitelistSafesV2(rolesDirectory: string = path.join(__dirname, 'src', 'roles')) {
+export async function whitelistSafesV2(rolesDirectory: string = 'src/roles') {
     // find all files named permissions.ts in the src/roles directory
     let permissionsFiles: string[] = [];
     try {
