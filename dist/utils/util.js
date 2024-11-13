@@ -260,12 +260,13 @@ exports.checkRequiredEnvVariables = checkRequiredEnvVariables;
 function updatePackageJson() {
     const tenderlyWizardPath = (0, child_process_1.execSync)('which tenderly-wizard').toString().trim();
     console.log("tenderlyWizardPath: ", tenderlyWizardPath);
-    const appPath = path_1.default.resolve(tenderlyWizardPath, '..').replace(/(.*tenderly-wizard).*/, '$1');
+    // Use fs.realpathSync instead of readlink -f for cross-platform compatibility
+    const appPath = fs_1.default.realpathSync(tenderlyWizardPath).replace(/(.*tenderly-wizard).*/, '$1');
     console.log("appPath: ", appPath);
     const scriptsToAdd = {
-        "deploy:safes": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
-        "deploy:whitelist": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
-        "save:vnet-snapshot": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
+        "deploy:safes": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
+        "deploy:whitelist": `hardhat run ${appPath}/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
+        "save:vnet-snapshot": `hardhat run ${appPath}/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
     };
     const packageJsonPath = path_1.default.join(process.cwd(), 'package.json');
     if (fs_1.default.existsSync(packageJsonPath)) {

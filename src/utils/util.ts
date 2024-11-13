@@ -332,18 +332,19 @@ export function checkRequiredEnvVariables(requiredVariables: string[]) {
  * @returns {void}
  */
 
-  // "save:vnet-snapshot": "hardhat run /Users/michaellungu/.nvm/versions/node/v20.13.0/bin/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet"
+// "save:vnet-snapshot": "hardhat run /Users/michaellungu/.nvm/versions/node/v20.13.0/bin/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet"
 export function updatePackageJson() {
   const tenderlyWizardPath = execSync('which tenderly-wizard').toString().trim();
   console.log("tenderlyWizardPath: ", tenderlyWizardPath);
 
-  const appPath = path.resolve(tenderlyWizardPath, '..').replace(/(.*tenderly-wizard).*/, '$1');
+  // Use fs.realpathSync instead of readlink -f for cross-platform compatibility
+  const appPath = fs.realpathSync(tenderlyWizardPath).replace(/(.*tenderly-wizard).*/, '$1');
   console.log("appPath: ", appPath);
 
   const scriptsToAdd = {
-    "deploy:safes": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
-    "deploy:whitelist": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
-    "save:vnet-snapshot": `hardhat run ${appPath}/tenderly-wizard/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
+    "deploy:safes": `hardhat run ${appPath}/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
+    "deploy:whitelist": `hardhat run ${appPath}/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
+    "save:vnet-snapshot": `hardhat run ${appPath}/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`
   };
 
   const packageJsonPath = path.join(process.cwd(), 'package.json');
