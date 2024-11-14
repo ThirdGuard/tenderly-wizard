@@ -17,6 +17,8 @@ async function whitelistSafesV1(whitelistDirectory = 'src/whitelist') {
     if (!ok) {
         process.exit(1);
     }
+    // set gas for all accounts
+    await (0, util_1.setGas)();
     // @note the safes and roles addresses are read from the .env file
     const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = env_config_1.default;
     // @todo get caller address

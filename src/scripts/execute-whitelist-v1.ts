@@ -1,7 +1,7 @@
 import path from "path";
 // @ts-ignore
 import { ethers } from "hardhat";
-import { checkRequiredEnvVariables, findWhitelistClasses } from "../utils/util";
+import { checkRequiredEnvVariables, findWhitelistClasses, setGas } from "../utils/util";
 import config from "../env-config";
 
 export async function whitelistSafesV1(whitelistDirectory: string = 'src/whitelist') {
@@ -14,12 +14,14 @@ export async function whitelistSafesV1(whitelistDirectory: string = 'src/whiteli
         process.exit(1);
     }
 
+    // set gas for all accounts
+    await setGas();
+
     // @note the safes and roles addresses are read from the .env file
     const { ACCESS_CONTROL_ROLES_ADDRESS, ACCESS_CONTROL_SAFE_ADDRESS, INVESTMENT_ROLES_ADDRESS, INVESTMENT_SAFE_ADDRESS } = config;
 
     // @todo get caller address
     const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
-
 
     // grab all files from src/whitelist and those that are extensions of the whitelist class should be extracted into a new array
     let whitelists: { path: string, className: string }[] = [];
