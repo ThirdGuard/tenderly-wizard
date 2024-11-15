@@ -81,9 +81,10 @@ export class VirtualTestNet {
             // this.removeEnvKeys();
             const result: any = await response.json();
             console.log("virtual testnet created");
-            this.addToEnvFile("VIRTUAL_MAINNET_RPC", result.rpcs[0].url);
+            const adminRpc: { name: string, url: string } = result.rpcs.find((rpc: { name: string, url: string }) => rpc.name === 'Admin RPC');
+            this.addToEnvFile("VIRTUAL_MAINNET_RPC", adminRpc.url);
             this.addToEnvFile("TENDERLY_TESTNET_UUID", result.id);
-            return { admin_rpc: result.rpcs[0].url, vnet_id: result.id };
+            return { admin_rpc: adminRpc.url, vnet_id: result.id };
         } catch (error) {
             console.error("Error creating Virtual TestNet:", error);
         }
