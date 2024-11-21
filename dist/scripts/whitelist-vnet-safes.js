@@ -16,10 +16,10 @@ async function main() {
     const { ROLES_VERSION } = env_config_1.default;
     console.log("ROLES_VERSION: ", ROLES_VERSION);
     if (ROLES_VERSION === "v1") {
-        await (0, execute_whitelist_v1_1.whitelistSafesV1)();
+        await (0, execute_whitelist_v1_1.whitelistSafesV1)('../access-control-safes/src/whitelist');
     }
     else if (ROLES_VERSION === "v2") {
-        await (0, execute_whitelist_v2_1.whitelistSafesV2)();
+        await (0, execute_whitelist_v2_1.whitelistSafesV2)("../access-control-safes-v2/src/roles");
     }
 }
 main();

@@ -8,7 +8,7 @@ const whitelist_class_1 = require("../whitelist/whitelist-class");
 const util_1 = require("../utils/util");
 const path_1 = __importDefault(require("path"));
 const env_config_1 = __importDefault(require("../env-config"));
-async function whitelistSafesV2(rolesDirectory = 'src/roles') {
+async function whitelistSafesV2(rolesDirectory = '../access-control-safes-v2/src/roles') {
     const callerDir = process.cwd();
     const absoluteWhitelistDirectory = path_1.default.resolve(callerDir, rolesDirectory);
     console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory);

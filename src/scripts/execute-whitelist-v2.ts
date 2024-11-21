@@ -5,7 +5,7 @@ import { findPermissionsFiles, setGas } from '../utils/util';
 import path from "path";
 import config from "../env-config";
 
-export async function whitelistSafesV2(rolesDirectory: string = 'src/roles') {
+export async function whitelistSafesV2(rolesDirectory: string = '../access-control-safes-v2/src/roles') {
     const callerDir = process.cwd();
     const absoluteWhitelistDirectory = path.resolve(callerDir, rolesDirectory);
     console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory)

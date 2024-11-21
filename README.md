@@ -55,7 +55,17 @@ This guide covers how to develop, pack, and test the tenderly-wizard package loc
 ## Basic Usage
 
 - Once The Tenderly Wizard is installed globally, in terminal navigate to directory of the repo you would like to use for testing.
+- ##### NOTE FOR WHITELISTING:
+   - access-control-safes OR access-control-safes-v2 folders needs to be in the same folder structure as the directory you would like to use this in:
+   ```
+   - folder
+   --- access-control-safes
+   --- access-control-safes-v2
+   --- repo-you-want-to-run-this-wizard-in
+   ```
+   - The reason for this is that the tenderly-wizard will use those repo's to access the whitelisting scripts
 
+   
 1. To start the tenderly wizard run:
 
 ```

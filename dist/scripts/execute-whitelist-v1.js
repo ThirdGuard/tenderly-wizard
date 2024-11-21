@@ -9,7 +9,7 @@ const path_1 = __importDefault(require("path"));
 const hardhat_1 = require("hardhat");
 const util_1 = require("../utils/util");
 const env_config_1 = __importDefault(require("../env-config"));
-async function whitelistSafesV1(whitelistDirectory = 'src/whitelist') {
+async function whitelistSafesV1(whitelistDirectory = '../access-control-safes/src/whitelist') {
     const callerDir = process.cwd();
     const absoluteWhitelistDirectory = path_1.default.resolve(callerDir, whitelistDirectory);
     console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory);

@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import { checkRequiredEnvVariables, findWhitelistClasses, setGas } from "../utils/util";
 import config from "../env-config";
 
-export async function whitelistSafesV1(whitelistDirectory: string = 'src/whitelist') {
+export async function whitelistSafesV1(whitelistDirectory: string = '../access-control-safes/src/whitelist') {
     const callerDir = process.cwd();
     const absoluteWhitelistDirectory = path.resolve(callerDir, whitelistDirectory);
     console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory)
