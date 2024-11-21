@@ -1,9 +1,9 @@
 import { Terminal, terminal } from 'terminal-kit';
 import { execSync, ExecSyncOptionsWithStringEncoding } from 'child_process';
 import VirtualTestNet from './scripts/virtual-test-net';
-import { stripAnsi, updatePackageJson } from './utils/util';
 import colors from "colors";
 import { SingleColumnMenuResponse } from 'terminal-kit/Terminal';
+import { stripAnsi, updatePackageJson } from './utils/file-manipulation';
 
 const rolesVersions = ["V1", "V2"];
 
