@@ -157,7 +157,6 @@ export async function start() {
         const confirmDeploy = await terminal.yesOrNo().promise;
         if (confirmDeploy?.valueOf()) {
             console.log("\nApplying whitelist...");
-            // const output = execSync(`npm run deploy:whitelist`, { stdio: 'pipe', encoding: 'utf8', maxBuffer: 1024 * 1024 * 10 }).toString()
 
             const output = executeWithLogs(`npm run deploy:whitelist && npm run save:vnet-snapshot`)
             console.log(output)
@@ -166,9 +165,6 @@ export async function start() {
                 console.error('Error output:', output.output);
             } else {
                 console.log("\nApplied whitelist successfully");
-
-                // const output = execSync(`npm run save:vnet-snapshot`, { stdio: 'pipe' }).toString()
-                // console.log(output)
             }
         }
     }

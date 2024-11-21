@@ -1,12 +1,9 @@
-
-import { network } from "hardhat";
 import { ChainId } from "zodiac-roles-sdk/.";
 import { RolesVersion } from "../utils/types";
 import { executeWhitelistV2 } from "../whitelist/whitelist-class";
 import { findPermissionsFiles, setGas } from '../utils/util';
 import path from "path";
 import config from "../env-config";
-import VirtualTestNet from './virtual-test-net';
 
 export async function whitelistSafesV2(rolesDirectory: string = 'src/roles') {
     const callerDir = process.cwd();
@@ -55,9 +52,9 @@ export async function whitelistSafesV2(rolesDirectory: string = 'src/roles') {
     }
 
     // save snapshot to .env
-    const postWhitelistSnapshot = await network.provider.send("evm_snapshot", []);
-    console.log("postWhitelistSnapshot: ", postWhitelistSnapshot);
-    VirtualTestNet.addToEnvFile("TENDERLY_SNAPSHOT", postWhitelistSnapshot)
+    // const postWhitelistSnapshot = await network.provider.send("evm_snapshot", []);
+    // console.log("postWhitelistSnapshot: ", postWhitelistSnapshot);
+    // VirtualTestNet.addToEnvFile("TENDERLY_SNAPSHOT", postWhitelistSnapshot)
     // return base;
 }
 

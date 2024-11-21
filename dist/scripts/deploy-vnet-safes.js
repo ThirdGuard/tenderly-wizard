@@ -16,8 +16,8 @@ async function deploySafesOnVnet(chainId, rolesVersion) {
     let contractsAddr;
     let deployedSnapshot;
     let base;
+    const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await hardhat_1.ethers.getSigners();
     if (rolesVersion === 'v1') {
-        const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await hardhat_1.ethers.getSigners();
         base = await (0, deploy_roles_v1_1.deployAccessControlSystemV1)(chainId, {
             proxied: true,
             managerEOAs: [manager.address],
@@ -28,8 +28,6 @@ async function deploySafesOnVnet(chainId, rolesVersion) {
         });
     }
     else {
-        // @note first PK is caller (_)
-        const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await hardhat_1.ethers.getSigners();
         base = await (0, deploy_roles_v2_1.deployAccessControlSystemV2)(chainId, {
             proxied: true,
             managerEOAs: [manager.address],

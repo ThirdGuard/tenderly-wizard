@@ -9,14 +9,12 @@ import { setGas } from "../utils/util";
 import config from "../env-config";
 
 export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVersion) {
-
-
     await setGas();
+
     let contractsAddr;
     let deployedSnapshot;
-
     let base: any;
-
+    
     const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
 
     if (rolesVersion === 'v1') {

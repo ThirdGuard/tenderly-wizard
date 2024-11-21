@@ -17,6 +17,7 @@ import {
   APPROVAL_SIG,
   EMPTY_BYTES,
   EQUAL_TO,
+  GAS_LIMIT,
   MANAGER_ROLE_ID_V2,
   OPTIONS_SEND,
   SAFE_OPERATION_DELEGATECALL,
@@ -166,7 +167,7 @@ export async function executeWhitelistV2(
   );
 
   // role members wishing to transact as the Safe will always have to call via execTransactionWithRole
-  return await acRoles.execTransactionWithRole(
+  const tx = await acRoles.execTransactionWithRole(
     chainConfig.MULTISEND_ADDR,
     ZERO_VALUE,
     multiSendTx.data,
@@ -174,7 +175,10 @@ export async function executeWhitelistV2(
     SECURITY_ROLE_ID_V2,
     true,
     {
-      gasLimit: BigNumber.from("6000000")
+      gasLimit: GAS_LIMIT
     }
   );
+
+  const receipt = await tx.wait();
+  console.log("Whitelist executed successfully", receipt);
 }
