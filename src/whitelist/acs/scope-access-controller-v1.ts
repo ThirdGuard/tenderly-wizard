@@ -24,7 +24,6 @@ const ROLES_FUNCTIONS_ALLOWED = [
   "allowTarget"
 ]
 
-
 // this whitelisting class is used in the roles deployment so that security has the ability to scope functions
 export class AccessControllerWhitelistV1 extends Whitelist {
   chainConfig: ChainConfig["v1"];

@@ -93,6 +93,8 @@ async function executeWhitelistV2(permissions, chainId, rolesVersion) {
     // Security needs to indirectly execute this bundle via acRoles
     const acRoles = new ethers_1.Contract(env_config_1.default.ACCESS_CONTROL_ROLES_ADDRESS, roles_v2_json_1.default, security);
     // role members wishing to transact as the Safe will always have to call via execTransactionWithRole
-    return await acRoles.execTransactionWithRole(chainConfig.MULTISEND_ADDR, constants_1.ZERO_VALUE, multiSendTx.data, constants_1.SAFE_OPERATION_DELEGATECALL, constants_1.SECURITY_ROLE_ID_V2, true);
+    return await acRoles.execTransactionWithRole(chainConfig.MULTISEND_ADDR, constants_1.ZERO_VALUE, multiSendTx.data, constants_1.SAFE_OPERATION_DELEGATECALL, constants_1.SECURITY_ROLE_ID_V2, true, {
+        gasLimit: ethers_1.BigNumber.from("6000000")
+    });
 }
 exports.executeWhitelistV2 = executeWhitelistV2;

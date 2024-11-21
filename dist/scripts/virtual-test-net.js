@@ -114,10 +114,11 @@ class VirtualTestNet {
             const result = await response.json();
             console.log(`Virtual TestNet forked successfully. New TestNet ID: ${result.id}`);
             // Update .env file with new testnet information
-            await this.addToEnvFile("VIRTUAL_MAINNET_RPC", result.connectivityConfig.endpoints[0].uri);
+            const admin_rpc = result.connectivityConfig.endpoints.find((e) => e.transportProtocol == 'HTTP').uri;
+            await this.addToEnvFile("VIRTUAL_MAINNET_RPC", admin_rpc);
             await this.addToEnvFile("TENDERLY_TESTNET_UUID", result.id);
             return {
-                admin_rpc: result.connectivityConfig.endpoints[0].uri,
+                admin_rpc,
                 vnet_id: result.id,
             };
         }
@@ -152,7 +153,7 @@ class VirtualTestNet {
                 return {
                     vnet_id: container.id,
                     displayName: container.displayName,
-                    admin_rpc: container.connectivityConfig.endpoints[0].uri,
+                    admin_rpc: container.connectivityConfig.endpoints.find((e) => e.transportProtocol == 'HTTP').uri,
                     project: container.metadata.project_name,
                     account: container.metadata.project_owner_name,
                     fork_of: container.metadata.origin_container_display_name || null,

@@ -1,4 +1,4 @@
-import { Contract } from "ethers";
+import { BigNumber, Contract } from "ethers";
 import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
 import ROLES_V2_MASTER_COPY_ABI from "../contracts/roles_v2.json";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
@@ -172,6 +172,9 @@ export async function executeWhitelistV2(
     multiSendTx.data,
     SAFE_OPERATION_DELEGATECALL,
     SECURITY_ROLE_ID_V2,
-    true
+    true,
+    {
+      gasLimit: BigNumber.from("6000000")
+    }
   );
 }

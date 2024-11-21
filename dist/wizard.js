@@ -7,8 +7,8 @@ exports.start = void 0;
 const terminal_kit_1 = require("terminal-kit");
 const child_process_1 = require("child_process");
 const virtual_test_net_1 = __importDefault(require("./scripts/virtual-test-net"));
-const util_1 = require("./utils/util");
 const colors_1 = __importDefault(require("colors"));
+const file_manipulation_1 = require("./utils/file-manipulation");
 const rolesVersions = ["V1", "V2"];
 async function getTestnetList() {
     terminal_kit_1.terminal.reset("========================\n");
@@ -58,7 +58,7 @@ async function start() {
     // update target repo's package.json with scripts
     let scripts;
     if (!process.env.IS_DEV) {
-        (0, util_1.updatePackageJson)();
+        (0, file_manipulation_1.updatePackageJson)();
     }
     terminal_kit_1.terminal.grabInput(true);
     terminal_kit_1.terminal.on('key', (name, matches, data) => {
@@ -168,7 +168,7 @@ function executeWithLogs(command, options = {}) {
         const output = (0, child_process_1.execSync)(command, defaultOptions);
         return {
             success: true,
-            output: (0, util_1.stripAnsi)(output.toString()),
+            output: (0, file_manipulation_1.stripAnsi)(output.toString()),
             error: null
         };
     }

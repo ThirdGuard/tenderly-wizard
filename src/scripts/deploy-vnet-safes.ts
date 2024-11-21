@@ -17,8 +17,9 @@ export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVer
 
     let base: any;
 
+    const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
+
     if (rolesVersion === 'v1') {
-        const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
         base = await deployAccessControlSystemV1(chainId, {
             proxied: true,
             managerEOAs: [manager.address],
@@ -28,15 +29,13 @@ export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVer
             sysAdminAddresses: [dummyOwnerOne.address, dummyOwnerTwo.address, dummyOwnerThree.address],
         });
     } else {
-        // @note first PK is caller (_)
-        const [_, sysAdmins, securityEOAs, managerEOAs] = await ethers.getSigners();
         base = await deployAccessControlSystemV2(chainId, {
             proxied: true,
-            managerEOAs: [managerEOAs.address],
-            securityEOAs: [securityEOAs.address],
+            managerEOAs: [manager.address],
+            securityEOAs: [security.address],
             invSafeThreshold: 1,
             acSafeThreshold: 1,
-            sysAdminAddresses: [sysAdmins.address],
+            sysAdminAddresses: [dummyOwnerOne.address, dummyOwnerTwo.address, dummyOwnerThree.address],
         });
     }
 

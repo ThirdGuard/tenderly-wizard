@@ -29,14 +29,14 @@ async function deploySafesOnVnet(chainId, rolesVersion) {
     }
     else {
         // @note first PK is caller (_)
-        const [_, sysAdmins, securityEOAs, managerEOAs] = await hardhat_1.ethers.getSigners();
+        const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await hardhat_1.ethers.getSigners();
         base = await (0, deploy_roles_v2_1.deployAccessControlSystemV2)(chainId, {
             proxied: true,
-            managerEOAs: [managerEOAs.address],
-            securityEOAs: [securityEOAs.address],
+            managerEOAs: [manager.address],
+            securityEOAs: [security.address],
             invSafeThreshold: 1,
             acSafeThreshold: 1,
-            sysAdminAddresses: [sysAdmins.address],
+            sysAdminAddresses: [dummyOwnerOne.address, dummyOwnerTwo.address, dummyOwnerThree.address],
         });
     }
     deployedSnapshot = await hardhat_1.network.provider.send("evm_snapshot", []);
