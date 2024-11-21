@@ -1,6 +1,7 @@
 import { whitelistSafesV2 } from "./execute-whitelist-v2";
 import { whitelistSafesV1 } from "./execute-whitelist-v1";
 import config from "../env-config";
+import path from "path";
 
 async function main() {
     // @audit add roles directory path to .env for more flexibility

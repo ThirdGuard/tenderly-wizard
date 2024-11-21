@@ -6,8 +6,13 @@ import { executeWhitelistV2 } from "../whitelist/whitelist-class";
 import { findPermissionsFiles, setGas } from '../utils/util';
 import path from "path";
 import config from "../env-config";
+import VirtualTestNet from './virtual-test-net';
 
 export async function whitelistSafesV2(rolesDirectory: string = 'src/roles') {
+    const callerDir = process.cwd();
+    const absoluteWhitelistDirectory = path.resolve(callerDir, rolesDirectory);
+    console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory)
+
     // find all files named permissions.ts in the src/roles directory
     let permissionsFiles: string[] = [];
     try {

@@ -26,7 +26,6 @@ export async function whitelistSafesV1(whitelistDirectory: string = 'src/whiteli
     // grab all files from src/whitelist and those that are extensions of the whitelist class should be extracted into a new array
     let whitelists: { path: string, className: string }[] = [];
     try {
-        // console.log("whitelistDirectory: ", whitelistDirectory)
         whitelists = findWhitelistClasses(whitelistDirectory);
     } catch (error) {
         console.error('Error finding permissions files:', error);

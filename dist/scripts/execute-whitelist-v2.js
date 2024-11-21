@@ -7,8 +7,13 @@ exports.whitelistSafesV2 = void 0;
 const hardhat_1 = require("hardhat");
 const whitelist_class_1 = require("../whitelist/whitelist-class");
 const util_1 = require("../utils/util");
+const path_1 = __importDefault(require("path"));
 const env_config_1 = __importDefault(require("../env-config"));
+const virtual_test_net_1 = __importDefault(require("./virtual-test-net"));
 async function whitelistSafesV2(rolesDirectory = 'src/roles') {
+    const callerDir = process.cwd();
+    const absoluteWhitelistDirectory = path_1.default.resolve(callerDir, rolesDirectory);
+    console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory);
     // find all files named permissions.ts in the src/roles directory
     let permissionsFiles = [];
     try {
@@ -47,7 +52,7 @@ async function whitelistSafesV2(rolesDirectory = 'src/roles') {
     // save snapshot to .env
     const postWhitelistSnapshot = await hardhat_1.network.provider.send("evm_snapshot", []);
     console.log("postWhitelistSnapshot: ", postWhitelistSnapshot);
-    VirtualTestNet.addToEnvFile("TENDERLY_SNAPSHOT", postWhitelistSnapshot);
+    virtual_test_net_1.default.addToEnvFile("TENDERLY_SNAPSHOT", postWhitelistSnapshot);
     // return base;
 }
 exports.whitelistSafesV2 = whitelistSafesV2;

@@ -186,16 +186,19 @@ exports.setGas = setGas;
  * @param {string} dir - Directory to search
  * @returns {string[]} Array of file paths
  */
-function findPermissionsFiles(dir) {
-    if (!fs_1.default.existsSync(dir)) {
-        throw new Error(`The directory ${dir} does not exist.`);
+function findPermissionsFiles(whitelistDir) {
+    if (!fs_1.default.existsSync(whitelistDir)) {
+        throw new Error(`The directory ${whitelistDir} does not exist.`);
     }
     let results = [];
-    const files = fs_1.default.readdirSync(dir);
+    // Get absolute path of whitelistDir
+    const absoluteWhitelistDir = path_1.default.resolve(process.cwd(), whitelistDir);
+    const files = fs_1.default.readdirSync(absoluteWhitelistDir);
     for (const file of files) {
-        const filePath = path_1.default.join(__dirname, dir, file);
+        const filePath = path_1.default.join(absoluteWhitelistDir, file);
         const stat = fs_1.default.statSync(filePath);
         if (stat.isDirectory()) {
+            // Recursively search subdirectories by calling findPermissionsFiles again
             results = results.concat(findPermissionsFiles(filePath));
         }
         else if (file === 'permissions.ts') {

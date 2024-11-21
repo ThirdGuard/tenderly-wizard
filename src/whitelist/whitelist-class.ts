@@ -130,7 +130,7 @@ export async function executeWhitelistV2(
   chainId: ChainId,
   rolesVersion: RolesVersion
 ) {
-  const [_, securityEOAs, __] = await ethers.getSigners();
+  const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
 
   // get chain config
   const chainConfig = getChainConfig(chainId, rolesVersion);
@@ -153,7 +153,7 @@ export async function executeWhitelistV2(
       return {
         to: config.INVESTMENT_ROLES_ADDRESS as string,
         value: "0",
-        data,
+        data
       };
     })
   );
@@ -162,7 +162,7 @@ export async function executeWhitelistV2(
   const acRoles = new Contract(
     config.ACCESS_CONTROL_ROLES_ADDRESS!,
     ROLES_V2_MASTER_COPY_ABI,
-    securityEOAs
+    security
   );
 
   // role members wishing to transact as the Safe will always have to call via execTransactionWithRole
