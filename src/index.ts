@@ -1,6 +1,6 @@
-const VirtualTestNet = require('./scripts/virtual-test-net').default;
+const VirtualTestNet = require("./scripts/virtual-test-net").default;
 // import { start as wizardStart } from './wizard';
-const wizardStart = require('./wizard').start;
+const wizardStart = require("./wizard").start;
 
 // export {
 //     VirtualTestNet,
@@ -15,4 +15,4 @@ const wizardStart = require('./wizard').start;
 //     });
 // }
 
-wizardStart()
+wizardStart();

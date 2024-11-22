@@ -1,25 +1,31 @@
-
 import SAFE_MASTER_COPY_BASE_ABI from "../contracts/safe_master_copy_v2.json";
 import SAFE_MODULE_PROXY_FACTORY_ABI from "../contracts/safe_module_proxy_factory_v2.json";
 import ROLES_V2_MASTER_COPY_ABI from "../contracts/roles_v2.json";
-import { createMultisendTx, getPreValidatedSignatures, predictRolesModAddress, SALT } from "../utils/util";
-import colors from "colors";
 import {
-  deploySafeV2,
-  addSafeSigners,
-} from "./deploy-safe-v2";
+  createMultisendTx,
+  getPreValidatedSignatures,
+  predictRolesModAddress,
+  SALT,
+} from "../utils/util";
+import colors from "colors";
+import { deploySafeV2, addSafeSigners } from "./deploy-safe-v2";
 // @ts-ignore
 import { ethers } from "hardhat";
 import { ChainId } from "zodiac-roles-sdk";
 import { deployViaFactory } from "./EIP2470";
-import { MANAGER_ROLE_ID_V2, SAFE_OPERATION_DELEGATECALL, SALTS, SECURITY_ROLE_ID_V2, tx } from "../utils/constants";
+import {
+  MANAGER_ROLE_ID_V2,
+  SAFE_OPERATION_DELEGATECALL,
+  SALTS,
+  SECURITY_ROLE_ID_V2,
+  tx,
+} from "../utils/constants";
 import { ChainConfig, RolesVersion } from "../utils/types";
 import { getChainConfig } from "../utils/roles-chain-config";
 import { AccessControllerWhitelistV2 } from "../whitelist/acs/scope-access-controller-v2";
 import { deployAndSetUpModule, KnownContracts } from "@gnosis-guild/zodiac";
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
-
 
 const ZeroHash =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -43,7 +49,6 @@ export async function deployRolesV2(
     //   [owner, avatar, target],
     // );
 
-
     const { expectedModuleAddress, transaction } = await deployAndSetUpModule(
       KnownContracts.ROLES_V2,
       {
@@ -53,16 +58,22 @@ export async function deployRolesV2(
       caller.provider,
       chainId,
       SALT
-    )
+    );
 
-    const predictedRolesAddress = await predictRolesModAddress(caller, owner, avatar, target, "v2")
-    console.log(`prediected roles address: ${predictedRolesAddress}`)
+    const predictedRolesAddress = await predictRolesModAddress(
+      caller,
+      owner,
+      avatar,
+      target,
+      "v2"
+    );
+    console.log(`prediected roles address: ${predictedRolesAddress}`);
 
     // check if address is matching predicted address before processing transaction
     if (expectedModuleAddress !== predictedRolesAddress) {
       throw new Error(
         `Roles mod address deployment unexpected, expected ${predictRolesModAddress}, actual: ${expectedModuleAddress}`
-      )
+      );
     }
 
     // const rolesMaster = new ethers.Contract(
@@ -96,14 +107,16 @@ export async function deployRolesV2(
     // return rolesModAddress;
 
     try {
-      await caller.sendTransaction(transaction)
+      await caller.sendTransaction(transaction);
       console.info(
-        colors.green(`✅ Roles was deployed via proxy factory to ${expectedModuleAddress}`)
+        colors.green(
+          `✅ Roles was deployed via proxy factory to ${expectedModuleAddress}`
+        )
       );
       return expectedModuleAddress;
     } catch (e: any) {
-      console.error(e)
-      throw new Error(`Roles mod address deployment failed: ${e}`)
+      console.error(e);
+      throw new Error(`Roles mod address deployment failed: ${e}`);
     }
   }
   //   const Permissions = await ethers.getContractFactory("Permissions");
@@ -115,7 +128,7 @@ export async function deployRolesV2(
     Packer.bytecode,
     salt,
     caller,
-    "Packer",
+    "Packer"
   );
 
   const Integrity = await ethers.getContractFactory("Integrity");
@@ -123,7 +136,7 @@ export async function deployRolesV2(
     Integrity.bytecode,
     salt,
     caller,
-    "Integrity",
+    "Integrity"
   );
   const Roles = await ethers.getContractFactory("Roles", {
     libraries: {
@@ -149,7 +162,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
   const invSafe = new ethers.Contract(
     safeAddr,
     SAFE_MASTER_COPY_BASE_ABI,
-    caller,
+    caller
   );
 
   const enabled = await invSafe.isModuleEnabled(rolesAddr);
@@ -166,42 +179,48 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
       tx.gasPrice,
       tx.gasToken,
       tx.refundReceiver,
-      signature,
+      signature
     );
     const txReceipt = await enableTx.wait();
     const txData = txReceipt.events?.find(
-      (x: any) => x.event == "EnabledModule",
+      (x: any) => x.event == "EnabledModule"
     );
     const moduleEnabledFromEvent = txData?.args?.module;
     console.info(
       colors.blue(
-        `ℹ️  Roles modifier: ${moduleEnabledFromEvent} has been enabled on safe: ${safeAddr}`,
-      ),
+        `ℹ️  Roles modifier: ${moduleEnabledFromEvent} has been enabled on safe: ${safeAddr}`
+      )
     );
   } else {
     console.info(
-      `Roles modifier: ${rolesAddr} was already enabled on safe: ${safeAddr}`,
+      `Roles modifier: ${rolesAddr} was already enabled on safe: ${safeAddr}`
     );
   }
 }
 
 // sets the address of the multisend contract
-export async function setRolesMultisend(safeAddr: string, rolesAddr: string, chainConfig: ChainConfig["v2"]) {
+export async function setRolesMultisend(
+  safeAddr: string,
+  rolesAddr: string,
+  chainConfig: ChainConfig["v2"]
+) {
   const [caller] = await ethers.getSigners();
   const roles = new ethers.Contract(
     rolesAddr,
     ROLES_V2_MASTER_COPY_ABI,
-    caller,
+    caller
   );
   const multisendOnRecord = await roles.multisend();
   //If no MS on record, submit a tx to write one on record
   if (multisendOnRecord === ethers.constants.AddressZero) {
-    const setMsPopTx = await roles.populateTransaction.setMultisend(chainConfig.MULTISEND_ADDR);
+    const setMsPopTx = await roles.populateTransaction.setMultisend(
+      chainConfig.MULTISEND_ADDR
+    );
 
     const safe = new ethers.Contract(
       safeAddr,
       SAFE_MASTER_COPY_BASE_ABI,
-      caller,
+      caller
     );
     const signature = getPreValidatedSignatures(caller.address);
     await safe.execTransaction(
@@ -214,38 +233,40 @@ export async function setRolesMultisend(safeAddr: string, rolesAddr: string, cha
       tx.gasPrice,
       tx.gasToken,
       tx.refundReceiver,
-      signature,
+      signature
     );
     console.info(
-      colors.blue(`ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`),
+      colors.blue(
+        `ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`
+      )
     );
   } else {
     console.info(
-      `Multisend has already been previously set to: ${multisendOnRecord}`,
+      `Multisend has already been previously set to: ${multisendOnRecord}`
     );
   }
 }
 
-export async function setRolesUnwrapper(safeAddr: string, rolesAddr: string, chainConfig: ChainConfig["v2"]) {
+export async function setRolesUnwrapper(
+  safeAddr: string,
+  rolesAddr: string,
+  chainConfig: ChainConfig["v2"]
+) {
   const [caller] = await ethers.getSigners();
 
   const roles = new ethers.Contract(
     rolesAddr,
     ROLES_V2_MASTER_COPY_ABI,
-    caller,
+    caller
   );
 
   const setMsPopTx = await roles.populateTransaction.setTransactionUnwrapper(
     chainConfig.MULTISEND_ADDR,
     chainConfig.MULTISEND_SELECTOR,
-    chainConfig.DEFAULT_UNWRAPPER_ADDR,
+    chainConfig.DEFAULT_UNWRAPPER_ADDR
   );
 
-  const safe = new ethers.Contract(
-    safeAddr,
-    SAFE_MASTER_COPY_BASE_ABI,
-    caller,
-  );
+  const safe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_BASE_ABI, caller);
   const signature = getPreValidatedSignatures(caller.address);
   await safe.execTransaction(
     rolesAddr,
@@ -257,11 +278,11 @@ export async function setRolesUnwrapper(safeAddr: string, rolesAddr: string, cha
     tx.gasPrice,
     tx.gasToken,
     tx.refundReceiver,
-    signature,
+    signature
   );
 
   console.info(
-    colors.blue(`ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`),
+    colors.blue(`ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`)
   );
 
   // return { adapter };
@@ -280,26 +301,29 @@ export async function assignRoles(
   const roles = new ethers.Contract(
     rolesAddr,
     ROLES_V2_MASTER_COPY_ABI,
-    caller,
+    caller
   );
   const signature = getPreValidatedSignatures(caller.address);
   const acSafe = new ethers.Contract(
     safeAddr,
     SAFE_MASTER_COPY_BASE_ABI,
-    caller,
+    caller
   );
 
   const assignRolesPopTx = await Promise.all(
-    memberAddrs.map(async (memberAddr) => {
+    memberAddrs.map(async memberAddr => {
       return await roles.populateTransaction.assignRoles(
         memberAddr,
         [roleId],
-        [true],
+        [true]
       );
-    }),
+    })
   );
 
-  const metaTxs = createMultisendTx(assignRolesPopTx, chainConfig.MULTISEND_ADDR);
+  const metaTxs = createMultisendTx(
+    assignRolesPopTx,
+    chainConfig.MULTISEND_ADDR
+  );
   await acSafe.execTransaction(
     chainConfig.MULTISEND_ADDR,
     tx.zeroValue,
@@ -310,13 +334,13 @@ export async function assignRoles(
     tx.gasPrice,
     tx.gasToken,
     tx.refundReceiver,
-    signature,
+    signature
   );
 
   console.info(
     colors.blue(
-      `Role member: ${memberAddrs.toString()} has been assigned role id: ${roleId} (default)`,
-    ),
+      `Role member: ${memberAddrs.toString()} has been assigned role id: ${roleId} (default)`
+    )
   );
 }
 
@@ -336,14 +360,18 @@ export const deployAccessControlSystemV2 = async (
     invSafeAddr: string | null;
     invRolesAddr: string | null;
     acRolesAddr: string | null;
-  },
+  }
 ) => {
   // get chain config for multichain deploy
   const chainConfig = getChainConfig(chainId, "v2");
 
   //Deploy both safes
-  const accessControlSafeAddr = deployed?.acSafeAddr || (await deploySafeV2(chainConfig, SALTS.safes.accessControl));
-  const investmentSafeAddr = deployed?.invSafeAddr || (await deploySafeV2(chainConfig, SALTS.safes.investment));
+  const accessControlSafeAddr =
+    deployed?.acSafeAddr ||
+    (await deploySafeV2(chainConfig, SALTS.safes.accessControl));
+  const investmentSafeAddr =
+    deployed?.invSafeAddr ||
+    (await deploySafeV2(chainConfig, SALTS.safes.investment));
 
   // //Deploy and enable a Roles modifier on the investment safe
   const invRolesAddr =
@@ -354,7 +382,7 @@ export const deployAccessControlSystemV2 = async (
       investmentSafeAddr,
       options.proxied,
       chainId,
-      chainConfig,
+      chainConfig
     ));
 
   await enableRolesModifier(investmentSafeAddr, invRolesAddr);
@@ -371,7 +399,7 @@ export const deployAccessControlSystemV2 = async (
       accessControlSafeAddr,
       options.proxied,
       chainId,
-      chainConfig,
+      chainConfig
     ));
   await enableRolesModifier(accessControlSafeAddr, acRolesAddr);
 
@@ -407,8 +435,16 @@ export const deployAccessControlSystemV2 = async (
   );
 
   // // Add signers
-  await addSafeSigners(investmentSafeAddr, options.sysAdminAddresses, chainConfig);
-  await addSafeSigners(accessControlSafeAddr, options.sysAdminAddresses, chainConfig);
+  await addSafeSigners(
+    investmentSafeAddr,
+    options.sysAdminAddresses,
+    chainConfig
+  );
+  await addSafeSigners(
+    accessControlSafeAddr,
+    options.sysAdminAddresses,
+    chainConfig
+  );
 
   // //Remove the deployer address as owner and rewrite signing threshold
   // await removeDeployerAsOwner(investmentSafeAddr, 0);

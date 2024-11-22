@@ -39,15 +39,24 @@ export enum ExecutionOptions {
 export class Whitelist {
   roles: Contract;
   caller: SignerWithAddress | LedgerSigner;
-  constructor(rolesAddr: string, rolesVersion: RolesVersion, caller: SignerWithAddress | LedgerSigner) {
-    this.roles = new Contract(rolesAddr, rolesVersion === "v1" ? ROLES_V1_MASTER_COPY_ABI : ROLES_V2_MASTER_COPY_ABI);
+  constructor(
+    rolesAddr: string,
+    rolesVersion: RolesVersion,
+    caller: SignerWithAddress | LedgerSigner
+  ) {
+    this.roles = new Contract(
+      rolesAddr,
+      rolesVersion === "v1"
+        ? ROLES_V1_MASTER_COPY_ABI
+        : ROLES_V2_MASTER_COPY_ABI
+    );
     this.caller = caller;
   }
 
   // roles.scopeTarget helper function
   async scopeTargets(targetAddrs: string[], roleId: number) {
     const scopeTargetTxs = await Promise.all(
-      targetAddrs.map(async (target) => {
+      targetAddrs.map(async target => {
         //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
         const tx = await this.roles.populateTransaction.scopeTarget(
           roleId,
@@ -62,7 +71,7 @@ export class Whitelist {
   // Helper to allows function calls without param scoping
   async scopeAllowFunctionsV1(target: string, sigs: string[], roleId: number) {
     const scopeFuncsTxs = await Promise.all(
-      sigs.map(async (sig) => {
+      sigs.map(async sig => {
         // scopeAllowFunction on Roles allows a role member to call the function in question with no paramter scoping
         const tx = await this.roles.populateTransaction.scopeAllowFunction(
           roleId,
@@ -76,7 +85,6 @@ export class Whitelist {
     return scopeFuncsTxs;
   }
 
-
   // Helper to allows function calls without param scoping
   async scopeAllowFunctionsV2(
     target: string,
@@ -84,7 +92,7 @@ export class Whitelist {
     roleId: `0x${string}`
   ) {
     const scopeFuncsTxs = await Promise.all(
-      sigs.map(async (sig) => {
+      sigs.map(async sig => {
         // allowFunction on Roles allows a role member to call the function in question with no paramter scoping
         const tx = await this.roles.populateTransaction.allowFunction(
           roleId,
@@ -131,7 +139,14 @@ export async function executeWhitelistV2(
   chainId: ChainId,
   rolesVersion: RolesVersion
 ) {
-  const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
+  const [
+    caller,
+    manager,
+    dummyOwnerOne,
+    dummyOwnerTwo,
+    dummyOwnerThree,
+    security,
+  ] = await ethers.getSigners();
 
   // get chain config
   const chainConfig = getChainConfig(chainId, rolesVersion);
@@ -154,7 +169,7 @@ export async function executeWhitelistV2(
       return {
         to: config.INVESTMENT_ROLES_ADDRESS as string,
         value: "0",
-        data
+        data,
       };
     })
   );
@@ -175,7 +190,7 @@ export async function executeWhitelistV2(
     SECURITY_ROLE_ID_V2,
     true,
     {
-      gasLimit: GAS_LIMIT
+      gasLimit: GAS_LIMIT,
     }
   );
 

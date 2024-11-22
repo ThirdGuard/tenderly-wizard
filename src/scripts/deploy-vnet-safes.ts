@@ -8,60 +8,78 @@ import { RolesVersion } from "../utils/types";
 import { setGas } from "../utils/util";
 import config from "../env-config";
 
-export async function deploySafesOnVnet(chainId: ChainId, rolesVersion: RolesVersion) {
-    await setGas();
+export async function deploySafesOnVnet(
+  chainId: ChainId,
+  rolesVersion: RolesVersion
+) {
+  await setGas();
 
-    let contractsAddr;
-    let deployedSnapshot;
-    let base: any;
-    
-    const [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
+  let contractsAddr;
+  let deployedSnapshot;
+  let base: any;
 
-    if (rolesVersion === 'v1') {
-        base = await deployAccessControlSystemV1(chainId, {
-            proxied: true,
-            managerEOAs: [manager.address],
-            securityEOAs: [security.address],
-            invSafeThreshold: 1,
-            acSafeThreshold: 1,
-            sysAdminAddresses: [dummyOwnerOne.address, dummyOwnerTwo.address, dummyOwnerThree.address],
-        });
-    } else {
-        base = await deployAccessControlSystemV2(chainId, {
-            proxied: true,
-            managerEOAs: [manager.address],
-            securityEOAs: [security.address],
-            invSafeThreshold: 1,
-            acSafeThreshold: 1,
-            sysAdminAddresses: [dummyOwnerOne.address, dummyOwnerTwo.address, dummyOwnerThree.address],
-        });
-    }
+  const [
+    caller,
+    manager,
+    dummyOwnerOne,
+    dummyOwnerTwo,
+    dummyOwnerThree,
+    security,
+  ] = await ethers.getSigners();
 
-    deployedSnapshot = await network.provider.send("evm_snapshot", []);
-    console.log("deployedSnapshot: ", deployedSnapshot);
+  if (rolesVersion === "v1") {
+    base = await deployAccessControlSystemV1(chainId, {
+      proxied: true,
+      managerEOAs: [manager.address],
+      securityEOAs: [security.address],
+      invSafeThreshold: 1,
+      acSafeThreshold: 1,
+      sysAdminAddresses: [
+        dummyOwnerOne.address,
+        dummyOwnerTwo.address,
+        dummyOwnerThree.address,
+      ],
+    });
+  } else {
+    base = await deployAccessControlSystemV2(chainId, {
+      proxied: true,
+      managerEOAs: [manager.address],
+      securityEOAs: [security.address],
+      invSafeThreshold: 1,
+      acSafeThreshold: 1,
+      sysAdminAddresses: [
+        dummyOwnerOne.address,
+        dummyOwnerTwo.address,
+        dummyOwnerThree.address,
+      ],
+    });
+  }
 
-    // add to .env
-    VirtualTestNet.addToEnvFile('TENDERLY_SNAPSHOT', deployedSnapshot);
-    VirtualTestNet.addToEnvFile('ACCESS_CONTROL_SAFE_ADDRESS', base?.acSafe);
-    VirtualTestNet.addToEnvFile('INVESTMENT_SAFE_ADDRESS', base?.invSafe);
-    VirtualTestNet.addToEnvFile('INVESTMENT_ROLES_ADDRESS', base?.invRoles);
-    VirtualTestNet.addToEnvFile('ACCESS_CONTROL_ROLES_ADDRESS', base?.acRoles);
+  deployedSnapshot = await network.provider.send("evm_snapshot", []);
+  console.log("deployedSnapshot: ", deployedSnapshot);
 
-    contractsAddr = base;
-    return base;
+  // add to .env
+  VirtualTestNet.addToEnvFile("TENDERLY_SNAPSHOT", deployedSnapshot);
+  VirtualTestNet.addToEnvFile("ACCESS_CONTROL_SAFE_ADDRESS", base?.acSafe);
+  VirtualTestNet.addToEnvFile("INVESTMENT_SAFE_ADDRESS", base?.invSafe);
+  VirtualTestNet.addToEnvFile("INVESTMENT_ROLES_ADDRESS", base?.invRoles);
+  VirtualTestNet.addToEnvFile("ACCESS_CONTROL_ROLES_ADDRESS", base?.acRoles);
+
+  contractsAddr = base;
+  return base;
 }
 
 async function main() {
-    const { ROLES_VERSION: rolesVersion } = config;
-    console.log(`Deploying with roles version: ${rolesVersion}`);
+  const { ROLES_VERSION: rolesVersion } = config;
+  console.log(`Deploying with roles version: ${rolesVersion}`);
 
-    // @note tenderly fork ID defaults to 1 if not set in .env
-    const chainId = config.TENDERLY_FORK_ID
+  // @note tenderly fork ID defaults to 1 if not set in .env
+  const chainId = config.TENDERLY_FORK_ID;
 
-    await deploySafesOnVnet(chainId as ChainId, rolesVersion as RolesVersion);
+  await deploySafesOnVnet(chainId as ChainId, rolesVersion as RolesVersion);
 }
 
-main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
+main().catch(error => {
+  console.error(error);
+  process.exitCode = 1;
 });

@@ -1,17 +1,29 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { BigNumber, BigNumberish, Contract, PopulatedTransaction, utils } from "ethers";
+import {
+  BigNumber,
+  BigNumberish,
+  Contract,
+  PopulatedTransaction,
+  utils,
+} from "ethers";
 import { MetaTransaction, encodeMulti } from "ethers-multisend";
 import { defaultAbiCoder, formatBytes32String } from "ethers/lib/utils";
-import fs from 'fs';
+import fs from "fs";
 import path from "path";
 // @ts-ignore
 import { ethers, network } from "hardhat";
-import { Project, ClassDeclaration, SyntaxKind } from 'ts-morph';
+import { Project, ClassDeclaration, SyntaxKind } from "ts-morph";
 import config from "../env-config";
-import { calculateProxyAddress, ContractAddresses, ContractFactories, KnownContracts } from "@gnosis-guild/zodiac";
+import {
+  calculateProxyAddress,
+  ContractAddresses,
+  ContractFactories,
+  KnownContracts,
+} from "@gnosis-guild/zodiac";
 import { RolesVersion } from "./types";
 
-export const SALT = "0x0000000000000000000000000000000000000000000000000000000000000000"
+export const SALT =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 export enum OperationType {
   Call,
@@ -40,14 +52,14 @@ export interface MetaTransactionData {
  */
 export function createMultisendTx(
   populatedTxs: PopulatedTransaction[],
-  multisendAddr: string,
+  multisendAddr: string
 ): MetaTransaction {
   const safeTransactionData: MetaTransactionData[] = populatedTxs.map(
-    (popTx) => ({
+    popTx => ({
       to: popTx.to as string,
       value: popTx.value ? popTx.value.toString() : "0",
       data: popTx.data as string,
-    }),
+    })
   );
 
   return encodeMulti(safeTransactionData, multisendAddr);
@@ -61,14 +73,13 @@ export function createMultisendTx(
  */
 export const getPreValidatedSignatures = (
   from: string,
-  initialString = "0x",
+  initialString = "0x"
 ): string => {
   return `${initialString}000000000000000000000000${from.replace(
     "0x",
-    "",
+    ""
   )}000000000000000000000000000000000000000000000000000000000000000001`;
 };
-
 
 /**
  * Helper function to scope targets in roles contract v1
@@ -83,7 +94,7 @@ export async function scopeTargetsV1(
   roles: Contract
 ) {
   const scopeTargetTxs = await Promise.all(
-    targetAddrs.map(async (target) => {
+    targetAddrs.map(async target => {
       //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
       const tx = await roles.populateTransaction.scopeTarget(roleId, target);
       return tx;
@@ -91,7 +102,6 @@ export async function scopeTargetsV1(
   );
   return scopeTargetTxs;
 }
-
 
 /**
  * Helper function to scope targets in roles contract v2
@@ -103,13 +113,13 @@ export async function scopeTargetsV1(
 export async function scopeTargetsV2(
   targetAddrs: string[],
   roleId: `0x${string}`,
-  roles: Contract,
+  roles: Contract
 ) {
   const scopeTargetTxs = await Promise.all(
-    targetAddrs.map(async (target) => {
+    targetAddrs.map(async target => {
       const tx = await roles.populateTransaction.scopeTarget(roleId, target);
       return tx;
-    }),
+    })
   );
   return scopeTargetTxs;
 }
@@ -126,18 +136,18 @@ export async function scopeAllowFunctions(
   target: string,
   sigs: string[],
   roleId: number,
-  roles: Contract,
+  roles: Contract
 ) {
   const scopeFuncsTxs = await Promise.all(
-    sigs.map(async (sig) => {
+    sigs.map(async sig => {
       const tx = await roles.populateTransaction.allowFunction(
         roleId,
         target,
         sig,
-        ExecutionOptions.Both,
+        ExecutionOptions.Both
       );
       return tx;
-    }),
+    })
   );
   return scopeFuncsTxs;
 }
@@ -147,7 +157,8 @@ export async function scopeAllowFunctions(
  * @param {string} address - Address to encode
  * @returns {string} ABI encoded address
  */
-export const getABICodedAddress = (address: string) => utils.defaultAbiCoder.encode(["address"], [address]);
+export const getABICodedAddress = (address: string) =>
+  utils.defaultAbiCoder.encode(["address"], [address]);
 
 /**
  * Converts a number to bytes32 format
@@ -166,7 +177,9 @@ export function numberToBytes32(num: number): `0x${string}` {
  * @param {string} text - String to encode
  * @returns {`0x${string}`} Bytes32 representation of the string
  */
-export const encodeBytes32String = formatBytes32String as (text: string) => `0x${string}`;
+export const encodeBytes32String = formatBytes32String as (
+  text: string
+) => `0x${string}`;
 
 /**
  * Sets ERC20 token balances for multiple tokens and a single recipient
@@ -181,7 +194,7 @@ export const setERC20TokenBalances = async (
   amount: BigNumberish
 ) =>
   tokenAddresses.forEach(
-    async (tokenAddress) =>
+    async tokenAddress =>
       await setERC20TokenBalance(tokenAddress, recipient, amount)
   );
 
@@ -216,7 +229,8 @@ export async function setGas() {
   let dummyOwnerTwo: SignerWithAddress;
   let dummyOwnerThree: SignerWithAddress;
   let security: SignerWithAddress;
-  [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] = await ethers.getSigners();
+  [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] =
+    await ethers.getSigners();
   const provider = new ethers.providers.JsonRpcProvider(VIRTUAL_MAINNET_RPC);
   await provider.send("tenderly_setBalance", [
     caller.address,
@@ -242,7 +256,6 @@ export async function setGas() {
  * @returns {string[]} Array of file paths
  */
 export function findPermissionsFiles(whitelistDir: string): string[] {
-
   if (!fs.existsSync(whitelistDir)) {
     throw new Error(`The directory ${whitelistDir} does not exist.`);
   }
@@ -261,7 +274,7 @@ export function findPermissionsFiles(whitelistDir: string): string[] {
     if (stat.isDirectory()) {
       // Recursively search subdirectories by calling findPermissionsFiles again
       results = results.concat(findPermissionsFiles(filePath));
-    } else if (file === 'permissions.ts') {
+    } else if (file === "permissions.ts") {
       results.push(filePath);
     }
   }
@@ -274,42 +287,51 @@ export function findPermissionsFiles(whitelistDir: string): string[] {
  * @param {string} whitelistDir - Directory to search
  * @returns {{ path: string, className: string }[]} Array of objects containing path and class name
  */
-export function findWhitelistClasses(whitelistDir: string): { path: string, className: string }[] {
+export function findWhitelistClasses(
+  whitelistDir: string
+): { path: string; className: string }[] {
   const project = new Project();
 
   fs.readdirSync(whitelistDir, { recursive: true }).forEach(file => {
-    if (typeof file === 'string' && file.endsWith('.ts')) {
+    if (typeof file === "string" && file.endsWith(".ts")) {
       project.addSourceFileAtPath(path.join(whitelistDir, file));
     }
   });
 
-  const whitelistExtensions: { path: string, className: string }[] = [];
+  const whitelistExtensions: { path: string; className: string }[] = [];
 
   project.getSourceFiles().forEach(sourceFile => {
-    const classes = sourceFile.getDescendantsOfKind(SyntaxKind.ClassDeclaration);
+    const classes = sourceFile.getDescendantsOfKind(
+      SyntaxKind.ClassDeclaration
+    );
 
     classes.forEach((classDeclaration: ClassDeclaration) => {
       const heritage = classDeclaration.getHeritageClauses();
 
-      if (heritage.some(clause =>
-        clause.getTypeNodes().some(node =>
-          node.getText().includes('Whitelist')
+      if (
+        heritage.some(clause =>
+          clause
+            .getTypeNodes()
+            .some(node => node.getText().includes("Whitelist"))
         )
-      )) {
+      ) {
         const absolutePath = sourceFile.getFilePath();
-        whitelistExtensions.push({ path: absolutePath, className: classDeclaration.getName() ?? '' });
+        whitelistExtensions.push({
+          path: absolutePath,
+          className: classDeclaration.getName() ?? "",
+        });
       }
     });
   });
 
   // Filter out AccessControllerWhitelist classes
-  const filteredExtensions = whitelistExtensions.filter(extension =>
-    !extension.className.includes('AccessControllerWhitelist')
+  const filteredExtensions = whitelistExtensions.filter(
+    extension => !extension.className.includes("AccessControllerWhitelist")
   );
   whitelistExtensions.length = 0;
   whitelistExtensions.push(...filteredExtensions);
 
-  console.log('Classes extending Whitelist:', whitelistExtensions);
+  console.log("Classes extending Whitelist:", whitelistExtensions);
 
   return whitelistExtensions;
 }
@@ -320,12 +342,16 @@ export function findWhitelistClasses(whitelistDir: string): { path: string, clas
  * @returns {boolean} True if all required variables are present, false otherwise
  */
 export function checkRequiredEnvVariables(requiredVariables: string[]) {
-  const missingVariables = requiredVariables.filter((variable) => !(variable in config));
+  const missingVariables = requiredVariables.filter(
+    variable => !(variable in config)
+  );
 
   console.log({ missingVariables });
 
   if (missingVariables.length > 0) {
-    console.log(`Missing required environment variables: ${missingVariables.join(", ")}`);
+    console.log(
+      `Missing required environment variables: ${missingVariables.join(", ")}`
+    );
     return false;
   }
 
@@ -333,27 +359,34 @@ export function checkRequiredEnvVariables(requiredVariables: string[]) {
   return true;
 }
 
-export async function predictRolesModAddress(signer: any, owner: string, avatar: string, target: string, rolesVersion: RolesVersion) {
+export async function predictRolesModAddress(
+  signer: any,
+  owner: string,
+  avatar: string,
+  target: string,
+  rolesVersion: RolesVersion
+) {
   const encodedInitParams = defaultAbiCoder.encode(
     ["address", "address", "address"],
     [owner, avatar, target]
-  )
+  );
 
-  const rolesContract = rolesVersion == "v1" ? KnownContracts.ROLES_V1 : KnownContracts.ROLES_V2
+  const rolesContract =
+    rolesVersion == "v1" ? KnownContracts.ROLES_V1 : KnownContracts.ROLES_V2;
 
   const moduleSetupData = ContractFactories[rolesContract]
     .createInterface()
-    .encodeFunctionData("setUp", [encodedInitParams])
+    .encodeFunctionData("setUp", [encodedInitParams]);
 
   return calculateProxyAddress(
     ContractFactories[KnownContracts.FACTORY].connect(
       ContractAddresses[1][KnownContracts.FACTORY],
-      signer,
+      signer
     ) as any,
     ContractAddresses[1][rolesContract],
     moduleSetupData,
     SALT
-  )
+  );
 }
 
 /**
@@ -366,17 +399,21 @@ export async function predictRolesModAddress(signer: any, owner: string, avatar:
  * @description Uses the proxy factory's calculateCreateProxyWithNonceAddress method to predict
  * the deterministic address where a Safe proxy will be deployed based on the initialization parameters
  */
-export async function predictSafeAddress(safeProxyFactory: Contract, safeMasterCopy: string, data: string, saltNonce: number) {
+export async function predictSafeAddress(
+  safeProxyFactory: Contract,
+  safeMasterCopy: string,
+  data: string,
+  saltNonce: number
+) {
   return await safeProxyFactory.calculateCreateProxyWithNonceAddress(
     safeMasterCopy,
     data,
     saltNonce,
     {
-      gasLimit: BigNumber.from("3000000")
+      gasLimit: BigNumber.from("3000000"),
     }
-  )
+  );
 }
-
 
 /**
  * Sets the current block number to a target block number by increasing blocks
@@ -396,6 +433,6 @@ export async function setUniformBlockNumber(targetBlock: number) {
 
   await network.provider.request({
     method: "evm_increaseBlocks",
-    params: [ethers.utils.hexValue(blocksToIncrease)]
+    params: [ethers.utils.hexValue(blocksToIncrease)],
   });
 }

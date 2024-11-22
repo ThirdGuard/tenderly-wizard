@@ -9,6 +9,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "build": "tsc -p tsconfig.json",
+    "format": "prettier 'src/**/*.ts' -w",
     "deploy:safes": "hardhat run src/scripts/deploy-vnet-safes.ts --network virtual_mainnet",
     "deploy:whitelist": "hardhat run src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet",
     "save:vnet-snapshot": "hardhat run src/scripts/save-vnet-snapshot.ts --network virtual_mainnet"
@@ -59,7 +60,8 @@
     "@types/mocha": "10.0.4",
     "@types/node": "^22.7.5",
     "@types/terminal-kit": "^2.5.6",
-    "@types/yargs": "16.0.8"
+    "@types/yargs": "16.0.8",
+    "prettier": "^3.3.3"
   },
   "packageManager": "yarn@4.2.2"
 }

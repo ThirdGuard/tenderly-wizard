@@ -35,7 +35,7 @@ const chainConfigs: Partial<Record<ChainId, ChainConfig>> = {
       DEFAULT_UNWRAPPER_ADDR: DEFAULT_UNWRAPPER_ADDR,
       MULTISEND_SELECTOR: MULTISEND_SELECTOR,
       SAFE_MASTER_COPY_ADDR: SAFE_MASTER_COPY_V1_ADDR,
-      SAFE_PROXY_FACTORY_ADDR: SAFE_PROXY_FACTORY_V1_ADDR
+      SAFE_PROXY_FACTORY_ADDR: SAFE_PROXY_FACTORY_V1_ADDR,
     },
     v2: {
       ROLES_MASTER_COPY_ADDR: ROLES_V2_MASTER_COPY_ADDR,
@@ -46,8 +46,7 @@ const chainConfigs: Partial<Record<ChainId, ChainConfig>> = {
       MULTISEND_SELECTOR: MULTISEND_SELECTOR,
       SAFE_MASTER_COPY_ADDR: SAFE_MASTER_COPY_ADDR,
       SAFE_PROXY_FACTORY_ADDR: SAFE_PROXY_FACTORY_ADDR,
-    }
-
+    },
   },
   [8453]: {
     v1: {
@@ -58,7 +57,7 @@ const chainConfigs: Partial<Record<ChainId, ChainConfig>> = {
       DEFAULT_UNWRAPPER_ADDR: DEFAULT_UNWRAPPER_ADDR,
       MULTISEND_SELECTOR: MULTISEND_SELECTOR,
       SAFE_MASTER_COPY_ADDR: SAFE_MASTER_COPY_V1_ADDR,
-      SAFE_PROXY_FACTORY_ADDR: SAFE_PROXY_FACTORY_V1_ADDR
+      SAFE_PROXY_FACTORY_ADDR: SAFE_PROXY_FACTORY_V1_ADDR,
     },
     v2: {
       ROLES_MASTER_COPY_ADDR: BASE_ROLES_V2_MASTER_COPY_ADDR,
@@ -69,15 +68,20 @@ const chainConfigs: Partial<Record<ChainId, ChainConfig>> = {
       MULTISEND_SELECTOR: BASE_MULTISEND_SELECTOR,
       SAFE_MASTER_COPY_ADDR: BASE_SAFE_MASTER_COPY_ADDR,
       SAFE_PROXY_FACTORY_ADDR: BASE_SAFE_PROXY_FACTORY_ADDR,
-    }
+    },
   },
   // @note Add configurations for other chains here
 };
 
-export function getChainConfig(chainId: ChainId, rolesVersion: RolesVersion): ChainConfig[RolesVersion] {
+export function getChainConfig(
+  chainId: ChainId,
+  rolesVersion: RolesVersion
+): ChainConfig[RolesVersion] {
   const config = chainConfigs[chainId]?.[rolesVersion];
   if (!config) {
-    throw new Error(`No configuration found for chain ID ${chainId} and roles version ${rolesVersion}`);
+    throw new Error(
+      `No configuration found for chain ID ${chainId} and roles version ${rolesVersion}`
+    );
   }
   return config;
 }

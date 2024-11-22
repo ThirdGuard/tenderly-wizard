@@ -4,8 +4,17 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { LedgerSigner } from "@anders-t/ethers-ledger";
 // @ts-ignore
 import { ethers } from "hardhat";
-import { createMultisendTx, getPreValidatedSignatures, scopeTargetsV1 } from "../../utils/util";
-import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V1, tx } from "../../utils/constants";
+import {
+  createMultisendTx,
+  getPreValidatedSignatures,
+  scopeTargetsV1,
+} from "../../utils/util";
+import {
+  GAS_LIMIT,
+  SAFE_OPERATION_DELEGATECALL,
+  SECURITY_ROLE_ID_V1,
+  tx,
+} from "../../utils/constants";
 import { getChainConfig } from "../../utils/roles-chain-config";
 import { ChainConfig } from "../../utils/types";
 import { ChainId } from "zodiac-roles-sdk/.";
@@ -21,15 +30,15 @@ const ROLES_FUNCTIONS_ALLOWED = [
   "scopeParameter",
   "scopeParameterAsOneOf",
   "unscopeParameter",
-  "allowTarget"
-]
+  "allowTarget",
+];
 
 // this whitelisting class is used in the roles deployment so that security has the ability to scope functions
 export class AccessControllerWhitelistV1 extends Whitelist {
   chainConfig: ChainConfig["v1"];
   constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner) {
     super(acRolesAddr, "v1", caller);
-    const chainId = config.TENDERLY_FORK_ID
+    const chainId = config.TENDERLY_FORK_ID;
     this.chainConfig = getChainConfig(chainId as ChainId, "v1");
   }
 
@@ -37,15 +46,22 @@ export class AccessControllerWhitelistV1 extends Whitelist {
   async getFullScope(invRolesAddr: string) {
     // Nested roles usage here can be confusing. The invRoles is the target that is scoped on the acRoles
     // Must scopeTarget before roles.scopeAllowFunction can be called
-    const getScopedTargetTxs = await scopeTargetsV1([invRolesAddr], SECURITY_ROLE_ID_V1, this.roles)
+    const getScopedTargetTxs = await scopeTargetsV1(
+      [invRolesAddr],
+      SECURITY_ROLE_ID_V1,
+      this.roles
+    );
     // Get the sighashs that need to be whitelisted
-    const functionSigs = ROLES_FUNCTIONS_ALLOWED.map(func => this.roles.interface.getSighash(func))
-    const getScopedAllowFunctionTxs = await this.scopeAllowFunctionsV1(invRolesAddr, functionSigs, SECURITY_ROLE_ID_V1)
-    const txs = [
-      ...getScopedTargetTxs,
-      ...getScopedAllowFunctionTxs
-    ];
-    return createMultisendTx(txs, this.chainConfig.MULTISEND_ADDR)
+    const functionSigs = ROLES_FUNCTIONS_ALLOWED.map(func =>
+      this.roles.interface.getSighash(func)
+    );
+    const getScopedAllowFunctionTxs = await this.scopeAllowFunctionsV1(
+      invRolesAddr,
+      functionSigs,
+      SECURITY_ROLE_ID_V1
+    );
+    const txs = [...getScopedTargetTxs, ...getScopedAllowFunctionTxs];
+    return createMultisendTx(txs, this.chainConfig.MULTISEND_ADDR);
   }
 
   async build(invRolesAddr: string, accessControlSafeAddr: string) {
