@@ -4,8 +4,17 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { LedgerSigner } from "@anders-t/ethers-ledger";
 // @ts-ignore
 import { ethers } from "hardhat";
-import { createMultisendTx, getPreValidatedSignatures, scopeTargetsV2 } from "../../utils/util";
-import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, SECURITY_ROLE_ID_V2, tx } from "../../utils/constants";
+import {
+  createMultisendTx,
+  getPreValidatedSignatures,
+  scopeTargetsV2,
+} from "../../utils/util";
+import {
+  GAS_LIMIT,
+  SAFE_OPERATION_DELEGATECALL,
+  SECURITY_ROLE_ID_V2,
+  tx,
+} from "../../utils/constants";
 import { ChainConfig } from "../../utils/types";
 import { ChainId } from "zodiac-roles-sdk/.";
 import { getChainConfig } from "../../utils/roles-chain-config";
@@ -25,7 +34,7 @@ export class AccessControllerWhitelistV2 extends Whitelist {
   chainConfig: ChainConfig["v2"];
   constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner) {
     super(acRolesAddr, "v2", caller);
-    const chainId = config.TENDERLY_FORK_ID
+    const chainId = config.TENDERLY_FORK_ID;
     this.chainConfig = getChainConfig(chainId as ChainId, "v2");
   }
 
@@ -40,13 +49,13 @@ export class AccessControllerWhitelistV2 extends Whitelist {
       this.roles
     );
     // Get the sighashs that need to be whitelisted
-    const functionSigs = ROLES_FUNCTIONS_ALLOWED.map((func) =>
+    const functionSigs = ROLES_FUNCTIONS_ALLOWED.map(func =>
       this.roles.interface.getSighash(func)
     );
     const getScopedAllowFunctionTxs = await this.scopeAllowFunctionsV2(
       invRolesAddr,
       functionSigs,
-      SECURITY_ROLE_ID_V2,
+      SECURITY_ROLE_ID_V2
     );
     const txs = [...getScopedTargetTxs, ...getScopedAllowFunctionTxs];
     return createMultisendTx(txs, this.chainConfig.MULTISEND_ADDR);
