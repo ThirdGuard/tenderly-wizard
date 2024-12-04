@@ -343,7 +343,7 @@ export function findWhitelistClasses(
 
   // @todo filter pendle abstract class from list
   const filteredWithoutAbstractPendle = filteredExtensions.filter(
-    extension => extension.className !== "AbstractPendleWhitelist"
+    extension => !extension.className.includes("AbstractPendleWhitelist")
   );
 
   whitelistExtensions.length = 0;
