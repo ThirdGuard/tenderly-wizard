@@ -248,6 +248,14 @@ export async function setGas() {
     dummyOwnerOne.address,
     "0x8AC7230489E80000",
   ]);
+  await provider.send("tenderly_setBalance", [
+    dummyOwnerTwo.address,
+    "0xDE0B6B3A7640000",
+  ]);
+  await provider.send("tenderly_setBalance", [
+    dummyOwnerThree.address,
+    "0xDE0B6B3A7640000",
+  ]);
 }
 
 /**
@@ -310,9 +318,13 @@ export function findWhitelistClasses(
 
       if (
         heritage.some(clause =>
-          clause
-            .getTypeNodes()
-            .some(node => node.getText().includes("Whitelist"))
+          clause.getTypeNodes().some(node => {
+            const text = node.getText();
+            return (
+              text.includes("Whitelist") ||
+              text.includes("AbstractPendleWhitelist")
+            );
+          })
         )
       ) {
         const absolutePath = sourceFile.getFilePath();
@@ -328,8 +340,14 @@ export function findWhitelistClasses(
   const filteredExtensions = whitelistExtensions.filter(
     extension => !extension.className.includes("AccessControllerWhitelist")
   );
+
+  // @todo filter pendle abstract class from list
+  const filteredWithoutAbstractPendle = filteredExtensions.filter(
+    extension => !extension.className.includes("AbstractPendleWhitelist")
+  );
+
   whitelistExtensions.length = 0;
-  whitelistExtensions.push(...filteredExtensions);
+  whitelistExtensions.push(...filteredWithoutAbstractPendle);
 
   console.log("Classes extending Whitelist:", whitelistExtensions);
 
