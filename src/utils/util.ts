@@ -234,19 +234,19 @@ export async function setGas() {
   const provider = new ethers.providers.JsonRpcProvider(VIRTUAL_MAINNET_RPC);
   await provider.send("tenderly_setBalance", [
     caller.address,
-    "0xDE0B6B3A7640000",
+    "0x8AC7230489E80000",
   ]);
   await provider.send("tenderly_setBalance", [
     manager.address,
-    "0xDE0B6B3A7640000",
+    "0x8AC7230489E80000",
   ]);
   await provider.send("tenderly_setBalance", [
     security.address,
-    "0xDE0B6B3A7640000",
+    "0x8AC7230489E80000",
   ]);
   await provider.send("tenderly_setBalance", [
     dummyOwnerOne.address,
-    "0xDE0B6B3A7640000",
+    "0x8AC7230489E80000",
   ]);
   await provider.send("tenderly_setBalance", [
     dummyOwnerTwo.address,
