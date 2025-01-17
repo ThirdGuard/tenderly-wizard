@@ -244,8 +244,6 @@ export async function start() {
         const whitelistSelection =
           await terminal.singleColumnMenu(whitelistNames).promise;
 
-        console.log("whitelistSelection: ", whitelistSelection);
-
         // Join the selected text back into a single word (removing spaces)
         const selectedClassName = whitelistSelection.selectedText
           .split(" ")

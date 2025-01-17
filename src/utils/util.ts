@@ -349,8 +349,6 @@ export function findWhitelistClasses(
   whitelistExtensions.length = 0;
   whitelistExtensions.push(...filteredWithoutAbstractPendle);
 
-  console.log("Classes extending Whitelist:", whitelistExtensions);
-
   return whitelistExtensions;
 }
 
