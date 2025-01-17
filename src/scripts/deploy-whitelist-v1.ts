@@ -39,7 +39,7 @@ export async function whitelistSafesV1(
     INVESTMENT_SAFE_ADDRESS,
   } = config;
 
-  // @todo get caller address
+  // get caller address
   const [
     caller,
     manager,
