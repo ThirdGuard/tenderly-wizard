@@ -195,71 +195,79 @@ export async function start() {
     }
   }
 
+  // deploy whitelist
   if (action.selectedIndex == 5) {
     // select roles version
     await selectRolesVersion(terminal);
 
-    // @todo show menu to select whitelisting options, the options are "Whitelist all", "Whitelist one", "Whitelist approvals"
-    const whitelistOptions = [
-      "Whitelist all",
-      "Whitelist one",
-      "Whitelist approvals",
-    ];
-    const whitelistSelection =
-      await terminal.singleColumnMenu(whitelistOptions).promise;
-
     let output: any;
 
-    if (whitelistSelection.selectedIndex == 0) {
-      // whitelist all
-      console.log("\nWhitelisting all");
+    // if roles version is v2, skip menu for selecting whitelisting options
+    if (process.env.ROLES_VERSION === "v2") {
+      console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}`);
       output = executeWithLogs(
         `npm run deploy:whitelist && npm run save:vnet-snapshot`
       );
-    } else if (whitelistSelection.selectedIndex == 1) {
-      // whitelist one
-      console.log("\nWhitelisting one");
-
-      // @todo get a list of all whitelists
-      const whiteLists = await getWhitelistsV1();
-      // Extract class names and format them into readable sentences
-      const whitelistNames = whiteLists.map(wl => {
-        // Split by capital letters and join with spaces
-        const formatted = wl.className.replace(/([A-Z])/g, " $1").trim();
-        // Capitalize first letter of each word
-        return formatted
-          .split(" ")
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-      });
-
-      // Create menu from formatted names
+    } else {
+      // show menu to select whitelisting options
+      const whitelistOptions = [
+        "Whitelist all",
+        "Whitelist one",
+        "Whitelist approvals",
+      ];
       const whitelistSelection =
-        await terminal.singleColumnMenu(whitelistNames).promise;
+        await terminal.singleColumnMenu(whitelistOptions).promise;
 
-      console.log("whitelistSelection: ", whitelistSelection);
+      // whitelist all
+      if (whitelistSelection.selectedIndex == 0) {
+        console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}`);
+        output = executeWithLogs(
+          `npm run deploy:whitelist && npm run save:vnet-snapshot`
+        );
+      } else if (whitelistSelection.selectedIndex == 1) {
+        // whitelist one
+        console.log(`\nWhitelisting one ${process.env.ROLES_VERSION}`);
+        // @todo get a list of all whitelists
+        const whiteLists = await getWhitelistsV1();
+        // Extract class names and format them into readable sentences
+        const whitelistNames = whiteLists.map(wl => {
+          // Split by capital letters and join with spaces
+          const formatted = wl.className.replace(/([A-Z])/g, " $1").trim();
+          // Capitalize first letter of each word
+          return formatted
+            .split(" ")
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+        });
 
-      // Join the selected text back into a single word (removing spaces)
-      const selectedClassName = whitelistSelection.selectedText
-        .split(" ")
-        .join("");
+        // Create menu from formatted names
+        const whitelistSelection =
+          await terminal.singleColumnMenu(whitelistNames).promise;
 
-      // Find the corresponding whitelist entry
-      const selectedWhitelist = whiteLists.find(
-        wl => wl.className === selectedClassName
-      );
+        console.log("whitelistSelection: ", whitelistSelection);
 
-      if (!selectedWhitelist) {
-        console.error("Could not find matching whitelist for selection");
-        return;
-      } else {
-        // feed the selected whitelist to the execute whitelist v1 function
-        process.env.SELECTED_WHITELIST = JSON.stringify(selectedWhitelist);
-        output = executeWithLogs(`npm run execute:whitelist`);
+        // Join the selected text back into a single word (removing spaces)
+        const selectedClassName = whitelistSelection.selectedText
+          .split(" ")
+          .join("");
+
+        // Find the corresponding whitelist entry
+        const selectedWhitelist = whiteLists.find(
+          wl => wl.className === selectedClassName
+        );
+
+        if (!selectedWhitelist) {
+          console.error("Could not find matching whitelist for selection");
+          return;
+        } else {
+          // feed the selected whitelist to the execute whitelist v1 function
+          process.env.SELECTED_WHITELIST = JSON.stringify(selectedWhitelist);
+          output = executeWithLogs(`npm run execute:whitelist`);
+        }
+      } else if (whitelistSelection.selectedIndex == 2) {
+        console.log(`\nWhitelisting approvals ${process.env.ROLES_VERSION}`);
+        // whitelist approvals
       }
-    } else if (whitelistSelection.selectedIndex == 2) {
-      console.log("\nWhitelisting approvals");
-      // whitelist approvals
     }
 
     if (output) {

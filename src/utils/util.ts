@@ -364,8 +364,6 @@ export function checkRequiredEnvVariables(requiredVariables: string[]) {
     variable => !(variable in config)
   );
 
-  console.log({ missingVariables });
-
   if (missingVariables.length > 0) {
     console.log(
       `Missing required environment variables: ${missingVariables.join(", ")}`

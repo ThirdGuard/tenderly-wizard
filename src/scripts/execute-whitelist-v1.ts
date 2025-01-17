@@ -1,12 +1,25 @@
 // @ts-ignore
 import { ethers } from "hardhat";
 import config from "../env-config";
+import { checkRequiredEnvVariables, setGas } from "../utils/util";
 
 async function main() {
+  const ok = checkRequiredEnvVariables([
+    "ACCESS_CONTROL_SAFE_ADDRESS",
+    "INVESTMENT_SAFE_ADDRESS",
+    "INVESTMENT_ROLES_ADDRESS",
+    "ACCESS_CONTROL_ROLES_ADDRESS",
+  ]);
+  if (!ok) {
+    process.exit(1);
+  }
+
+  // set gas for all accounts
+  await setGas();
+
   // @audit the whitelist object is being read from .env variables,
   // need a better solution for this. Currently, this function is
   // being called by execSync in wizard.ts
-
   if (!process.env.SELECTED_WHITELIST) {
     console.error("No whitelist selected");
     process.exit(1);
