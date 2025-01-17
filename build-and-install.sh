@@ -35,6 +35,11 @@ if [ -z "$PACKAGE_FILE" ]; then
     exit 1
 fi
 
+# Uninstall existing global package
+echo "Uninstalling existing global package..."
+npm uninstall -g tenderly-wizard
+
+
 # Install globally
 echo "Installing package globally..."
 npm i -g "./$PACKAGE_FILE"

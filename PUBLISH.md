@@ -27,20 +27,14 @@ This guide covers how to publish and update the tenderly-wizard package on npm.
 
 ## Updating the Package
 
-1. Update your code as necessary.
+1. Update your code as necessary & `yarn build`.
 
 2. Update the version in `package.json`:
    - For bug fixes: `npm version patch`
    - For new features (backwards-compatible): `npm version minor`
    - For breaking changes: `npm version major`
 
-3. Commit your changes:
-   ```
-   git add .
-   git commit -m "Description of changes"
-   ```
-
-4. Publish the new version:
+3. Publish the new version:
    ```
    npm publish
    ```
