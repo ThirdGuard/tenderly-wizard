@@ -1,5 +1,5 @@
-import { whitelistSafesV2 } from "./deploy-whitelist-v2";
-import { whitelistSafesV1 } from "./deploy-whitelist-v1";
+import { whitelistSafesV2 } from "./execute-whitelist-v2-all";
+import { whitelistSafesV1 } from "./execute-whitelist-v1-all";
 import config from "../env-config";
 
 async function main() {
