@@ -204,29 +204,25 @@ export async function start() {
 
     // if roles version is v2, skip menu for selecting whitelisting options
     if (process.env.ROLES_VERSION === "v2") {
-      console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}`);
+      console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}...`);
       output = executeWithLogs(
         `npm run deploy:whitelist && npm run save:vnet-snapshot`
       );
     } else {
       // show menu to select whitelisting options
-      const whitelistOptions = [
-        "Whitelist all",
-        "Whitelist one",
-        "Whitelist approvals",
-      ];
+      const whitelistOptions = ["Whitelist all", "Whitelist one"];
       const whitelistSelection =
         await terminal.singleColumnMenu(whitelistOptions).promise;
 
       // whitelist all
       if (whitelistSelection.selectedIndex == 0) {
-        console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}`);
+        console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}...`);
         output = executeWithLogs(
           `npm run deploy:whitelist && npm run save:vnet-snapshot`
         );
       } else if (whitelistSelection.selectedIndex == 1) {
         // whitelist one
-        console.log(`\nWhitelisting one ${process.env.ROLES_VERSION}`);
+        console.log(`\nWhitelisting one ${process.env.ROLES_VERSION}...`);
         // @todo get a list of all whitelists
         const whiteLists = await getWhitelistsV1();
         // Extract class names and format them into readable sentences
@@ -262,9 +258,6 @@ export async function start() {
           process.env.SELECTED_WHITELIST = JSON.stringify(selectedWhitelist);
           output = executeWithLogs(`npm run execute:whitelist`);
         }
-      } else if (whitelistSelection.selectedIndex == 2) {
-        console.log(`\nWhitelisting approvals ${process.env.ROLES_VERSION}`);
-        // whitelist approvals
       }
     }
 
