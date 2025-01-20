@@ -218,7 +218,7 @@ export async function start() {
       if (whitelistSelection.selectedIndex == 0) {
         console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}...`);
         output = executeWithLogs(
-          `npm run deploy:whitelist && npm run save:vnet-snapshot`
+          `BYPASS_APPROVALS=true npm run deploy:whitelist && npm run save:vnet-snapshot`
         );
       } else if (whitelistSelection.selectedIndex == 1) {
         // whitelist one
@@ -256,7 +256,9 @@ export async function start() {
         } else {
           // feed the selected whitelist to the execute whitelist v1 function
           process.env.SELECTED_WHITELIST = JSON.stringify(selectedWhitelist);
-          output = executeWithLogs(`npm run execute:whitelist`);
+          output = executeWithLogs(
+            `BYPASS_APPROVALS=true npm run execute:whitelist && npm run save:vnet-snapshot`
+          );
         }
       }
     }

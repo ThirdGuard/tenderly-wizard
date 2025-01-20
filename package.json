@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.json",
     "format": "prettier 'src/**/*.ts' -w",
     "deploy:safes": "hardhat run src/scripts/deploy-vnet-safes.ts --network virtual_mainnet",
-    "deploy:whitelist": "hardhat run src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet",
+    "deploy:whitelist": "BYPASS_APPROVALS=true hardhat run src/scripts/whitelist-vnet-safes.ts --network virtual_mainnet",
     "execute:whitelist": "BYPASS_APPROVALS=true hardhat run src/scripts/execute-whitelist-v1-one.ts --network virtual_mainnet",
     "save:vnet-snapshot": "hardhat run src/scripts/save-vnet-snapshot.ts --network virtual_mainnet"
   },
