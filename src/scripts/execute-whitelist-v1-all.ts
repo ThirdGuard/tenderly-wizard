@@ -39,7 +39,7 @@ export async function whitelistSafesV1(
     INVESTMENT_SAFE_ADDRESS,
   } = config;
 
-  // @todo get caller address
+  // get caller address
   const [
     caller,
     manager,
@@ -58,7 +58,7 @@ export async function whitelistSafesV1(
     process.exit(1);
   }
 
-  // @todo iterate over all whitelists and execute them
+  // iterate over all whitelists and execute them
   for (const whitelist of whitelists) {
     const { className, path: whitelistPath } = whitelist;
 

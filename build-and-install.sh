@@ -37,7 +37,9 @@ fi
 
 # Uninstall existing global package
 echo "Uninstalling existing global package..."
-npm uninstall -g tenderly-wizard
+# Try to remove the module directory first if it exists
+rm -rf "$HOME/.nvm/versions/node/$(node -v)/lib/node_modules/tenderly-wizard" 2>/dev/null || true
+npm uninstall -g tenderly-wizard --force
 
 
 # Install globally

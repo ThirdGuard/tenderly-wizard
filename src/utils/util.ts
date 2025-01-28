@@ -337,19 +337,12 @@ export function findWhitelistClasses(
   });
 
   // Filter out AccessControllerWhitelist classes
-  const filteredExtensions = whitelistExtensions.filter(
+  let filteredExtensions = whitelistExtensions.filter(
     extension => !extension.className.includes("AccessControllerWhitelist")
   );
 
-  // @todo filter pendle abstract class from list
-  const filteredWithoutAbstractPendle = filteredExtensions.filter(
-    extension => !extension.className.includes("AbstractPendleWhitelist")
-  );
-
   whitelistExtensions.length = 0;
-  whitelistExtensions.push(...filteredWithoutAbstractPendle);
-
-  console.log("Classes extending Whitelist:", whitelistExtensions);
+  whitelistExtensions.push(...filteredExtensions);
 
   return whitelistExtensions;
 }
@@ -363,8 +356,6 @@ export function checkRequiredEnvVariables(requiredVariables: string[]) {
   const missingVariables = requiredVariables.filter(
     variable => !(variable in config)
   );
-
-  console.log({ missingVariables });
 
   if (missingVariables.length > 0) {
     console.log(

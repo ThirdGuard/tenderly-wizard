@@ -1,15 +1,7 @@
 import { BigNumber, constants, utils } from "ethers";
 import { encodeBytes32String } from "./util";
 
-export const AMOUNTS = {
-  one: "1",
-  ten: "10",
-  hundred: "100",
-  thousand: "1000",
-  ten_thousand: "10000",
-  hundred_thousand: "100000",
-  million: "1000000",
-};
+export const SECURITY_ROLE_ID = 1;
 
 export const SALTS = {
   safes: {
