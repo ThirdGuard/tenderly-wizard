@@ -189,19 +189,20 @@ export class VirtualTestNet {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result: any = await response.json();
+      const result: ContainersResponse = await response.json();
       return (
-        result?.containers?.map((container: any) => {
+        result?.containers?.map((container: Container) => {
           return {
             vnet_id: container.id,
             displayName: container.displayName,
-            admin_rpc: container.connectivityConfig.endpoints.find(
-              (e: any) => e.transportProtocol == "HTTP"
-            ).uri,
-            project: container.metadata.project_name,
-            account: container.metadata.project_owner_name,
-            fork_of: container.metadata.origin_container_display_name || null,
-            network_id: container.networkConfig.networkId,
+            admin_rpc:
+              container?.connectivityConfig?.endpoints?.find(
+                (e: Endpoint) => e.transportProtocol == "HTTP"
+              )?.uri || "",
+            project: container?.metadata?.project_name || "",
+            account: container?.metadata?.owner_name || "",
+            fork_of: container?.metadata?.project_name || null,
+            network_id: container?.networkConfig?.networkId || 0,
           };
         }) || []
       );
@@ -268,3 +269,62 @@ export class VirtualTestNet {
 }
 
 export default new VirtualTestNet();
+
+interface Container {
+  id: string;
+  slug: string;
+  displayName: string;
+  description: string;
+  templateSlugOrId: string;
+  createdBy: string;
+  owner: string;
+  projectId: string;
+  visibility: "TEAM" | string;
+  containerType: "TEST_NET" | string;
+  networkConfig: NetworkConfig;
+  connectivityConfig: EndpointsConfig;
+  maintenance: boolean;
+  status: "RUNNING" | string;
+  platformType: "VNET" | string;
+  platformId: string;
+  createdAt: string;
+  updatedAt: string;
+  executionStatus: "IN_PROGRESS" | string;
+  explorer_config: object;
+  metadata?: MetaData; // Optional as it doesn't appear in all objects
+}
+
+interface ContainersResponse {
+  containers: Container[];
+}
+
+type CommunicationProtocol = "JSON_RPC" | "REST" | "GRAPHQL" | string; // Add other possible protocols if known
+type TransportProtocol = "HTTP" | "HTTPS" | "WS" | "WSS" | string; // Add other possible transports if known
+
+interface Endpoint {
+  id: string;
+  slug: string;
+  displayName: string;
+  description: string;
+  communicationProtocol: CommunicationProtocol;
+  transportProtocol: TransportProtocol;
+  private: boolean;
+  isDefault: boolean;
+  uri: string;
+  createdAt: string; // or Date if you'll parse it
+  updatedAt: string; // or Date if you'll parse it
+}
+
+interface EndpointsConfig {
+  id: string;
+  endpoints: Endpoint[];
+}
+
+interface NetworkConfig {
+  networkId: number;
+}
+
+interface MetaData {
+  project_name: string;
+  owner_name: string;
+}
