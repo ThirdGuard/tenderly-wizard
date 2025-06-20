@@ -123,13 +123,8 @@ git commit -m "chore: bump version to $NEW_PACKAGE_VERSION"
 echo "Publishing to npm with tag '$NPM_TAG'..."
 npm publish --tag "$NPM_TAG"
 
-# Add version-specific tag (v5 or v6) after successful publish
-echo "Adding version-specific tag '$ETHERS_TAG'..."
-npm dist-tag add "$PACKAGE_NAME@$NEW_PACKAGE_VERSION" "$ETHERS_TAG"
-
 echo "-------------------------------------"
 echo "✅ Successfully published $PACKAGE_NAME@$NEW_PACKAGE_VERSION"
-echo
-echo "Don't forget to push your changes and tags to git:"
-echo "git push && git push --tags"
 echo "-------------------------------------" 
+
+exit 0
