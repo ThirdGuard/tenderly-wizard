@@ -1,7 +1,6 @@
 import { BigNumber, Contract } from "ethers";
 import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
 import ROLES_V2_MASTER_COPY_ABI from "../contracts/roles_v2.json";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { LedgerSigner } from "@anders-t/ethers-ledger";
 // @ts-ignore
 import { ethers } from "hardhat";
@@ -38,11 +37,11 @@ export enum ExecutionOptions {
 
 export class Whitelist {
   roles: Contract;
-  caller: SignerWithAddress | LedgerSigner;
+  caller: any;
   constructor(
     rolesAddr: string,
     rolesVersion: RolesVersion,
-    caller: SignerWithAddress | LedgerSigner
+    caller: any
   ) {
     this.roles = new Contract(
       rolesAddr,
