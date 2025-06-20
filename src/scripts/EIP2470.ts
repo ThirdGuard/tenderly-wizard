@@ -1,7 +1,6 @@
 import assert from "assert";
 
-import { Contract, Signer } from "ethers";
-import { getCreate2Address, keccak256, parseEther } from "ethers/lib/utils";
+import { Contract, Signer, getCreate2Address, keccak256, parseEther } from "ethers";
 
 const GAS_LIMIT_FACTOR: { [key: number]: number } = {
   42161: 15,
@@ -20,7 +19,7 @@ export async function deployViaFactory(
   assert(provider);
 
   const { chainId } = await provider.getNetwork();
-  const gasLimitFactor = GAS_LIMIT_FACTOR[chainId] || 1;
+  const gasLimitFactor = GAS_LIMIT_FACTOR[Number(chainId)] || 1;
 
   const factory = new Contract(
     factoryInfo.address,
@@ -47,8 +46,7 @@ export async function deployViaFactory(
 
   if (receipt?.status == 1) {
     console.log(
-      `\x1B[32m✔ ${
-        displayName || "Singleton"
+      `\x1B[32m✔ ${displayName || "Singleton"
       } deployed to: ${computedAddress} 🎉\x1B[0m `
     );
   } else {
@@ -89,14 +87,6 @@ async function maybeDeployFactory(signer: Signer) {
     });
 
     // deploy the singleton factory
-    const receipt = await (
-      await provider.sendTransaction(factoryInfo.transaction)
-    ).wait();
-
-    if (receipt?.status != 1) {
-      throw Error(
-        "EIP2470 SingletonFactory could not be deployed to correct address, deployment haulted."
-      );
-    }
+    await provider.broadcastTransaction(factoryInfo.transaction);
   }
 }

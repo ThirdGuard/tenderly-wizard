@@ -6,6 +6,7 @@ import colors from "colors";
 import { ethers } from "hardhat";
 import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, tx } from "../utils/constants";
 import { ChainConfig } from "../utils/types";
+import { ZeroAddress } from "ethers";
 
 export async function deploySafeV2(
   chainConfig: ChainConfig["v2"],
@@ -20,12 +21,12 @@ export async function deploySafeV2(
   const initializer = await safeMaster.populateTransaction.setup(
     [caller.address],
     1, //threshold
-    ethers.constants.AddressZero,
+    ZeroAddress,
     "0x",
     chainConfig.DEFAULT_FALLBACK_HANDLER_ADDRESS,
-    ethers.constants.AddressZero,
+    ZeroAddress,
     0,
-    ethers.constants.AddressZero
+    ZeroAddress
   );
   const safeProxyFactory = new ethers.Contract(
     chainConfig.SAFE_PROXY_FACTORY_ADDR,

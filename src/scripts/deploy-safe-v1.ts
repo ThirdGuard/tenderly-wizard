@@ -10,6 +10,7 @@ import {
 } from "../utils/util";
 import { ChainConfig } from "../utils/types";
 import { GAS_LIMIT, SAFE_OPERATION_DELEGATECALL, tx } from "../utils/constants";
+import { ZeroAddress } from "ethers";
 
 export async function deploySafeV1(
   chainConfig: ChainConfig["v1"],
@@ -24,12 +25,12 @@ export async function deploySafeV1(
   const initializer = await safeMaster.populateTransaction.setup(
     [caller.address],
     1, //threshold
-    ethers.constants.AddressZero,
+    ZeroAddress,
     "0x",
     chainConfig.DEFAULT_FALLBACK_HANDLER_ADDRESS,
-    ethers.constants.AddressZero,
+    ZeroAddress,
     0,
-    ethers.constants.AddressZero
+    ZeroAddress
   );
   const safeProxyFactory = new ethers.Contract(
     chainConfig.SAFE_PROXY_FACTORY_ADDR,

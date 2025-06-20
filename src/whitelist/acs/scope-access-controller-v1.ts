@@ -1,6 +1,7 @@
 import SAFE_MASTER_COPY_V1_ABI from "../../contracts/safe_master_copy_v1.json";
+import ROLES_V1_ABI from "../../contracts/roles_v1.json";
 import { Whitelist } from "../whitelist-class";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { LedgerSigner } from "@anders-t/ethers-ledger";
 // @ts-ignore
 import { ethers } from "hardhat";
@@ -19,6 +20,8 @@ import { getChainConfig } from "../../utils/roles-chain-config";
 import { ChainConfig } from "../../utils/types";
 import { ChainId } from "zodiac-roles-sdk/.";
 import config from "../../env-config";
+import type { RolesV1Interface } from "@gnosis-guild/zodiac/dist/esm/types/RolesV1";
+import { Interface } from "ethers";
 
 const ROLES_FUNCTIONS_ALLOWED = [
   "revokeTarget",
@@ -31,7 +34,10 @@ const ROLES_FUNCTIONS_ALLOWED = [
   "scopeParameterAsOneOf",
   "unscopeParameter",
   "allowTarget",
-];
+] as const;
+
+// Create an ethers Interface from the ABI to get function signatures
+const rolesInterface = new Interface(ROLES_V1_ABI);
 
 // this whitelisting class is used in the roles deployment so that security has the ability to scope functions
 export class AccessControllerWhitelistV1 extends Whitelist {
@@ -49,12 +55,17 @@ export class AccessControllerWhitelistV1 extends Whitelist {
     const getScopedTargetTxs = await scopeTargetsV1(
       [invRolesAddr],
       SECURITY_ROLE_ID_V1,
-      this.roles
+      this.roles as any
     );
     // Get the sighashs that need to be whitelisted
-    const functionSigs = ROLES_FUNCTIONS_ALLOWED.map(func =>
-      this.roles.interface.getSighash(func)
-    );
+    const functionSigs = ROLES_FUNCTIONS_ALLOWED.map(func => {
+      // Find the function fragment in the ABI
+      const fragment = rolesInterface.getFunction(func);
+      if (!fragment) {
+        throw new Error(`Function ${func} not found in ABI`);
+      }
+      return fragment.selector;
+    });
     const getScopedAllowFunctionTxs = await this.scopeAllowFunctionsV1(
       invRolesAddr,
       functionSigs,

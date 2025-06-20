@@ -1,13 +1,13 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import {
-  BigNumber,
   BigNumberish,
   Contract,
-  PopulatedTransaction,
-  utils,
+  id,
+  zeroPadValue,
+  AbiCoder,
+  PreparedTransactionRequest
 } from "ethers";
 import { MetaTransaction, encodeMulti } from "ethers-multisend";
-import { defaultAbiCoder, formatBytes32String } from "ethers/lib/utils";
 import fs from "fs";
 import path from "path";
 // @ts-ignore
@@ -19,6 +19,8 @@ import {
   ContractAddresses,
   ContractFactories,
   KnownContracts,
+  RolesV1,
+  RolesV2,
 } from "@gnosis-guild/zodiac";
 import { RolesVersion } from "./types";
 
@@ -46,12 +48,12 @@ export interface MetaTransactionData {
 
 /**
  * Encodes multiple transactions so we can then use a Safe with multisend for atomic transacting
- * @param {PopulatedTransaction[]} populatedTxs - Array of populated transactions
+ * @param {PreparedTransactionRequest[]} populatedTxs - Array of populated transactions
  * @param {string} multisendAddr - Address of the multisend contract
  * @returns {MetaTransaction} Encoded multi-transaction
  */
 export function createMultisendTx(
-  populatedTxs: PopulatedTransaction[],
+  populatedTxs: PreparedTransactionRequest[],
   multisendAddr: string
 ): MetaTransaction {
   const safeTransactionData: MetaTransactionData[] = populatedTxs.map(
@@ -86,7 +88,7 @@ export const getPreValidatedSignatures = (
  * @param {string[]} targetAddrs - Array of target addresses
  * @param {number} roleId - Role ID
  * @param {Contract} roles - Roles contract instance
- * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
+ * @returns {Promise<PreparedTransactionRequest[]>} Array of populated transactions
  */
 export async function scopeTargetsV1(
   targetAddrs: string[],
@@ -96,7 +98,7 @@ export async function scopeTargetsV1(
   const scopeTargetTxs = await Promise.all(
     targetAddrs.map(async target => {
       //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
-      const tx = await roles.populateTransaction.scopeTarget(roleId, target);
+      const tx = await (roles as any).scopeTarget.populateTransaction(ethers.toBeHex(roleId, 32), target);
       return tx;
     })
   );
@@ -108,16 +110,16 @@ export async function scopeTargetsV1(
  * @param {string[]} targetAddrs - Array of target addresses
  * @param {`0x${string}`} roleId - Role ID
  * @param {Contract} roles - Roles contract instance
- * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
+ * @returns {Promise<PreparedTransactionRequest[]>} Array of populated transactions
  */
 export async function scopeTargetsV2(
   targetAddrs: string[],
   roleId: `0x${string}`,
-  roles: Contract
+  roles: RolesV2
 ) {
   const scopeTargetTxs = await Promise.all(
     targetAddrs.map(async target => {
-      const tx = await roles.populateTransaction.scopeTarget(roleId, target);
+      const tx = await roles.scopeTarget.populateTransaction(ethers.toBeHex(roleId, 32), target);
       return tx;
     })
   );
@@ -130,18 +132,18 @@ export async function scopeTargetsV2(
  * @param {string[]} sigs - Array of function signatures
  * @param {number} roleId - Role ID
  * @param {Contract} roles - Roles contract instance
- * @returns {Promise<PopulatedTransaction[]>} Array of populated transactions
+ * @returns {Promise<PreparedTransactionRequest[]>} Array of populated transactions
  */
 export async function scopeAllowFunctions(
   target: string,
   sigs: string[],
   roleId: number,
-  roles: Contract
+  roles: RolesV2
 ) {
   const scopeFuncsTxs = await Promise.all(
     sigs.map(async sig => {
-      const tx = await roles.populateTransaction.allowFunction(
-        roleId,
+      const tx = await roles.allowFunction.populateTransaction(
+        ethers.toBeHex(roleId, 32),
         target,
         sig,
         ExecutionOptions.Both
@@ -153,20 +155,12 @@ export async function scopeAllowFunctions(
 }
 
 /**
- * Encodes an address as ABI
- * @param {string} address - Address to encode
- * @returns {string} ABI encoded address
- */
-export const getABICodedAddress = (address: string) =>
-  utils.defaultAbiCoder.encode(["address"], [address]);
-
-/**
  * Converts a number to bytes32 format
  * @param {number} num - Number to convert
  * @returns {`0x${string}`} Bytes32 representation of the number
  */
 export function numberToBytes32(num: number): `0x${string}` {
-  let hexString = utils.hexlify(num);
+  let hexString = ethers.hexlify(num);
   hexString = hexString.slice(2);
   const paddedHexString = hexString.padStart(64, "0");
   return `0x${paddedHexString}`;
@@ -177,9 +171,15 @@ export function numberToBytes32(num: number): `0x${string}` {
  * @param {string} text - String to encode
  * @returns {`0x${string}`} Bytes32 representation of the string
  */
-export const encodeBytes32String = formatBytes32String as (
-  text: string
-) => `0x${string}`;
+export const encodeBytes32String = ethers.encodeBytes32String;
+
+/**
+ * Encodes an address as ABI
+ * @param {string} address - Address to encode
+ * @returns {string} ABI encoded address
+ */
+export const getABICodedAddress = (address: string) =>
+  new AbiCoder().encode(["address"], [address]);
 
 /**
  * Sets ERC20 token balances for multiple tokens and a single recipient
@@ -210,7 +210,7 @@ export const setERC20TokenBalance = async (
   address: string,
   amount: BigNumberish
 ) => {
-  const value = BigNumber.from(amount).toHexString();
+  const value = ethers.hexlify(amount);
   await network.provider.request({
     method: "tenderly_setErc20Balance",
     params: [token, address, value.replace("0x0", "0x")],
@@ -231,7 +231,7 @@ export async function setGas() {
   let security: SignerWithAddress;
   [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] =
     await ethers.getSigners();
-  const provider = new ethers.providers.JsonRpcProvider(VIRTUAL_MAINNET_RPC);
+  const provider = new ethers.JsonRpcProvider(VIRTUAL_MAINNET_RPC);
   await provider.send("tenderly_setBalance", [
     caller.address,
     "0x8AC7230489E80000",
@@ -375,7 +375,7 @@ export async function predictRolesModAddress(
   target: string,
   rolesVersion: RolesVersion
 ) {
-  const encodedInitParams = defaultAbiCoder.encode(
+  const encodedInitParams = AbiCoder.defaultAbiCoder().encode(
     ["address", "address", "address"],
     [owner, avatar, target]
   );
@@ -419,7 +419,7 @@ export async function predictSafeAddress(
     data,
     saltNonce,
     {
-      gasLimit: BigNumber.from("3000000"),
+      gasLimit: ethers.hexlify(3000000),
     }
   );
 }
@@ -442,6 +442,6 @@ export async function setUniformBlockNumber(targetBlock: number) {
 
   await network.provider.request({
     method: "evm_increaseBlocks",
-    params: [ethers.utils.hexValue(blocksToIncrease)],
+    params: [ethers.hexlify(blocksToIncrease)],
   });
 }

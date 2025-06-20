@@ -1,8 +1,9 @@
-import { BigNumber, Contract } from "ethers";
+import { Contract, Provider } from "ethers";
 import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
 import ROLES_V2_MASTER_COPY_ABI from "../contracts/roles_v2.json";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { LedgerSigner } from "@anders-t/ethers-ledger";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+
 // @ts-ignore
 import { ethers } from "hardhat";
 import {
@@ -28,6 +29,7 @@ import {
 import { getChainConfig } from "../utils/roles-chain-config";
 import { RolesVersion } from "../utils/types";
 import config from "../env-config";
+import { RolesV1, RolesV2 } from "@gnosis-guild/zodiac";
 
 export enum ExecutionOptions {
   None,
@@ -36,20 +38,31 @@ export enum ExecutionOptions {
   Both,
 }
 
+// Make LedgerSigner compatible with ContractRunner by ensuring it has a provider
+type CompatibleSigner = SignerWithAddress | (LedgerSigner & { provider: Provider | null });
+
 export class Whitelist {
-  roles: Contract;
-  caller: SignerWithAddress | LedgerSigner;
+  roles: RolesV2 | RolesV1;
+  caller: CompatibleSigner;
   constructor(
     rolesAddr: string,
     rolesVersion: RolesVersion,
-    caller: SignerWithAddress | LedgerSigner
+    caller: CompatibleSigner
   ) {
-    this.roles = new Contract(
-      rolesAddr,
-      rolesVersion === "v1"
-        ? ROLES_V1_MASTER_COPY_ABI
-        : ROLES_V2_MASTER_COPY_ABI
-    );
+    if (rolesVersion === "v1") {
+      this.roles = new Contract(
+        rolesAddr,
+        ROLES_V1_MASTER_COPY_ABI,
+        caller as any
+      ) as unknown as RolesV1;
+    } else {
+      this.roles = new Contract(
+        rolesAddr,
+        ROLES_V2_MASTER_COPY_ABI,
+        caller as any
+      ) as unknown as RolesV2;
+    }
+
     this.caller = caller;
   }
 
@@ -58,7 +71,7 @@ export class Whitelist {
     const scopeTargetTxs = await Promise.all(
       targetAddrs.map(async target => {
         //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
-        const tx = await this.roles.populateTransaction.scopeTarget(
+        const tx = await (this.roles as RolesV1).scopeTarget.populateTransaction(
           roleId,
           target
         );
@@ -73,7 +86,7 @@ export class Whitelist {
     const scopeFuncsTxs = await Promise.all(
       sigs.map(async sig => {
         // scopeAllowFunction on Roles allows a role member to call the function in question with no paramter scoping
-        const tx = await this.roles.populateTransaction.scopeAllowFunction(
+        const tx = await (this.roles as RolesV1).scopeAllowFunction.populateTransaction(
           roleId,
           target,
           sig,
@@ -94,7 +107,7 @@ export class Whitelist {
     const scopeFuncsTxs = await Promise.all(
       sigs.map(async sig => {
         // allowFunction on Roles allows a role member to call the function in question with no paramter scoping
-        const tx = await this.roles.populateTransaction.allowFunction(
+        const tx = await (this.roles as RolesV2).allowFunction.populateTransaction(
           roleId,
           target,
           sig,
@@ -112,7 +125,7 @@ export class Whitelist {
     approvedSpender: string
   ) {
     const scopedApproveFunctionTx =
-      await this.roles.populateTransaction.scopeFunction(
+      await (this.roles as RolesV1).scopeFunction.populateTransaction(
         MANAGER_ROLE_ID_V2,
         contractAddr,
         APPROVAL_SIG,
@@ -124,6 +137,13 @@ export class Whitelist {
       );
     return scopedApproveFunctionTx;
   }
+}
+
+// Helper to assert a string is a hex address
+export function asHexString(address: string): `0x${string}` {
+  if (!address.startsWith("0x")) throw new Error("Address must start with 0x");
+  if (address.length !== 42) throw new Error("Address must be 42 characters");
+  return address as `0x${string}`;
 }
 
 /**
@@ -155,9 +175,10 @@ export async function executeWhitelistV2(
   const { targets } = processPermissions(permissions);
 
   // Apply the targets
-  const calls = await applyTargets(MANAGER_ROLE_ID_V2, targets, {
+  const calls = await applyTargets(
+    asHexString(MANAGER_ROLE_ID_V2), targets, {
     chainId,
-    address: config.ACCESS_CONTROL_ROLES_ADDRESS as `0x${string}`,
+    address: asHexString(config.ACCESS_CONTROL_ROLES_ADDRESS!),
     mode: "replace", // or "extend" or "remove"
     log: console.debug,
     currentTargets: [],
@@ -165,18 +186,19 @@ export async function executeWhitelistV2(
 
   console.log(`${calls.length} permissions to execute`);
   const multiSendTx = encodeMulti(
-    calls.map((data: `0x${string}`) => {
+    calls.map((data) => {
       return {
-        to: config.INVESTMENT_ROLES_ADDRESS as string,
+        to: asHexString(config.INVESTMENT_ROLES_ADDRESS!),
         value: "0",
-        data,
+        data: data as `0x${string}`,
       };
     })
   );
 
   // Security needs to indirectly execute this bundle via acRoles
+  if (!config.ACCESS_CONTROL_ROLES_ADDRESS) throw new Error("ACCESS_CONTROL_ROLES_ADDRESS is undefined");
   const acRoles = new Contract(
-    config.ACCESS_CONTROL_ROLES_ADDRESS!,
+    asHexString(config.ACCESS_CONTROL_ROLES_ADDRESS!),
     ROLES_V2_MASTER_COPY_ABI,
     security
   );

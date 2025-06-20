@@ -146,7 +146,7 @@ export async function deployRolesV2(
   });
 
   const roles = await Roles.deploy(owner, avatar, target);
-  await roles.connect(caller).deployed();
+  await roles.connect(caller).waitForDeployment();
 
   //  const rolesAddress = await deployRolesV2(owner, avatar, target, proxied);
   console.info("Modifier deployed to:", roles.address, "\n");

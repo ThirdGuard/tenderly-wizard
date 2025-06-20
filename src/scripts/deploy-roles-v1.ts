@@ -27,7 +27,7 @@ import {
 import { ChainConfig } from "../utils/types";
 import { getChainConfig } from "../utils/roles-chain-config";
 import { ChainId } from "zodiac-roles-sdk/.";
-import { constants, Contract, utils } from "ethers";
+import { Contract, ZeroAddress } from "ethers";
 import {
   ContractAddresses,
   ContractFactories,
@@ -135,7 +135,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
     `ℹ️  Roles modifier: ${rolesAddr} is enabled on safe: ${safeAddr} ${enabled}`
   );
   if (!enabled) {
-    const enable = await invSafe.populateTransaction.enableModule(rolesAddr);
+    const enable = await invSafe.enableModule.populateTransaction(rolesAddr);
     const enableTx = await invSafe.execTransaction(
       safeAddr,
       tx.zeroValue,
@@ -175,8 +175,8 @@ export async function setRolesMultisend(
   const roles = new Contract(rolesAddr, ROLES_V1_MASTER_COPY_ABI, caller);
   const multisendOnRecord = await roles.multisend();
   //If no MS on record, submit a tx to write one on record
-  if (multisendOnRecord === constants.AddressZero) {
-    const setMsPopTx = await roles.populateTransaction.setMultisend(
+  if (multisendOnRecord === ZeroAddress) {
+    const setMsPopTx = await roles.setMultisend.populateTransaction(
       chainConfig.MULTISEND_ADDR
     );
     const safe = new Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
@@ -221,7 +221,7 @@ export async function assignRoles(
 
   const assignRolesPopTx = await Promise.all(
     memberAddrs.map(async memberAddr => {
-      return await roles.populateTransaction.assignRoles(
+      return await roles.assignRoles.populateTransaction(
         memberAddr,
         [roleId],
         [true]

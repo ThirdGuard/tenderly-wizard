@@ -1,5 +1,5 @@
-import { BigNumber, constants, utils } from "ethers";
-import { encodeBytes32String } from "./util";
+import { ZeroAddress, id, zeroPadValue, encodeBytes32String } from "ethers";
+import { asHexString } from '../whitelist/whitelist-class';
 
 export const SECURITY_ROLE_ID = 1;
 
@@ -18,8 +18,8 @@ export const SALTS = {
 
 export const MANAGER_ROLE_ID_V1 = 1;
 export const SECURITY_ROLE_ID_V1 = 1;
-export const MANAGER_ROLE_ID_V2 = encodeBytes32String("default");
-export const SECURITY_ROLE_ID_V2 = encodeBytes32String("security");
+export const MANAGER_ROLE_ID_V2 = asHexString(encodeBytes32String("default"));
+export const SECURITY_ROLE_ID_V2 = asHexString(encodeBytes32String("security"));
 
 export const SAFE_OPERATION_DELEGATECALL = 1;
 export const SAFE_OPERATION_CALL = 0;
@@ -37,9 +37,9 @@ export const GREATER_THAN = 2;
 export const ANY = 0;
 export const ONE_OF = 3;
 
-export const GAS_LIMIT = BigNumber.from("3000000");
+export const GAS_LIMIT = BigInt("3000000");
 
-export const EMPTY_BYTES = utils.hexZeroPad("0x", 32);
+export const EMPTY_BYTES = zeroPadValue("0x", 32);
 export const EMPTY_LIMIT_DATA = {
   limitRouter: "0x0000000000000000000000000000000000000000",
   epsSkipMarket: "0",
@@ -47,8 +47,7 @@ export const EMPTY_LIMIT_DATA = {
   flashFills: [],
   optData: "0x",
 };
-export const APPROVAL_SIG = utils
-  .id("approve(address,uint256)")
+export const APPROVAL_SIG = id("approve(address,uint256)")
   .substring(0, 10);
 
 export const tx = {
@@ -57,8 +56,8 @@ export const tx = {
   avatarTxGas: 0,
   baseGas: 0,
   gasPrice: 0,
-  gasToken: constants.AddressZero,
-  refundReceiver: constants.AddressZero,
+  gasToken: ZeroAddress,
+  refundReceiver: ZeroAddress,
 };
 
 // Roles V1
