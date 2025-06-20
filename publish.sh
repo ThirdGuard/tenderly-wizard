@@ -117,13 +117,12 @@ echo "Committing package.json changes..."
 git add package.json
 git commit -m "chore: bump version to $NEW_PACKAGE_VERSION"
 
-
 echo "Publishing to npm with tag '$NPM_TAG'..."
-yarn publish --tag "$NPM_TAG"
+npm publish --tag "$NPM_TAG"
 
 if [ "$NPM_TAG" == "latest" ]; then
     echo "Adding 'v5' tag to version $NEW_PACKAGE_VERSION..."
-    yarn tag add "$PACKAGE_NAME@$NEW_PACKAGE_VERSION" v5
+    npm dist-tag add "$PACKAGE_NAME@$NEW_PACKAGE_VERSION" v5
 fi
 
 echo "-------------------------------------"
