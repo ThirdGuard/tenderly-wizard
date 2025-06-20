@@ -27,6 +27,7 @@ import {
 import { getChainConfig } from "../utils/roles-chain-config";
 import { RolesVersion } from "../utils/types";
 import config from "../env-config";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 export enum ExecutionOptions {
   None,
@@ -37,11 +38,11 @@ export enum ExecutionOptions {
 
 export class Whitelist {
   roles: Contract;
-  caller: any;
+  caller: SignerWithAddress | LedgerSigner;
   constructor(
     rolesAddr: string,
     rolesVersion: RolesVersion,
-    caller: any
+    caller: SignerWithAddress | LedgerSigner
   ) {
     this.roles = new Contract(
       rolesAddr,

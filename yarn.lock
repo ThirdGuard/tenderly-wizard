@@ -2191,7 +2191,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomiclabs/hardhat-ethers@npm:^2.1.1":
+"@nomiclabs/hardhat-ethers@npm:^2.1.1, @nomiclabs/hardhat-ethers@npm:^2.2.3":
   version: 2.2.3
   resolution: "@nomiclabs/hardhat-ethers@npm:2.2.3"
   peerDependencies:
@@ -10714,6 +10714,7 @@ __metadata:
     "@nomicfoundation/hardhat-chai-matchers": "npm:^1.0.6"
     "@nomicfoundation/hardhat-network-helpers": "npm:^1.0.9"
     "@nomicfoundation/hardhat-toolbox": "npm:^2.0.2"
+    "@nomiclabs/hardhat-ethers": "npm:^2.2.3"
     "@tenderly/api-client": "npm:^1.0.0"
     "@tenderly/hardhat-tenderly": "npm:^1.8.0"
     "@thirdguard/config": "npm:^1.1.19"
