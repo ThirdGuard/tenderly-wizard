@@ -129,76 +129,11 @@ export async function scopeTargetsV2(
 }
 
 /**
- * Helper to allow function calls without param scoping
- * @param {string} target - Target contract address
- * @param {string[]} sigs - Array of function signatures
- * @param {number} roleId - Role ID
- * @param {Contract} roles - Roles contract instance
- * @returns {Promise<PreparedTransactionRequest[]>} Array of populated transactions
- */
-export async function scopeAllowFunctions(
-  target: string,
-  sigs: string[],
-  roleId: number,
-  roles: RolesV2
-) {
-  const scopeFuncsTxs = await Promise.all(
-    sigs.map(async sig => {
-      const tx = await roles.allowFunction.populateTransaction(
-        ethers.toBeHex(roleId, 32),
-        target,
-        sig,
-        ExecutionOptions.Both
-      );
-      return tx;
-    })
-  );
-  return scopeFuncsTxs;
-}
-
-/**
- * Converts a number to bytes32 format
- * @param {number} num - Number to convert
- * @returns {`0x${string}`} Bytes32 representation of the number
- */
-export function numberToBytes32(num: number): `0x${string}` {
-  let hexString = ethers.hexlify(num);
-  hexString = hexString.slice(2);
-  const paddedHexString = hexString.padStart(64, "0");
-  return `0x${paddedHexString}`;
-}
-
-/**
  * Encodes a string to bytes32 format
  * @param {string} text - String to encode
  * @returns {`0x${string}`} Bytes32 representation of the string
  */
 export const encodeBytes32String = ethers.encodeBytes32String;
-
-/**
- * Encodes an address as ABI
- * @param {string} address - Address to encode
- * @returns {string} ABI encoded address
- */
-export const getABICodedAddress = (address: string) =>
-  new AbiCoder().encode(["address"], [address]);
-
-/**
- * Sets ERC20 token balances for multiple tokens and a single recipient
- * @param {string[]} tokenAddresses - Array of token addresses
- * @param {string} recipient - Address of the recipient
- * @param {BigNumberish} amount - Amount to set for each token
- * @returns {Promise<void>}
- */
-export const setERC20TokenBalances = async (
-  tokenAddresses: string[],
-  recipient: string,
-  amount: BigNumberish
-) =>
-  tokenAddresses.forEach(
-    async tokenAddress =>
-      await setERC20TokenBalance(tokenAddress, recipient, amount)
-  );
 
 /**
  * Sets ERC20 token balance for a single token and recipient
