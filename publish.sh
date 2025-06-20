@@ -108,7 +108,7 @@ yarn build
 
 echo "Updating package version..."
 # yarn version will create a git tag and a commit
-yarn version --"$NEW_VERSION"
+yarn version "$NEW_VERSION"
 
 # Fetch the new version from package.json
 NEW_PACKAGE_VERSION=$(get_package_json_value 'version')
