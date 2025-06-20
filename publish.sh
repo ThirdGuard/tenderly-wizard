@@ -113,6 +113,11 @@ yarn version "$NEW_VERSION"
 # Fetch the new version from package.json
 NEW_PACKAGE_VERSION=$(get_package_json_value 'version')
 
+echo "Committing package.json changes..."
+git add package.json
+git commit -m "chore: bump version to $NEW_PACKAGE_VERSION"
+
+
 echo "Publishing to npm with tag '$NPM_TAG'..."
 yarn publish --tag "$NPM_TAG"
 
