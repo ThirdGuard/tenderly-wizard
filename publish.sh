@@ -30,8 +30,11 @@ echo "-------------------------------------"
 
 # --- Determine NPM Tag and Validate Version ---
 NPM_TAG=""
+ETHERS_TAG=""
+
 if [ "$ETHERS_MAJOR_VERSION" == "6" ]; then
-    NPM_TAG="v6"
+    NPM_TAG="v6-latest"
+    ETHERS_TAG="v6"
     if [[ ! "$PACKAGE_VERSION" =~ ^6\. ]]; then
         echo "Warning: Ethers version is v6, but package version does not start with '6.'."
         echo "It's recommended to align your package version. For example: 6.0.0"
@@ -39,7 +42,8 @@ if [ "$ETHERS_MAJOR_VERSION" == "6" ]; then
         exit 1
     fi
 elif [ "$ETHERS_MAJOR_VERSION" == "5" ]; then
-    NPM_TAG="latest"
+    NPM_TAG="v5-latest"
+    ETHERS_TAG="v5"
     if [[ ! "$PACKAGE_VERSION" =~ ^5\. ]]; then
         echo "Warning: Ethers version is v5, but package version does not start with '5.'."
         echo "It's recommended to align your package version. For example: 5.0.0"
@@ -52,9 +56,8 @@ else
 fi
 
 echo "This version will be published with npm tag: '$NPM_TAG'"
-if [ "$NPM_TAG" == "latest" ]; then
+if [ "$NPM_TAG" == "v5-latest" ]; then
     echo "It will also be installable via 'npm i -g $PACKAGE_NAME'"
-    echo "A 'v5' dist-tag will also be added."
 fi
 
 # --- Get New Version ---
@@ -120,10 +123,9 @@ git commit -m "chore: bump version to $NEW_PACKAGE_VERSION"
 echo "Publishing to npm with tag '$NPM_TAG'..."
 npm publish --tag "$NPM_TAG"
 
-if [ "$NPM_TAG" == "latest" ]; then
-    echo "Adding 'v5' tag to version $NEW_PACKAGE_VERSION..."
-    npm dist-tag add "$PACKAGE_NAME@$NEW_PACKAGE_VERSION" v5
-fi
+# Add version-specific tag (v5 or v6) after successful publish
+echo "Adding version-specific tag '$ETHERS_TAG'..."
+npm dist-tag add "$PACKAGE_NAME@$NEW_PACKAGE_VERSION" "$ETHERS_TAG"
 
 echo "-------------------------------------"
 echo "✅ Successfully published $PACKAGE_NAME@$NEW_PACKAGE_VERSION"
