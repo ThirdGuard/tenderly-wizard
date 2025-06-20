@@ -25,7 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "@anders-t/ethers-ledger": "^1.0.4",
-    "@gnosis-guild/zodiac": "^4.0.3",
+    "@gnosis-guild/zodiac": "4.1.1",
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.6",
     "@nomicfoundation/hardhat-ethers": "^3.0.9",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.9",
@@ -53,6 +53,7 @@
     "zodiac-roles-sdk": "^2.14.3"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.0",
     "@typechain/ethers-v6": "^0.5.1",
     "@types/chai": "4.2.14",
     "@types/fs-extra": "^11.0.4",

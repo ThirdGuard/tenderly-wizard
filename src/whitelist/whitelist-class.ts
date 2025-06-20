@@ -139,12 +139,12 @@ export class Whitelist {
   }
 }
 
-// Helper to assert a string is a hex address
-export function asHexString(address: string): `0x${string}` {
-  if (!address.startsWith("0x")) throw new Error("Address must start with 0x");
-  if (address.length !== 42) throw new Error("Address must be 42 characters");
-  return address as `0x${string}`;
-}
+// // Helper to assert a string is a hex address
+// export function asHexString(address: string): `0x${string}` {
+//   if (!address.startsWith("0x")) throw new Error("Address must start with 0x");
+//   if (address.length !== 42) throw new Error("Address must be 42 characters");
+//   return address as `0x${string}`;
+// }
 
 /**
  * Executes whitelist permissions for a specific chain.
@@ -176,9 +176,9 @@ export async function executeWhitelistV2(
 
   // Apply the targets
   const calls = await applyTargets(
-    asHexString(MANAGER_ROLE_ID_V2), targets, {
+    MANAGER_ROLE_ID_V2 as `0x${string}`, targets, {
     chainId,
-    address: asHexString(config.ACCESS_CONTROL_ROLES_ADDRESS!),
+    address: config.ACCESS_CONTROL_ROLES_ADDRESS! as `0x${string}`,
     mode: "replace", // or "extend" or "remove"
     log: console.debug,
     currentTargets: [],
@@ -188,7 +188,7 @@ export async function executeWhitelistV2(
   const multiSendTx = encodeMulti(
     calls.map((data) => {
       return {
-        to: asHexString(config.INVESTMENT_ROLES_ADDRESS!),
+        to: config.INVESTMENT_ROLES_ADDRESS! as `0x${string}`,
         value: "0",
         data: data as `0x${string}`,
       };
@@ -198,7 +198,7 @@ export async function executeWhitelistV2(
   // Security needs to indirectly execute this bundle via acRoles
   if (!config.ACCESS_CONTROL_ROLES_ADDRESS) throw new Error("ACCESS_CONTROL_ROLES_ADDRESS is undefined");
   const acRoles = new Contract(
-    asHexString(config.ACCESS_CONTROL_ROLES_ADDRESS!),
+    config.ACCESS_CONTROL_ROLES_ADDRESS! as `0x${string}`,
     ROLES_V2_MASTER_COPY_ABI,
     security
   );

@@ -5,7 +5,8 @@ import {
   id,
   zeroPadValue,
   AbiCoder,
-  PreparedTransactionRequest
+  PreparedTransactionRequest,
+  JsonRpcProvider
 } from "ethers";
 import { MetaTransaction, encodeMulti } from "ethers-multisend";
 import fs from "fs";
@@ -21,6 +22,7 @@ import {
   KnownContracts,
   RolesV1,
   RolesV2,
+  SupportedNetworks
 } from "@gnosis-guild/zodiac";
 import { RolesVersion } from "./types";
 
@@ -231,7 +233,7 @@ export async function setGas() {
   let security: SignerWithAddress;
   [caller, manager, dummyOwnerOne, dummyOwnerTwo, dummyOwnerThree, security] =
     await ethers.getSigners();
-  const provider = new ethers.JsonRpcProvider(VIRTUAL_MAINNET_RPC);
+  const provider = new JsonRpcProvider(VIRTUAL_MAINNET_RPC);
   await provider.send("tenderly_setBalance", [
     caller.address,
     "0x8AC7230489E80000",
@@ -375,6 +377,8 @@ export async function predictRolesModAddress(
   target: string,
   rolesVersion: RolesVersion
 ) {
+  const chainId = Number(await signer.provider.getNetwork().then((n: { chainId: number }) => n.chainId)) as SupportedNetworks;
+
   const encodedInitParams = AbiCoder.defaultAbiCoder().encode(
     ["address", "address", "address"],
     [owner, avatar, target]
@@ -389,10 +393,10 @@ export async function predictRolesModAddress(
 
   return calculateProxyAddress(
     ContractFactories[KnownContracts.FACTORY].connect(
-      ContractAddresses[1][KnownContracts.FACTORY],
+      ContractAddresses[chainId][KnownContracts.FACTORY],
       signer
     ) as any,
-    ContractAddresses[1][rolesContract],
+    ContractAddresses[chainId][rolesContract],
     moduleSetupData,
     SALT
   );

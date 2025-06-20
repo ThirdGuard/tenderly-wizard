@@ -18,7 +18,9 @@ export async function deploySafeV2(
     SAFE_MASTER_COPY_ABI,
     caller
   );
-  const initializer = await safeMaster.populateTransaction.setup(
+
+  // In v6, we need to use the function directly for populateTransaction
+  const initializer = await safeMaster.setup.populateTransaction(
     [caller.address],
     1, //threshold
     ZeroAddress,
@@ -28,27 +30,32 @@ export async function deploySafeV2(
     0,
     ZeroAddress
   );
+
   const safeProxyFactory = new ethers.Contract(
     chainConfig.SAFE_PROXY_FACTORY_ADDR,
     SAFE_PROXY_FACTORY_ABI,
     caller
   );
+
   const txResponse = await safeProxyFactory.createProxyWithNonce(
     chainConfig.SAFE_MASTER_COPY_ADDR,
-    initializer.data as string,
+    initializer.data,
     saltNonce,
     {
       gasLimit: GAS_LIMIT,
     }
   );
+
   const txReceipt = await txResponse.wait();
-  const txData = txReceipt.events?.find((x: any) => x.event == "ProxyCreation");
-  const deployedSafeAddress = txData?.args?.proxy; //?? hre.ethers.constants.AddressZero
+  // In v6, we need to use logs and check the fragment name
+  const txData = txReceipt.logs?.find(
+    (x: any) => x.fragment?.name === "ProxyCreation"
+  );
+  const deployedSafeAddress = txData?.args?.proxy;
   console.info(colors.green(`✅ Safe was deployed to ${deployedSafeAddress}`));
   return deployedSafeAddress;
 }
 
-// adds signers to a safe (only if they are uniquely new signers)
 export async function addSafeSigners(
   safeAddr: string,
   newOwners: string[],
@@ -56,40 +63,42 @@ export async function addSafeSigners(
 ) {
   const [caller] = await ethers.getSigners();
   const safe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
-  //check the owners being added are not already owners
   const currentOwners: string[] = await safe.getOwners();
-  // Check if any of the new owners are already in the current owners list
+
   const hasCommonOwner = newOwners.some(newOwner =>
     currentOwners.some(
       currentOwner => currentOwner.toLowerCase() === newOwner.toLowerCase()
     )
   );
+
   if (!hasCommonOwner) {
-    //get txs for adding owners
     const addOwnersTxs = await Promise.all(
       newOwners.map(async owner => {
-        return await safe.populateTransaction.addOwnerWithThreshold(owner, 1);
+        // In v6, we use the function directly for populateTransaction
+        return await safe.addOwnerWithThreshold.populateTransaction(owner, 1);
       })
     );
+
     const metaTxs = createMultisendTx(addOwnersTxs, chainConfig.MULTISEND_ADDR);
     const signature = getPreValidatedSignatures(caller.address);
-    const addSignersTx = await safe
-      .connect(caller)
-      .execTransaction(
-        chainConfig.MULTISEND_ADDR,
-        tx.zeroValue,
-        metaTxs.data,
-        SAFE_OPERATION_DELEGATECALL,
-        tx.avatarTxGas,
-        tx.baseGas,
-        tx.gasPrice,
-        tx.gasToken,
-        tx.refundReceiver,
-        signature
-      );
+
+    const addSignersTx = await safe.execTransaction(
+      chainConfig.MULTISEND_ADDR,
+      tx.zeroValue,
+      metaTxs.data,
+      SAFE_OPERATION_DELEGATECALL,
+      tx.avatarTxGas,
+      tx.baseGas,
+      tx.gasPrice,
+      tx.gasToken,
+      tx.refundReceiver,
+      signature
+    );
+
     const txReceipt = await addSignersTx.wait();
-    const txData = txReceipt.events?.filter(
-      (x: any) => x.event === "AddedOwner"
+    // In v6, we need to use logs and check the fragment name
+    const txData = txReceipt.logs?.filter(
+      (x: any) => x.fragment?.name === "AddedOwner"
     );
     const ownersAddedFromEvent = txData.map((log: any) => log.args);
     console.info(
@@ -109,38 +118,42 @@ export async function removeDeployerAsOwner(
   const [caller] = await ethers.getSigners();
   const safe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_ABI, caller);
   const owners: string[] = await safe.getOwners();
+
   const isDeployerStillOwner = owners.some(
     owner => owner.toLowerCase() === caller.address.toLowerCase()
   );
+
   if (isDeployerStillOwner) {
-    // Find the index of the caller address
     const callerIndex = owners.findIndex(owner => owner === caller.address);
     const prevOwnerIndex = (callerIndex - 1 + owners.length) % owners.length;
     const prevOwner = owners[prevOwnerIndex];
-    //now remove deployer as signer and apply the correct threshold
-    const removeOwnersPopTx = await safe.populateTransaction.removeOwner(
+
+    // In v6, we use the function directly for populateTransaction
+    const removeOwnersPopTx = await safe.removeOwner.populateTransaction(
       prevOwner,
       caller.address,
       threshold
     );
+
     const signature = getPreValidatedSignatures(caller.address);
-    await safe
-      .connect(caller)
-      .execTransaction(
-        safeAddr,
-        tx.zeroValue,
-        removeOwnersPopTx.data,
-        tx.operation,
-        tx.avatarTxGas,
-        tx.baseGas,
-        tx.gasPrice,
-        tx.gasToken,
-        tx.refundReceiver,
-        signature,
-        {
-          gasLimit: GAS_LIMIT,
-        }
-      );
+
+    const removeTx = await safe.execTransaction(
+      safeAddr,
+      tx.zeroValue,
+      removeOwnersPopTx.data,
+      tx.operation,
+      tx.avatarTxGas,
+      tx.baseGas,
+      tx.gasPrice,
+      tx.gasToken,
+      tx.refundReceiver,
+      signature,
+      {
+        gasLimit: GAS_LIMIT,
+      }
+    );
+
+    await removeTx.wait();
     console.info(
       `\n🔒 Deployer: ${caller.address} was removed as an owner on Safe: ${safeAddr}`
     );

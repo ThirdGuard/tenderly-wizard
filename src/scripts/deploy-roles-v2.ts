@@ -23,7 +23,6 @@ import {
 import { ChainConfig, RolesVersion } from "../utils/types";
 import { getChainConfig } from "../utils/roles-chain-config";
 import { AccessControllerWhitelistV2 } from "../whitelist/acs/scope-access-controller-v2";
-import { deployAndSetUpModule, KnownContracts } from "@gnosis-guild/zodiac";
 
 //@dev note that hardhat struggles with nested contracts. When we call a Safe to interact with Roles, only events from the Safe can be detected.
 
@@ -43,21 +42,23 @@ export async function deployRolesV2(
 ) {
   const [caller] = await ethers.getSigners();
   if (proxied) {
-    // const abiCoder = ethers.utils.defaultAbiCoder;
-    // const encoded = abiCoder.encode(
-    //   ["address", "address", "address"],
-    //   [owner, avatar, target],
-    // );
+    const rolesMaster = new ethers.Contract(
+      chainConfig.ROLES_MASTER_COPY_ADDR,
+      ROLES_V2_MASTER_COPY_ABI,
+      caller
+    );
 
-    const { expectedModuleAddress, transaction } = await deployAndSetUpModule(
-      KnownContracts.ROLES_V2,
-      {
-        types: ["address", "address", "address"],
-        values: [owner, avatar, target],
-      },
-      caller.provider,
-      chainId,
-      SALT
+    const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+    const encoded = abiCoder.encode(
+      ["address", "address", "address"],
+      [owner, avatar, target]
+    );
+
+    const initParams = await rolesMaster.setUp.populateTransaction(encoded);
+    const safeModuleProxyFactory = new ethers.Contract(
+      chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR,
+      SAFE_MODULE_PROXY_FACTORY_ABI,
+      caller
     );
 
     const predictedRolesAddress = await predictRolesModAddress(
@@ -67,53 +68,32 @@ export async function deployRolesV2(
       target,
       "v2"
     );
-    console.log(`prediected roles address: ${predictedRolesAddress}`);
-
-    // check if address is matching predicted address before processing transaction
-    if (expectedModuleAddress !== predictedRolesAddress) {
-      throw new Error(
-        `Roles mod address deployment unexpected, expected ${predictRolesModAddress}, actual: ${expectedModuleAddress}`
-      );
-    }
-
-    // const rolesMaster = new ethers.Contract(
-    //   chainConfig.ROLES_MASTER_COPY_ADDR,
-    //   ROLES_V2_MASTER_COPY_ABI,
-    //   caller,
-    // );
-    // const initParams = await rolesMaster.populateTransaction.setUp(encoded);
-    // const tsSalt = new Date().getTime();
-    // const safeModuleProxyFactory = new ethers.Contract(
-    //   chainConfig.SAFE_MODULE_PROXY_FACTORY_ADDR,
-    //   SAFE_MODULE_PROXY_FACTORY_ABI,
-    //   caller,
-    // );
-
-    // const deployModTx = await safeModuleProxyFactory.deployModule(
-    //   chainConfig.ROLES_MASTER_COPY_ADDR,
-    //   initParams.data as string,
-    //   tsSalt,
-    // );
-    // const txReceipt = await deployModTx.wait();
-    // const txData = txReceipt.events?.find(
-    //   (x: any) => x.event == "ModuleProxyCreation",
-    // );
-    // const rolesModAddress = txData?.args?.proxy;
-    // console.info(
-    //   colors.green(
-    //     `✅ Roles was deployed via proxy factory to ${rolesModAddress}`,
-    //   ),
-    // );
-    // return rolesModAddress;
+    console.log(`predicted roles address: ${predictedRolesAddress}`);
 
     try {
-      await caller.sendTransaction(transaction);
+      const deployModTx = await safeModuleProxyFactory.deployModule(
+        chainConfig.ROLES_MASTER_COPY_ADDR,
+        initParams.data,
+        SALT
+      );
+      const txReceipt = await deployModTx.wait();
+      const txData = txReceipt.logs?.find(
+        (x: any) => x.fragment?.name === "ModuleProxyCreation"
+      );
+      const rolesModAddress = txData?.args?.proxy;
+
+      if (rolesModAddress !== predictedRolesAddress) {
+        throw new Error(
+          `Roles mod address deployment unexpected, expected ${predictedRolesAddress}, actual: ${rolesModAddress}`
+        );
+      }
+
       console.info(
         colors.green(
-          `✅ Roles was deployed via proxy factory to ${expectedModuleAddress}`
+          `✅ Roles was deployed via proxy factory to ${rolesModAddress}`
         )
       );
-      return expectedModuleAddress;
+      return rolesModAddress;
     } catch (e: any) {
       console.error(e);
       throw new Error(`Roles mod address deployment failed: ${e}`);
@@ -168,7 +148,7 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
   const enabled = await invSafe.isModuleEnabled(rolesAddr);
 
   if (!enabled) {
-    const enable = await invSafe.populateTransaction.enableModule(rolesAddr);
+    const enable = await invSafe.enableModule.populateTransaction(rolesAddr);
     const enableTx = await invSafe.execTransaction(
       safeAddr,
       tx.zeroValue,
@@ -182,8 +162,8 @@ export async function enableRolesModifier(safeAddr: string, rolesAddr: string) {
       signature
     );
     const txReceipt = await enableTx.wait();
-    const txData = txReceipt.events?.find(
-      (x: any) => x.event == "EnabledModule"
+    const txData = txReceipt.logs?.find(
+      (x: any) => x.fragment?.name === "EnabledModule"
     );
     const moduleEnabledFromEvent = txData?.args?.module;
     console.info(
@@ -213,7 +193,7 @@ export async function setRolesMultisend(
   const multisendOnRecord = await roles.multisend();
   //If no MS on record, submit a tx to write one on record
   if (multisendOnRecord === ethers.constants.AddressZero) {
-    const setMsPopTx = await roles.populateTransaction.setMultisend(
+    const setMsPopTx = await roles.setMultisend.populateTransaction(
       chainConfig.MULTISEND_ADDR
     );
 
@@ -223,7 +203,7 @@ export async function setRolesMultisend(
       caller
     );
     const signature = getPreValidatedSignatures(caller.address);
-    await safe.execTransaction(
+    const setMsTx = await safe.execTransaction(
       rolesAddr,
       tx.zeroValue,
       setMsPopTx.data,
@@ -235,6 +215,7 @@ export async function setRolesMultisend(
       tx.refundReceiver,
       signature
     );
+    await setMsTx.wait();
     console.info(
       colors.blue(
         `ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`
@@ -260,7 +241,7 @@ export async function setRolesUnwrapper(
     caller
   );
 
-  const setMsPopTx = await roles.populateTransaction.setTransactionUnwrapper(
+  const setMsPopTx = await roles.setTransactionUnwrapper.populateTransaction(
     chainConfig.MULTISEND_ADDR,
     chainConfig.MULTISEND_SELECTOR,
     chainConfig.DEFAULT_UNWRAPPER_ADDR
@@ -268,7 +249,7 @@ export async function setRolesUnwrapper(
 
   const safe = new ethers.Contract(safeAddr, SAFE_MASTER_COPY_BASE_ABI, caller);
   const signature = getPreValidatedSignatures(caller.address);
-  await safe.execTransaction(
+  const setMsTx = await safe.execTransaction(
     rolesAddr,
     tx.zeroValue,
     setMsPopTx.data,
@@ -280,12 +261,11 @@ export async function setRolesUnwrapper(
     tx.refundReceiver,
     signature
   );
+  await setMsTx.wait();
 
   console.info(
-    colors.blue(`ℹ️  Multisend has been set to: ${chainConfig.MULTISEND_ADDR}`)
+    colors.blue(`ℹ️  Transaction unwrapper has been set to: ${chainConfig.DEFAULT_UNWRAPPER_ADDR}`)
   );
-
-  // return { adapter };
 }
 
 // assign a role to a array of members addresses attached to a role id policy
@@ -312,7 +292,7 @@ export async function assignRoles(
 
   const assignRolesPopTx = await Promise.all(
     memberAddrs.map(async memberAddr => {
-      return await roles.populateTransaction.assignRoles(
+      return await roles.assignRoles.populateTransaction(
         memberAddr,
         [roleId],
         [true]

@@ -43,7 +43,7 @@ const rolesInterface = new Interface(ROLES_V1_ABI);
 export class AccessControllerWhitelistV1 extends Whitelist {
   chainConfig: ChainConfig["v1"];
   constructor(acRolesAddr: string, caller: SignerWithAddress | LedgerSigner) {
-    super(acRolesAddr, "v1", caller);
+    super(acRolesAddr, "v1", caller as any);
     const chainId = config.TENDERLY_FORK_ID;
     this.chainConfig = getChainConfig(chainId as ChainId, "v1");
   }
@@ -83,7 +83,7 @@ export class AccessControllerWhitelistV1 extends Whitelist {
       this.caller
     );
     const signature = getPreValidatedSignatures(await this.caller.getAddress());
-    return await acSafe.populateTransaction.execTransaction(
+    return await acSafe.execTransaction.populateTransaction(
       this.chainConfig.MULTISEND_ADDR,
       tx.zeroValue,
       metaTx.data,

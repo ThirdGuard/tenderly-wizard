@@ -1,5 +1,4 @@
 import { ZeroAddress, id, zeroPadValue, encodeBytes32String } from "ethers";
-import { asHexString } from '../whitelist/whitelist-class';
 
 export const SECURITY_ROLE_ID = 1;
 
@@ -18,8 +17,8 @@ export const SALTS = {
 
 export const MANAGER_ROLE_ID_V1 = 1;
 export const SECURITY_ROLE_ID_V1 = 1;
-export const MANAGER_ROLE_ID_V2 = asHexString(encodeBytes32String("default"));
-export const SECURITY_ROLE_ID_V2 = asHexString(encodeBytes32String("security"));
+export const MANAGER_ROLE_ID_V2 = encodeBytes32String("default") as `0x${string}`;
+export const SECURITY_ROLE_ID_V2 = encodeBytes32String("security") as `0x${string}`;
 
 export const SAFE_OPERATION_DELEGATECALL = 1;
 export const SAFE_OPERATION_CALL = 0;

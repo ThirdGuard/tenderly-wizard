@@ -91,7 +91,7 @@ export class AccessControllerWhitelistV2 extends Whitelist {
       this.caller as any
     ) as any;
     const signature = getPreValidatedSignatures(await this.caller.getAddress());
-    return await acSafe.populateTransaction.execTransaction(
+    return await acSafe.execTransaction.populateTransaction(
       this.chainConfig.MULTISEND_ADDR,
       tx.zeroValue,
       metaTx.data,
