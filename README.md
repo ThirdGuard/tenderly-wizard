@@ -56,16 +56,15 @@ This guide covers how to develop, pack, and test the tenderly-wizard package loc
 
 - Once The Tenderly Wizard is installed globally, in terminal navigate to directory of the repo you would like to use for testing.
 - ##### NOTE FOR WHITELISTING:
-   - access-control-safes OR access-control-safes-v2 folders needs to be in the same folder structure as the directory you would like to use this in:
-   ```
-   - folder
-   --- access-control-safes
-   --- access-control-safes-v2
-   --- repo-you-want-to-run-this-wizard-in
-   ```
-   - The reason for this is that the tenderly-wizard will use those repo's to access the whitelisting scripts
+  - access-control-safes OR access-control-safes-v2 folders needs to be in the same folder structure as the directory you would like to use this in:
+  ```
+  - folder
+  --- access-control-safes
+  --- access-control-safes-v2
+  --- repo-you-want-to-run-this-wizard-in
+  ```
+  - The reason for this is that the tenderly-wizard will use those repo's to access the whitelisting scripts
 
-   
 1. To start the tenderly wizard run:
 
 ```
@@ -89,6 +88,45 @@ tenderly-wizard
 
 4. Run `yarn start` to start the wizard.
 
+## Publishing to npm
+
+To publish a new version of the package to npm:
+
+1. Ensure your git working directory is clean (no uncommitted changes).
+
+2. Make the publish script executable (first time only):
+
+   ```
+   chmod +x publish.sh
+   ```
+
+3. Run the publish script:
+
+   ```
+   ./publish.sh
+   ```
+
+4. The script will:
+
+   - Verify your working directory is clean
+   - Display current package version and ethers dependency version
+   - Prompt you to select version bump type (patch or minor)
+   - Build the project
+   - Update the version in package.json
+   - Create a git commit and tag
+   - Publish to npm with the appropriate tag (v5-latest or v6-latest)
+
+5. Important notes:
+   - The script enforces version alignment with ethers.js:
+     - For ethers v5.x.x, package version must start with "5."
+     - For ethers v6.x.x, package version must start with "6."
+   - The npm tag is automatically set based on the ethers version:
+     - v5.x.x uses "v5-latest"
+     - v6.x.x uses "v6-latest"
+   - To install globally after publishing:
+     - For Roles V1 (ethers v5): `npm i -g tenderly-wizard@v5-latest` or `npm i -g tenderly-wizard`
+     - For Roles V2 (ethers v6): `npm i -g tenderly-wizard@v6-latest`
+
 ## Troubleshooting
 
 - If you encounter issues, try clearing npm's cache:
@@ -100,13 +138,14 @@ tenderly-wizard
 - For verbose logging, run:
   ```
   NODE_DEBUG=module tenderly-wizard
-
   ```
 
 ## Gotchas
+
 - Creating or Forking a new testnet will activate it by default.
-- The `Apply Whitelist` option will only work if the Safe and Role contracts have been deployed and configured. 
+- The `Apply Whitelist` option will only work if the Safe and Role contracts have been deployed and configured.
 - The `Apply Whitelist` command will only work in the [access-control-safes](https://github.com/ThirdGuard/access-control-safes) or [access-control-safes-v2](https://github.com/ThirdGuard/access-control-safes-v2) repos, depending on the roles version selected.
+- For working with Roles V2, use `npm i -g tenderly-wizard@v6-latest` to install globally. The v6 uses Ethers V6 version includes all the necessary updates and dependencies for Roles V2 functionality.
 
 ## Notes
 
