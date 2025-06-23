@@ -5,19 +5,16 @@ import colors from "colors";
 import { SingleColumnMenuResponse } from "terminal-kit/Terminal";
 import { stripAnsi, updatePackageJson } from "./utils/file-manipulation";
 import {
-  findWhitelistClasses,
   findPermissionsFiles,
-  checkRequiredEnvVariables,
-  setUniformBlockNumber,
 } from "./utils/util";
 import path from "path";
 import fs from "fs";
 
-const rolesVersions = ["V1", "V2"];
 
 async function getTestnetList() {
   terminal.reset("========================\n");
   terminal.black(" 🧙 TENDERLY WIZARD 🧙\n");
+  terminal.yellow("  Roles v2 / Ethers v6\n");
   terminal.black("========================\n");
   const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
   const testnets = vnets.map(vnet => " 🌐 " + vnet.displayName);
@@ -84,13 +81,12 @@ async function getTestnetList() {
 
 export async function start() {
   // update target repo's package.json with scripts
-  let scripts;
   if (!process.env.IS_DEV) {
     updatePackageJson();
   }
 
   terminal.grabInput(true);
-  terminal.on("key", (name: any, matches: any, data: any) => {
+  terminal.on("key", (name: any) => {
     if (name === "ESCAPE") {
       terminal.processExit(0);
     }

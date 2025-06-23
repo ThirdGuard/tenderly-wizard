@@ -1,11 +1,11 @@
-# tenderly-wizard
+# tenderly-wizard (Roles v2 / Ethers v6)
 
 ## Overview
 
 The tenderly-wizard is a CLI tool that streamlines the management of Tenderly virtual testnets. Key features include:
 
 • Deploy Safe addresses that remain consistent across chains
-• Deploy and configure role management contracts (V1 and V2)
+• Deploy and configure role management contracts
 • Execute whitelisting
 • Create, fork, manage and preserve virtual testnet states through snapshots
 
@@ -56,14 +56,13 @@ This guide covers how to develop, pack, and test the tenderly-wizard package loc
 
 - Once The Tenderly Wizard is installed globally, in terminal navigate to directory of the repo you would like to use for testing.
 - ##### NOTE FOR WHITELISTING:
-  - access-control-safes OR access-control-safes-v2 folders needs to be in the same folder structure as the directory you would like to use this in:
+  - The access-control-safes-v2 folder needs to be in the same folder structure as the directory you would like to use this in:
   ```
   - folder
-  --- access-control-safes
   --- access-control-safes-v2
   --- repo-you-want-to-run-this-wizard-in
   ```
-  - The reason for this is that the tenderly-wizard will use those repo's to access the whitelisting scripts
+  - The reason for this is that the tenderly-wizard will use that repo to access the whitelisting scripts
 
 1. To start the tenderly wizard run:
 
@@ -144,8 +143,7 @@ To publish a new version of the package to npm:
 
 - Creating or Forking a new testnet will activate it by default.
 - The `Apply Whitelist` option will only work if the Safe and Role contracts have been deployed and configured.
-- The `Apply Whitelist` command will only work in the [access-control-safes](https://github.com/ThirdGuard/access-control-safes) or [access-control-safes-v2](https://github.com/ThirdGuard/access-control-safes-v2) repos, depending on the roles version selected.
-- For working with Roles V2, use `npm i -g tenderly-wizard@v6-latest` to install globally. The v6 uses Ethers V6 version includes all the necessary updates and dependencies for Roles V2 functionality.
+- The `Deploy Safes` option fails when run in isolation on `Base` testnets with a an unknown call2 error, use the `+CREATE TESTNET & SETUP+` option instead.
 
 ## Notes
 
