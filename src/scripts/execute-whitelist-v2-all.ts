@@ -41,8 +41,8 @@ export async function whitelistSafesV2(
   for (const file of permissionsFiles) {
     const { default: permissions, chainId: permissionsChainId } = require(file);
 
-    console.log("permissions: ", permissions);
-    console.log("permissionsChainId: ", permissionsChainId);
+    // console.log("permissions: ", permissions);
+    // console.log("permissionsChainId: ", permissionsChainId);
 
     try {
       // check if the current permission chainId matches the chainId in .env

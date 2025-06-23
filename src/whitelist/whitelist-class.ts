@@ -1,4 +1,4 @@
-import { Contract, Provider } from "ethers";
+import { Contract, ContractTransactionReceipt, Provider } from "ethers";
 import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
 import ROLES_V2_MASTER_COPY_ABI from "../contracts/roles_v2.json";
 import { LedgerSigner } from "@anders-t/ethers-ledger";
@@ -216,6 +216,6 @@ export async function executeWhitelistV2(
     }
   );
 
-  const receipt = await tx.wait();
-  console.log("Whitelist executed successfully", receipt);
+  const receipt: ContractTransactionReceipt = await tx.wait();
+  console.log("Whitelist executed successfully", receipt.hash);
 }

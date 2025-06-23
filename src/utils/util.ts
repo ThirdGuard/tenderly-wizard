@@ -237,10 +237,23 @@ export function findWhitelistClasses(
 ): { path: string; className: string }[] {
   const project = new Project();
 
-  fs.readdirSync(whitelistDir, { recursive: true }).forEach(file => {
-    if (typeof file === "string" && file.endsWith(".ts")) {
-      project.addSourceFileAtPath(path.join(whitelistDir, file));
-    }
+  const getAllTsFiles = (dir: string): string[] => {
+    let results: string[] = [];
+    const list = fs.readdirSync(dir);
+    list.forEach(file => {
+      const filePath = path.join(dir, file);
+      const stat = fs.statSync(filePath);
+      if (stat && stat.isDirectory()) {
+        results = results.concat(getAllTsFiles(filePath));
+      } else if (file.endsWith(".ts")) {
+        results.push(filePath);
+      }
+    });
+    return results;
+  };
+
+  getAllTsFiles(whitelistDir).forEach(file => {
+    project.addSourceFileAtPath(file);
   });
 
   const whitelistExtensions: { path: string; className: string }[] = [];
