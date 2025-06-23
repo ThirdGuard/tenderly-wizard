@@ -72,8 +72,8 @@ tenderly-wizard
 
 2. The wizard will display a list of options, to get started select any of the 2 options:
 
-   - +CREATE TESTNET & SETUP+ - Creates a new testnet, sets up Safes and Roles contracts and executes whitelisting
-   - +CREATE TESTNET+ - Creates a new testnet
+   - `+CREATE TESTNET & SETUP+` - Creates a new testnet, sets up Safes and Roles contracts and executes whitelisting
+   - `+CREATE TESTNET+` - Creates a new testnet
 
 3. Select an existing testnet to manage or activate it. Activating a testnet will update the .env file with the testnet's RPC URL, chain ID, Testnet UUID and current snapshot ID.
 
