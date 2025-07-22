@@ -171,8 +171,18 @@ export async function executeWhitelistV2(
   // get chain config
   const chainConfig = getChainConfig(chainId, rolesVersion);
 
+  // Process any promises in the permissions array
+  const processedPermissions = (await Promise.all(
+    permissions.map(async (permission) => {
+      if (permission instanceof Promise) {
+        return await permission;
+      }
+      return permission;
+    })
+  )).flat();
+
   // Process the permissions
-  const { targets } = processPermissions(permissions);
+  const { targets } = processPermissions(processedPermissions);
 
   // Apply the targets
   const calls = await applyTargets(

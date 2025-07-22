@@ -9266,9 +9266,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tenderly-wizard@workspace:.":
+"tenderly-wizard-v6@workspace:.":
   version: 0.0.0-use.local
-  resolution: "tenderly-wizard@workspace:."
+  resolution: "tenderly-wizard-v6@workspace:."
   dependencies:
     "@anders-t/ethers-ledger": "npm:1.0.4"
     "@gnosis-guild/zodiac": "npm:4.1.1"
@@ -9311,7 +9311,7 @@ __metadata:
     yargs: "npm:17.7.2"
     zodiac-roles-sdk: "npm:2.14.3"
   bin:
-    tenderly-wizard: ./bin/cli.js
+    tenderly-wizard-v6: ./bin/cli.js
   languageName: unknown
   linkType: soft
 
