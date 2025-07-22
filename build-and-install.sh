@@ -17,7 +17,7 @@ yarn build
 
 # Delete old .tgz files
 echo "Removing old .tgz files..."
-rm -f tenderly-wizard-*.tgz
+rm -f tenderly-wizard-v6-*.tgz
 
 # Create new package
 echo "Creating new package..."
@@ -28,7 +28,7 @@ echo "Configuring npm authentication..."
 echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}"> ~/.npmrc
 
 # Get the name of the newly created .tgz file
-PACKAGE_FILE=$(ls tenderly-wizard-*.tgz | head -n 1)
+PACKAGE_FILE=$(ls tenderly-wizard-v6-*.tgz | head -n 1)
 
 if [ -z "$PACKAGE_FILE" ]; then
     echo "Error: No .tgz file found after npm pack"
@@ -38,8 +38,8 @@ fi
 # Uninstall existing global package
 echo "Uninstalling existing global package..."
 # Try to remove the module directory first if it exists
-rm -rf "$HOME/.nvm/versions/node/$(node -v)/lib/node_modules/tenderly-wizard" 2>/dev/null || true
-npm uninstall -g tenderly-wizard --force
+rm -rf "$HOME/.nvm/versions/node/$(node -v)/lib/node_modules/tenderly-wizard-v6" 2>/dev/null || true
+npm uninstall -g tenderly-wizard-v6 --force
 
 
 # Install globally

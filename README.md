@@ -1,17 +1,17 @@
-# tenderly-wizard (Roles v2 / Ethers v6)
+# tenderly-wizard-v6 (Roles v2 / Ethers v6)
 
 ## Overview
 
-The tenderly-wizard is a CLI tool that streamlines the management of Tenderly virtual testnets. Key features include:
+The tenderly-wizard-v6 is a CLI tool that streamlines the management of Tenderly virtual testnets. Key features include:
 
 • Deploy Safe addresses that remain consistent across chains
 • Deploy and configure role management contracts
 • Execute whitelisting
 • Create, fork, manage and preserve virtual testnet states through snapshots
 
-# tenderly-wizard: Local Development and Testing
+# tenderly-wizard-v6: Local Development and Testing
 
-This guide covers how to develop, pack, and test the tenderly-wizard package locally.
+This guide covers how to develop, pack, and test the tenderly-wizard-v6 package locally.
 
 ## Prerequisites
 
@@ -44,12 +44,12 @@ This guide covers how to develop, pack, and test the tenderly-wizard package loc
 3. Run the CLI:
 
    ```
-   tenderly-wizard
+   tenderly-wizard-v6
    ```
 
 4. To uninstall:
    ```
-   npm uninstall -g tenderly-wizard
+   npm uninstall -g tenderly-wizard-v6
    ```
 
 ## Basic Usage
@@ -62,12 +62,12 @@ This guide covers how to develop, pack, and test the tenderly-wizard package loc
   --- access-control-safes-v2
   --- repo-you-want-to-run-this-wizard-in
   ```
-  - The reason for this is that the tenderly-wizard will use that repo to access the whitelisting scripts
+  - The reason for this is that the tenderly-wizard-v6 will use that repo to access the whitelisting scripts
 
 1. To start the tenderly wizard run:
 
 ```
-tenderly-wizard
+tenderly-wizard-v6
 ```
 
 2. The wizard will display a list of options, to get started select any of the 2 options:
@@ -123,8 +123,8 @@ To publish a new version of the package to npm:
      - v5.x.x uses "v5-latest"
      - v6.x.x uses "v6-latest"
    - To install globally after publishing:
-     - For Roles V1 (ethers v5): `npm i -g tenderly-wizard@v5-latest` or `npm i -g tenderly-wizard`
-     - For Roles V2 (ethers v6): `npm i -g tenderly-wizard@v6-latest`
+     - For Roles V1 (ethers v5): `npm i -g tenderly-wizard`
+     - For Roles V2 (ethers v6): `npm i -g tenderly-wizard-v6`
 
 ## Troubleshooting
 
@@ -136,7 +136,7 @@ To publish a new version of the package to npm:
 
 - For verbose logging, run:
   ```
-  NODE_DEBUG=module tenderly-wizard
+  NODE_DEBUG=module tenderly-wizard-v6
   ```
 
 ## Gotchas

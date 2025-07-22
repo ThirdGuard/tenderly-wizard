@@ -9,7 +9,7 @@ import { execSync } from "child_process";
 
 // "save:vnet-snapshot": "hardhat run /Users/michaellungu/.nvm/versions/node/v20.13.0/bin/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet"
 export function updatePackageJson() {
-  const tenderlyWizardPath = execSync("which tenderly-wizard")
+  const tenderlyWizardPath = execSync("which tenderly-wizard-v6")
     .toString()
     .trim();
   console.log("tenderlyWizardPath: ", tenderlyWizardPath);
@@ -17,14 +17,14 @@ export function updatePackageJson() {
   // Use fs.realpathSync instead of readlink -f for cross-platform compatibility
   const appPath = fs
     .realpathSync(tenderlyWizardPath)
-    .replace(/(.*tenderly-wizard).*/, "$1");
+    .replace(/(.*tenderly-wizard-v6).*/, "$1");
   console.log("appPath: ", appPath);
 
   const scriptsToAdd = {
-    "deploy:safes": `hardhat run $(npm root -g)/tenderly-wizard/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
-    "deploy:whitelist": `BYPASS_APPROVALS=true hardhat run $(npm root -g)/tenderly-wizard/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
-    "execute:whitelist": `BYPASS_APPROVALS=true hardhat run $(npm root -g)/tenderly-wizard/dist/scripts/execute-whitelist-v1-one.js --network virtual_mainnet`,
-    "save:vnet-snapshot": `hardhat run $(npm root -g)/tenderly-wizard/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`,
+    "deploy:safes": `hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
+    "deploy:whitelist": `BYPASS_APPROVALS=true hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
+    "execute:whitelist": `BYPASS_APPROVALS=true hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/execute-whitelist-v1-one.js --network virtual_mainnet`,
+    "save:vnet-snapshot": `hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`,
   };
 
   const packageJsonPath = path.join(process.cwd(), "package.json");

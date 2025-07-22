@@ -1,6 +1,6 @@
-# tenderly-wizard: Publishing and Updating on npm
+# tenderly-wizard-v6: Publishing and Updating on npm
 
-This guide covers how to publish and update the tenderly-wizard package on npm.
+This guide covers how to publish and update the tenderly-wizard-v6 package on npm.
 
 ## Prerequisites
 
@@ -54,16 +54,16 @@ This guide covers how to publish and update the tenderly-wizard package on npm.
 
 - To deprecate a version:
   ```
-  npm deprecate tenderly-wizard@"< 1.0.4" "Critical bug fixed in 1.0.4"
+  npm deprecate tenderly-wizard-v6@"< 1.0.4" "Critical bug fixed in 1.0.4"
   ```
 
 - To unpublish a version (within 72 hours of publishing):
   ```
-  npm unpublish tenderly-wizard@1.0.3
+  npm unpublish tenderly-wizard-v6@1.0.3
   ```
 
 ## Notes
 
-- Once published, the package will be available at `https://www.npmjs.com/package/tenderly-wizard`
-- Users can install it using `npm install -g tenderly-wizard`
+- Once published, the package will be available at `https://www.npmjs.com/package/tenderly-wizard-v6`
+- Users can install it using `npm install -g tenderly-wizard-v6`
 - Remember to update any relevant documentation or README files with each release.
