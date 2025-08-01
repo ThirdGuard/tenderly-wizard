@@ -23,7 +23,7 @@ export function updatePackageJson() {
   const scriptsToAdd = {
     "deploy:safes": `hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/deploy-vnet-safes.js --network virtual_mainnet`,
     "deploy:whitelist": `BYPASS_APPROVALS=true hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/whitelist-vnet-safes.js --network virtual_mainnet`,
-    "execute:whitelist": `BYPASS_APPROVALS=true hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/execute-whitelist-v1-one.js --network virtual_mainnet`,
+    "execute:whitelist": `BYPASS_APPROVALS=true hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/execute-whitelist-v2-one.js --network virtual_mainnet`,
     "save:vnet-snapshot": `hardhat run $(npm root -g)/tenderly-wizard-v6/dist/scripts/save-vnet-snapshot.js --network virtual_mainnet`,
   };
 
