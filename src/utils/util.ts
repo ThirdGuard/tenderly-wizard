@@ -96,7 +96,7 @@ export async function scopeTargetsV1(
   const scopeTargetTxs = await Promise.all(
     targetAddrs.map(async target => {
       //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
-      const tx = await roles.scopeTarget.populateTransaction(roleId, target);
+      const tx = await roles.populateTransaction.scopeTarget(roleId, target);
       return tx;
     })
   );
@@ -117,7 +117,7 @@ export async function scopeTargetsV2(
 ) {
   const scopeTargetTxs = await Promise.all(
     targetAddrs.map(async target => {
-      const tx = await roles.scopeTarget.populateTransaction(roleId, target);
+      const tx = await roles.populateTransaction.scopeTarget(roleId, target);
       return tx;
     })
   );

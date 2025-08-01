@@ -19,7 +19,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anders-t/ethers-ledger@npm:^1.0.4":
+"@anders-t/ethers-ledger@npm:1.0.4":
   version: 1.0.4
   resolution: "@anders-t/ethers-ledger@npm:1.0.4"
   dependencies:
@@ -1538,7 +1538,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gnosis-guild/zodiac@npm:^4.0.3":
+"@gnosis-guild/zodiac@npm:4.1.1":
   version: 4.1.1
   resolution: "@gnosis-guild/zodiac@npm:4.1.1"
   dependencies:
@@ -2047,7 +2047,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomicfoundation/hardhat-chai-matchers@npm:^1.0.6":
+"@nomicfoundation/hardhat-chai-matchers@npm:1.0.6":
   version: 1.0.6
   resolution: "@nomicfoundation/hardhat-chai-matchers@npm:1.0.6"
   dependencies:
@@ -2065,7 +2065,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomicfoundation/hardhat-network-helpers@npm:^1.0.9":
+"@nomicfoundation/hardhat-network-helpers@npm:1.0.12":
   version: 1.0.12
   resolution: "@nomicfoundation/hardhat-network-helpers@npm:1.0.12"
   dependencies:
@@ -2076,7 +2076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomicfoundation/hardhat-toolbox@npm:^2.0.2":
+"@nomicfoundation/hardhat-toolbox@npm:2.0.2":
   version: 2.0.2
   resolution: "@nomicfoundation/hardhat-toolbox@npm:2.0.2"
   peerDependencies:
@@ -2191,7 +2191,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomiclabs/hardhat-ethers@npm:^2.1.1, @nomiclabs/hardhat-ethers@npm:^2.2.3":
+"@nomiclabs/hardhat-ethers@npm:2.2.3, @nomiclabs/hardhat-ethers@npm:^2.1.1":
   version: 2.2.3
   resolution: "@nomiclabs/hardhat-ethers@npm:2.2.3"
   peerDependencies:
@@ -3062,7 +3062,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tenderly/api-client@npm:^1.0.0, @tenderly/api-client@npm:^1.1.0":
+"@tenderly/api-client@npm:1.1.0, @tenderly/api-client@npm:^1.1.0":
   version: 1.1.0
   resolution: "@tenderly/api-client@npm:1.1.0"
   dependencies:
@@ -3106,7 +3106,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tenderly/hardhat-tenderly@npm:^1.8.0":
+"@tenderly/hardhat-tenderly@npm:1.11.0":
   version: 1.11.0
   resolution: "@tenderly/hardhat-tenderly@npm:1.11.0"
   dependencies:
@@ -3122,7 +3122,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thirdguard/config@npm:^1.1.19":
+"@thirdguard/config@npm:1.1.22":
   version: 1.1.22
   resolution: "@thirdguard/config@npm:1.1.22"
   dependencies:
@@ -3220,7 +3220,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typechain/hardhat@npm:^6.1.6":
+"@typechain/hardhat@npm:6.1.6":
   version: 6.1.6
   resolution: "@typechain/hardhat@npm:6.1.6"
   dependencies:
@@ -3298,7 +3298,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/fs-extra@npm:^11.0.4":
+"@types/fs-extra@npm:11.0.4":
   version: 11.0.4
   resolution: "@types/fs-extra@npm:11.0.4"
   dependencies:
@@ -3380,6 +3380,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:22.15.32":
+  version: 22.15.32
+  resolution: "@types/node@npm:22.15.32"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/63a2fa52adf1134d1b3bee8b1862d4b8e4550fffc190551068d3d41a41d9e5c0c8f1cb81faa18767b260637360f662115c26c5e4e7718868ead40c4a57cbc0e3
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:22.7.5":
   version: 22.7.5
   resolution: "@types/node@npm:22.7.5"
@@ -3393,15 +3402,6 @@ __metadata:
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
   checksum: 10c0/3b190bb0410047d489c49bbaab592d2e6630de6a50f00ba3d7d513d59401d279972a8f5a598b5bb8ddc1702f8a2f4ec57a65d93852f9c329639738e7053637d1
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^22.7.5":
-  version: 22.15.32
-  resolution: "@types/node@npm:22.15.32"
-  dependencies:
-    undici-types: "npm:~6.21.0"
-  checksum: 10c0/63a2fa52adf1134d1b3bee8b1862d4b8e4550fffc190551068d3d41a41d9e5c0c8f1cb81faa18767b260637360f662115c26c5e4e7718868ead40c4a57cbc0e3
   languageName: node
   linkType: hard
 
@@ -3456,7 +3456,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/terminal-kit@npm:^2.5.6":
+"@types/terminal-kit@npm:2.5.7":
   version: 2.5.7
   resolution: "@types/terminal-kit@npm:2.5.7"
   dependencies:
@@ -4734,7 +4734,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colors@npm:^1.4.0":
+"colors@npm:1.4.0":
   version: 1.4.0
   resolution: "colors@npm:1.4.0"
   checksum: 10c0/9af357c019da3c5a098a301cf64e3799d27549d8f185d86f79af23069e4f4303110d115da98483519331f6fb71c8568d5688fa1c6523600044fd4a54e97c4efb
@@ -5270,7 +5270,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:^16.4.5":
+"dotenv@npm:16.5.0, dotenv@npm:^16.4.5":
   version: 16.5.0
   resolution: "dotenv@npm:16.5.0"
   checksum: 10c0/5bc94c919fbd955bf0ba44d33922a1e93d1078e64a1db5c30faeded1d996e7a83c55332cb8ea4fae5a9ca4d0be44cbceb95c5811e70f9f095298df09d1997dd9
@@ -5746,7 +5746,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers-multisend@npm:^3.1.0":
+"ethers-multisend@npm:3.1.0":
   version: 3.1.0
   resolution: "ethers-multisend@npm:3.1.0"
   dependencies:
@@ -6298,6 +6298,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fs-extra@npm:10.1.0, fs-extra@npm:^10.0.0, fs-extra@npm:^10.1.0":
+  version: 10.1.0
+  resolution: "fs-extra@npm:10.1.0"
+  dependencies:
+    graceful-fs: "npm:^4.2.0"
+    jsonfile: "npm:^6.0.1"
+    universalify: "npm:^2.0.0"
+  checksum: 10c0/5f579466e7109719d162a9249abbeffe7f426eb133ea486e020b89bc6d67a741134076bf439983f2eb79276ceaf6bd7b7c1e43c3fd67fe889863e69072fb0a5e
+  languageName: node
+  linkType: hard
+
 "fs-extra@npm:^0.30.0":
   version: 0.30.0
   resolution: "fs-extra@npm:0.30.0"
@@ -6308,17 +6319,6 @@ __metadata:
     path-is-absolute: "npm:^1.0.0"
     rimraf: "npm:^2.2.8"
   checksum: 10c0/24f3c966018c7bf436bf38ca3a126f1d95bf0f82598302195c4f0c8887767f045dae308f92c53a39cead74631dabbc30fcf1c71dbe96f1f0148f6de8edd114bc
-  languageName: node
-  linkType: hard
-
-"fs-extra@npm:^10.0.0, fs-extra@npm:^10.1.0":
-  version: 10.1.0
-  resolution: "fs-extra@npm:10.1.0"
-  dependencies:
-    graceful-fs: "npm:^4.2.0"
-    jsonfile: "npm:^6.0.1"
-    universalify: "npm:^2.0.0"
-  checksum: 10c0/5f579466e7109719d162a9249abbeffe7f426eb133ea486e020b89bc6d67a741134076bf439983f2eb79276ceaf6bd7b7c1e43c3fd67fe889863e69072fb0a5e
   languageName: node
   linkType: hard
 
@@ -6821,7 +6821,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hardhat-gas-reporter@npm:^2.2.0":
+"hardhat-gas-reporter@npm:2.3.0":
   version: 2.3.0
   resolution: "hardhat-gas-reporter@npm:2.3.0"
   dependencies:
@@ -8402,7 +8402,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mocha@npm:^10.0.0, mocha@npm:^10.7.3":
+"mocha@npm:10.8.2, mocha@npm:^10.0.0":
   version: 10.8.2
   resolution: "mocha@npm:10.8.2"
   dependencies:
@@ -9295,21 +9295,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier@npm:3.6.0":
+  version: 3.6.0
+  resolution: "prettier@npm:3.6.0"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 10c0/636897c8084b71ef1f740a46199df0d8f6ed896aa497212cc8cc229d3026b9dca82fa92f61e55924c4708cea11e39a88478e2d93c4818741c55b7408a9ac6d91
+  languageName: node
+  linkType: hard
+
 "prettier@npm:^2.3.1":
   version: 2.8.8
   resolution: "prettier@npm:2.8.8"
   bin:
     prettier: bin-prettier.js
   checksum: 10c0/463ea8f9a0946cd5b828d8cf27bd8b567345cf02f56562d5ecde198b91f47a76b7ac9eae0facd247ace70e927143af6135e8cf411986b8cb8478784a4d6d724a
-  languageName: node
-  linkType: hard
-
-"prettier@npm:^3.3.3":
-  version: 3.6.0
-  resolution: "prettier@npm:3.6.0"
-  bin:
-    prettier: bin/prettier.cjs
-  checksum: 10c0/636897c8084b71ef1f740a46199df0d8f6ed896aa497212cc8cc229d3026b9dca82fa92f61e55924c4708cea11e39a88478e2d93c4818741c55b7408a9ac6d91
   languageName: node
   linkType: hard
 
@@ -10745,50 +10745,50 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tenderly-wizard@workspace:."
   dependencies:
-    "@anders-t/ethers-ledger": "npm:^1.0.4"
-    "@ethersproject/abi": "npm:^5.7.0"
-    "@ethersproject/bytes": "npm:^5.7.0"
-    "@ethersproject/providers": "npm:^5.7.2"
-    "@gnosis-guild/zodiac": "npm:^4.0.3"
-    "@nomicfoundation/hardhat-chai-matchers": "npm:^1.0.6"
-    "@nomicfoundation/hardhat-network-helpers": "npm:^1.0.9"
-    "@nomicfoundation/hardhat-toolbox": "npm:^2.0.2"
-    "@nomiclabs/hardhat-ethers": "npm:^2.2.3"
-    "@tenderly/api-client": "npm:^1.0.0"
-    "@tenderly/hardhat-tenderly": "npm:^1.8.0"
-    "@thirdguard/config": "npm:^1.1.19"
+    "@anders-t/ethers-ledger": "npm:1.0.4"
+    "@ethersproject/abi": "npm:5.8.0"
+    "@ethersproject/bytes": "npm:5.8.0"
+    "@ethersproject/providers": "npm:5.8.0"
+    "@gnosis-guild/zodiac": "npm:4.1.1"
+    "@nomicfoundation/hardhat-chai-matchers": "npm:1.0.6"
+    "@nomicfoundation/hardhat-network-helpers": "npm:1.0.12"
+    "@nomicfoundation/hardhat-toolbox": "npm:2.0.2"
+    "@nomiclabs/hardhat-ethers": "npm:2.2.3"
+    "@tenderly/api-client": "npm:1.1.0"
+    "@tenderly/hardhat-tenderly": "npm:1.11.0"
+    "@thirdguard/config": "npm:1.1.22"
     "@typechain/ethers-v5": "npm:10.0.0"
-    "@typechain/hardhat": "npm:^6.1.6"
+    "@typechain/hardhat": "npm:6.1.6"
     "@types/chai": "npm:4.2.14"
-    "@types/fs-extra": "npm:^11.0.4"
+    "@types/fs-extra": "npm:11.0.4"
     "@types/mocha": "npm:10.0.4"
-    "@types/node": "npm:^22.7.5"
-    "@types/terminal-kit": "npm:^2.5.6"
+    "@types/node": "npm:22.15.32"
+    "@types/terminal-kit": "npm:2.5.7"
     "@types/yargs": "npm:16.0.8"
     chai: "npm:4.2.0"
-    colors: "npm:^1.4.0"
-    dotenv: "npm:^16.4.5"
+    colors: "npm:1.4.0"
+    dotenv: "npm:16.5.0"
     ethers: "npm:5.7.2"
-    ethers-multisend: "npm:^3.1.0"
-    fs-extra: "npm:^10.0.0"
+    ethers-multisend: "npm:3.1.0"
+    fs-extra: "npm:10.1.0"
     hardhat: "npm:2.19.1"
-    hardhat-gas-reporter: "npm:^2.2.0"
-    mocha: "npm:^10.7.3"
-    prettier: "npm:^3.3.3"
+    hardhat-gas-reporter: "npm:2.3.0"
+    mocha: "npm:10.8.2"
+    prettier: "npm:3.6.0"
     solidity-coverage: "npm:0.7.17"
-    terminal-kit: "npm:^3.1.1"
-    ts-morph: "npm:^24.0.0"
+    terminal-kit: "npm:3.1.2"
+    ts-morph: "npm:24.0.0"
     ts-node: "npm:10.8.0"
     typechain: "npm:8.0.0"
-    typescript: "npm:^4.5.4"
-    yargs: "npm:^17.7.2"
-    zodiac-roles-sdk: "npm:^2.14.3"
+    typescript: "npm:4.9.5"
+    yargs: "npm:17.7.2"
+    zodiac-roles-sdk: "npm:2.22.2"
   bin:
     tenderly-wizard: ./bin/cli.js
   languageName: unknown
   linkType: soft
 
-"terminal-kit@npm:^3.1.1":
+"terminal-kit@npm:3.1.2, terminal-kit@npm:^3.1.1":
   version: 3.1.2
   resolution: "terminal-kit@npm:3.1.2"
   dependencies:
@@ -10911,7 +10911,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-morph@npm:^24.0.0":
+"ts-morph@npm:24.0.0":
   version: 24.0.0
   resolution: "ts-morph@npm:24.0.0"
   dependencies:
@@ -11151,7 +11151,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.5.4":
+"typescript@npm:4.9.5":
   version: 4.9.5
   resolution: "typescript@npm:4.9.5"
   bin:
@@ -11171,7 +11171,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^4.5.4#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A4.9.5#optional!builtin<compat/typescript>":
   version: 4.9.5
   resolution: "typescript@patch:typescript@npm%3A4.9.5#optional!builtin<compat/typescript>::version=4.9.5&hash=289587"
   bin:
@@ -12469,6 +12469,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"yargs@npm:17.7.2":
+  version: 17.7.2
+  resolution: "yargs@npm:17.7.2"
+  dependencies:
+    cliui: "npm:^8.0.1"
+    escalade: "npm:^3.1.1"
+    get-caller-file: "npm:^2.0.5"
+    require-directory: "npm:^2.1.1"
+    string-width: "npm:^4.2.3"
+    y18n: "npm:^5.0.5"
+    yargs-parser: "npm:^21.1.1"
+  checksum: 10c0/ccd7e723e61ad5965fffbb791366db689572b80cca80e0f96aad968dfff4156cd7cd1ad18607afe1046d8241e6fb2d6c08bf7fa7bfb5eaec818735d8feac8f05
+  languageName: node
+  linkType: hard
+
 "yargs@npm:^16.2.0":
   version: 16.2.0
   resolution: "yargs@npm:16.2.0"
@@ -12481,21 +12496,6 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^20.2.2"
   checksum: 10c0/b1dbfefa679848442454b60053a6c95d62f2d2e21dd28def92b647587f415969173c6e99a0f3bab4f1b67ee8283bf735ebe3544013f09491186ba9e8a9a2b651
-  languageName: node
-  linkType: hard
-
-"yargs@npm:^17.7.2":
-  version: 17.7.2
-  resolution: "yargs@npm:17.7.2"
-  dependencies:
-    cliui: "npm:^8.0.1"
-    escalade: "npm:^3.1.1"
-    get-caller-file: "npm:^2.0.5"
-    require-directory: "npm:^2.1.1"
-    string-width: "npm:^4.2.3"
-    y18n: "npm:^5.0.5"
-    yargs-parser: "npm:^21.1.1"
-  checksum: 10c0/ccd7e723e61ad5965fffbb791366db689572b80cca80e0f96aad968dfff4156cd7cd1ad18607afe1046d8241e6fb2d6c08bf7fa7bfb5eaec818735d8feac8f05
   languageName: node
   linkType: hard
 
@@ -12536,7 +12536,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zodiac-roles-sdk@npm:^2.14.3":
+"zodiac-roles-sdk@npm:2.22.2":
   version: 2.22.2
   resolution: "zodiac-roles-sdk@npm:2.22.2"
   dependencies:
