@@ -3,6 +3,8 @@ import {
   BigNumber,
   BigNumberish,
   Contract,
+  PopulatedTransaction,
+  utils,
 } from "ethers";
 import { MetaTransaction, encodeMulti } from "ethers-multisend";
 import { defaultAbiCoder, formatBytes32String } from "ethers/lib/utils";

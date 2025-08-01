@@ -5,6 +5,8 @@ import yargs from "yargs";
 import "hardhat-deploy";
 import type { HttpNetworkUserConfig } from "hardhat/types";
 import envConfig from "./src/env-config";
+import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-ethers";
 
 // tenderly.setup({ automaticVerifications: true });
 
