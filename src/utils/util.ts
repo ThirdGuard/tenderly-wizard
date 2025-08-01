@@ -3,8 +3,6 @@ import {
   BigNumber,
   BigNumberish,
   Contract,
-  PopulatedTransaction,
-  utils,
 } from "ethers";
 import { MetaTransaction, encodeMulti } from "ethers-multisend";
 import { defaultAbiCoder, formatBytes32String } from "ethers/lib/utils";
@@ -96,7 +94,7 @@ export async function scopeTargetsV1(
   const scopeTargetTxs = await Promise.all(
     targetAddrs.map(async target => {
       //Before granular function/parameter whitelisting can occur, you need to bring a target contract into 'scope' via scopeTarget
-      const tx = await roles.populateTransaction.scopeTarget(roleId, target);
+      const tx = await roles.scopeTarget.populateTransaction(roleId, target);
       return tx;
     })
   );
@@ -117,7 +115,7 @@ export async function scopeTargetsV2(
 ) {
   const scopeTargetTxs = await Promise.all(
     targetAddrs.map(async target => {
-      const tx = await roles.populateTransaction.scopeTarget(roleId, target);
+      const tx = await roles.scopeTarget.populateTransaction(roleId, target);
       return tx;
     })
   );
@@ -140,7 +138,7 @@ export async function scopeAllowFunctions(
 ) {
   const scopeFuncsTxs = await Promise.all(
     sigs.map(async sig => {
-      const tx = await roles.populateTransaction.allowFunction(
+      const tx = await roles.allowFunction.populateTransaction(
         roleId,
         target,
         sig,
