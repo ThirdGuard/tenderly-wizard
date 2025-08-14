@@ -1,7 +1,6 @@
 import { BigNumber, Contract } from "ethers";
 import ROLES_V1_MASTER_COPY_ABI from "../contracts/roles_v1.json";
 import ROLES_V2_MASTER_COPY_ABI from "../contracts/roles_v2.json";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { LedgerSigner } from "@anders-t/ethers-ledger";
 // @ts-ignore
 import { ethers } from "hardhat";
@@ -28,6 +27,7 @@ import {
 import { getChainConfig } from "../utils/roles-chain-config";
 import { RolesVersion } from "../utils/types";
 import config from "../env-config";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 export enum ExecutionOptions {
   None,

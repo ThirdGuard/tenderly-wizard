@@ -7,11 +7,10 @@ import { stripAnsi, updatePackageJson } from "./utils/file-manipulation";
 import { findWhitelistClasses } from "./utils/util";
 import path from "path";
 
-const rolesVersions = ["V1", "V2"];
-
 async function getTestnetList() {
   terminal.reset("========================\n");
   terminal.black(" 🧙 TENDERLY WIZARD 🧙\n");
+  terminal.yellow("  Roles v1 / Ethers v5\n");
   terminal.black("========================\n");
   const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
   const testnets = vnets.map(vnet => " 🌐 " + vnet.displayName);
@@ -202,64 +201,56 @@ export async function start() {
 
     let output: any;
 
-    // if roles version is v2, skip menu for selecting whitelisting options
-    if (process.env.ROLES_VERSION === "v2") {
+    // show menu to select whitelisting options
+    const whitelistOptions = ["Whitelist all", "Whitelist one"];
+    const whitelistSelection =
+      await terminal.singleColumnMenu(whitelistOptions).promise;
+
+    // whitelist all
+    if (whitelistSelection.selectedIndex == 0) {
       console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}...`);
       output = executeWithLogs(
-        `npm run deploy:whitelist && npm run save:vnet-snapshot`
+        `BYPASS_APPROVALS=true npm run deploy:whitelist && npm run save:vnet-snapshot`
       );
-    } else {
-      // show menu to select whitelisting options
-      const whitelistOptions = ["Whitelist all", "Whitelist one"];
-      const whitelistSelection =
-        await terminal.singleColumnMenu(whitelistOptions).promise;
-
-      // whitelist all
-      if (whitelistSelection.selectedIndex == 0) {
-        console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}...`);
-        output = executeWithLogs(
-          `BYPASS_APPROVALS=true npm run deploy:whitelist && npm run save:vnet-snapshot`
-        );
-      } else if (whitelistSelection.selectedIndex == 1) {
-        // whitelist one
-        console.log(`\nWhitelisting one ${process.env.ROLES_VERSION}...`);
-        // @todo get a list of all whitelists
-        const whiteLists = await getWhitelistsV1();
-        // Extract class names and format them into readable sentences
-        const whitelistNames = whiteLists.map(wl => {
-          // Split by capital letters and join with spaces
-          const formatted = wl.className.replace(/([A-Z])/g, " $1").trim();
-          // Capitalize first letter of each word
-          return formatted
-            .split(" ")
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
-        });
-
-        // Create menu from formatted names
-        const whitelistSelection =
-          await terminal.singleColumnMenu(whitelistNames).promise;
-
-        // Join the selected text back into a single word (removing spaces)
-        const selectedClassName = whitelistSelection.selectedText
+    } else if (whitelistSelection.selectedIndex == 1) {
+      // whitelist one
+      console.log(`\nWhitelisting one ${process.env.ROLES_VERSION}...`);
+      // @todo get a list of all whitelists
+      const whiteLists = await getWhitelistsV1();
+      // Extract class names and format them into readable sentences
+      const whitelistNames = whiteLists.map(wl => {
+        // Split by capital letters and join with spaces
+        const formatted = wl.className.replace(/([A-Z])/g, " $1").trim();
+        // Capitalize first letter of each word
+        return formatted
           .split(" ")
-          .join("");
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+      });
 
-        // Find the corresponding whitelist entry
-        const selectedWhitelist = whiteLists.find(
-          wl => wl.className === selectedClassName
+      // Create menu from formatted names
+      const whitelistSelection =
+        await terminal.singleColumnMenu(whitelistNames).promise;
+
+      // Join the selected text back into a single word (removing spaces)
+      const selectedClassName = whitelistSelection.selectedText
+        .split(" ")
+        .join("");
+
+      // Find the corresponding whitelist entry
+      const selectedWhitelist = whiteLists.find(
+        wl => wl.className === selectedClassName
+      );
+
+      if (!selectedWhitelist) {
+        console.error("Could not find matching whitelist for selection");
+        return;
+      } else {
+        // feed the selected whitelist to the execute whitelist v1 function
+        process.env.SELECTED_WHITELIST = JSON.stringify(selectedWhitelist);
+        output = executeWithLogs(
+          `BYPASS_APPROVALS=true npm run execute:whitelist && npm run save:vnet-snapshot`
         );
-
-        if (!selectedWhitelist) {
-          console.error("Could not find matching whitelist for selection");
-          return;
-        } else {
-          // feed the selected whitelist to the execute whitelist v1 function
-          process.env.SELECTED_WHITELIST = JSON.stringify(selectedWhitelist);
-          output = executeWithLogs(
-            `BYPASS_APPROVALS=true npm run execute:whitelist && npm run save:vnet-snapshot`
-          );
-        }
       }
     }
 
@@ -272,27 +263,6 @@ export async function start() {
         console.log("\nApplied whitelist successfully");
       }
     }
-
-    // // confirmation
-    // console.log(
-    //   "Are you sure you want to apply whitelist to the default safes on this testnet (Y/N):",
-    //   testnet.selectedText
-    // );
-    // const confirmDeploy = await terminal.yesOrNo().promise;
-    // if (confirmDeploy?.valueOf()) {
-    //   console.log("\nApplying whitelist...");
-
-    //   const output = executeWithLogs(
-    //     `npm run deploy:whitelist && npm run save:vnet-snapshot`
-    //   );
-    //   console.log(output);
-    //   if (!output.success) {
-    //     console.error("Error details:", output.error);
-    //     console.error("Error output:", output.output);
-    //   } else {
-    //     console.log("\nApplied whitelist successfully");
-    //   }
-    // }
   }
 
   if (action.selectedIndex == 6) {
@@ -378,15 +348,7 @@ async function createNewTestnet(terminal: Terminal) {
 }
 
 async function selectRolesVersion(terminal: Terminal): Promise<string> {
-  terminal.red("Select roles version: ");
-  const roleVersionSelection =
-    await terminal.singleColumnMenu(rolesVersions).promise;
-
-  // Default to v1
-  let rolesVersion = "v1";
-  if (roleVersionSelection.selectedIndex == 1) {
-    rolesVersion = "v2";
-  }
+  const rolesVersion = "v1";
 
   // Update .env file
   await VirtualTestNet.addToEnvFile("ROLES_VERSION", rolesVersion);

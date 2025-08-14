@@ -1,6 +1,6 @@
 import SAFE_MASTER_COPY_V2_ABI from "../../contracts/safe_master_copy_v2.json";
 import { Whitelist } from "../whitelist-class";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { LedgerSigner } from "@anders-t/ethers-ledger";
 // @ts-ignore
 import { ethers } from "hardhat";

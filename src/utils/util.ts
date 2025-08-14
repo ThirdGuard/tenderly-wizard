@@ -1,4 +1,4 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   BigNumber,
   BigNumberish,
@@ -140,7 +140,7 @@ export async function scopeAllowFunctions(
 ) {
   const scopeFuncsTxs = await Promise.all(
     sigs.map(async sig => {
-      const tx = await roles.populateTransaction.allowFunction(
+      const tx = await roles.allowFunction.populateTransaction(
         roleId,
         target,
         sig,
