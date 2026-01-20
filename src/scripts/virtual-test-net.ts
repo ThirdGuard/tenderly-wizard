@@ -27,14 +27,14 @@ export class VirtualTestNet {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error response:", errorData);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorMsg = errorData.error?.message || errorData.message || "Unknown error";
+        throw new Error(`Failed to delete testnet (${response.status}): ${errorMsg}`);
       }
-
-      console.log(`Virtual TestNet ${testnetId} deleted successfully.`);
-    } catch (error) {
-      console.error("Error deleting Virtual TestNet:", error);
-      throw error;
+    } catch (error: any) {
+      if (error.message.includes("Failed to delete")) {
+        throw error; // Re-throw our formatted error
+      }
+      throw new Error(`Network error while deleting testnet: ${error.message}`);
     }
   }
 
@@ -79,20 +79,24 @@ export class VirtualTestNet {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        const errorMsg = errorData.error?.message || errorData.message || "Unknown error";
+        throw new Error(`Failed to create testnet (${response.status}): ${errorMsg}`);
       }
 
       // this.removeEnvKeys();
       const result: any = await response.json();
-      console.log("virtual testnet created");
       const adminRpc: { name: string; url: string } = result.rpcs.find(
         (rpc: { name: string; url: string }) => rpc.name === "Admin RPC"
       );
       this.addToEnvFile("VIRTUAL_MAINNET_RPC", adminRpc.url);
       this.addToEnvFile("TENDERLY_TESTNET_UUID", result.id);
       return { admin_rpc: adminRpc.url, vnet_id: result.id };
-    } catch (error) {
-      console.error("Error creating Virtual TestNet:", error);
+    } catch (error: any) {
+      if (error.message.includes("Failed to create")) {
+        throw error; // Re-throw our formatted error
+      }
+      throw new Error(`Network error while creating testnet: ${error.message}`);
     }
   }
 
@@ -129,14 +133,11 @@ export class VirtualTestNet {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error response:", errorData);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorMsg = errorData.error?.message || errorData.message || "Unknown error";
+        throw new Error(`Failed to fork testnet (${response.status}): ${errorMsg}`);
       }
 
       const result: any = await response.json();
-      console.log(
-        `Virtual TestNet forked successfully. New TestNet ID: ${result.id}`
-      );
       // Update .env file with new testnet information
       const admin_rpc = result.connectivityConfig.endpoints.find(
         (e: any) => e.transportProtocol == "HTTP"
@@ -148,9 +149,11 @@ export class VirtualTestNet {
         admin_rpc,
         vnet_id: result.id,
       };
-    } catch (error) {
-      console.error("Error forking Virtual TestNet:", error);
-      throw error;
+    } catch (error: any) {
+      if (error.message.includes("Failed to fork")) {
+        throw error; // Re-throw our formatted error
+      }
+      throw new Error(`Network error while forking testnet: ${error.message}`);
     }
   }
 
@@ -185,8 +188,8 @@ export class VirtualTestNet {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error response:", errorData);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorMsg = errorData.error?.message || errorData.message || "Unknown error";
+        throw new Error(`Failed to list testnets (${response.status}): ${errorMsg}`);
       }
 
       const result: ContainersResponse = await response.json();
@@ -206,9 +209,11 @@ export class VirtualTestNet {
           };
         }) || []
       );
-    } catch (error) {
-      console.error("Error Getting Virtual TestNets:", error);
-      throw error;
+    } catch (error: any) {
+      if (error.message.includes("Failed to list")) {
+        throw error; // Re-throw our formatted error
+      }
+      throw new Error(`Network error while listing testnets: ${error.message}`);
     }
   }
 
@@ -217,7 +222,7 @@ export class VirtualTestNet {
     return vnets.find(vnet => vnet?.displayName == name);
   }
 
-  async addToEnvFile(key: string, value: string): Promise<void> {
+  async addToEnvFile(key: string, value: string, silent: boolean = false): Promise<void> {
     // write to .env file
     const envPath = path.resolve(process.cwd(), ".env");
 
@@ -238,9 +243,11 @@ export class VirtualTestNet {
     // change .env in current session
     process.env[key] = value;
 
-    console.log(
-      `Environment variable ${key} has been added/updated in .env file.`
-    );
+    if (!silent) {
+      console.log(
+        `Environment variable ${key} has been added/updated in .env file.`
+      );
+    }
   }
 
   // removeEnvKeys() {

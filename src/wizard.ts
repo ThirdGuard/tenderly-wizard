@@ -12,7 +12,18 @@ async function getTestnetList() {
   terminal.black(" 🧙 TENDERLY WIZARD 🧙\n");
   terminal.yellow("  Roles v1 / Ethers v5\n");
   terminal.black("========================\n");
-  const vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
+
+  let vnets;
+  try {
+    vnets = await VirtualTestNet.listVirtualTestnets(); // Get the list of virtual testnets
+  } catch (error: any) {
+    terminal.red(`\n✗ Error fetching testnets: ${error.message}\n`);
+    terminal("Press any key to exit...\n");
+    await terminal.inputField().promise;
+    terminal.processExit(1);
+    return { selectedText: "" } as SingleColumnMenuResponse;
+  }
+
   const testnets = vnets.map(vnet => " 🌐 " + vnet.displayName);
   testnets.unshift("\n");
   testnets.unshift(colors.blue("Select an existing Testnet:"));
@@ -28,9 +39,8 @@ async function getTestnetList() {
 
   let testnet: SingleColumnMenuResponse =
     await terminal.singleColumnMenu(testnets).promise;
-  console.log(
-    (testnet.selectedText = testnet.selectedText.replace(" 🌐 ", ""))
-  );
+  // Clean up the selected text (remove emoji prefix)
+  testnet.selectedText = testnet.selectedText.replace(" 🌐 ", "");
 
   if (
     testnet.selectedText == colors.red("🛑 EXIT") ||
@@ -56,19 +66,19 @@ async function getTestnetList() {
     const outputSafes = execSync(`npm run deploy:safes`, {
       stdio: "pipe",
     }).toString();
-    console.log(outputSafes);
+    terminal(outputSafes + "\n");
 
     // apply whitelist
     const outputWhitelist = execSync(`npm run deploy:whitelist`, {
       stdio: "pipe",
     }).toString();
-    console.log(outputWhitelist);
+    terminal(outputWhitelist + "\n");
 
     // save snapshot
     const outputSnapshot = execSync(`npm run save:vnet-snapshot`, {
       stdio: "pipe",
     }).toString();
-    console.log(outputSnapshot);
+    terminal(outputSnapshot + "\n");
 
     terminal.processExit(0);
   }
@@ -95,9 +105,9 @@ export async function start() {
   const vnet = vnets.find(vnet => vnet.displayName == testnet.selectedText);
 
   terminal.reset();
-  console.log(`VIRTUAL_MAINNET_RPC=${vnet?.admin_rpc}`);
-  console.log(`TENDERLY_TESTNET_UUID=${vnet?.vnet_id}`);
-  console.log(`Select Action for ${testnet.selectedText}:`);
+  terminal(`VIRTUAL_MAINNET_RPC=${vnet?.admin_rpc}\n`);
+  terminal(`TENDERLY_TESTNET_UUID=${vnet?.vnet_id}\n`);
+  terminal.green(`\nSelect Action for ${testnet.selectedText}:\n`);
 
   const action = await terminal.singleColumnMenu([
     "Fork",
@@ -113,24 +123,31 @@ export async function start() {
   if (action.selectedIndex == 0) {
     terminal.reset("Enter the name of the fork name: ");
     const newTestnet = await terminal.inputField().promise;
-    console.log(`fork testnet: ${newTestnet}`);
-    const result = await VirtualTestNet.forkVirtualTestNet(
-      vnet?.vnet_id as string,
-      newTestnet as string
-    );
-    console.log(`Forked testnet: ${result.vnet_id}`);
+    terminal(`\nForking testnet: ${newTestnet}\n`);
+    try {
+      const result = await VirtualTestNet.forkVirtualTestNet(
+        vnet?.vnet_id as string,
+        newTestnet as string
+      );
+      terminal.green(`✓ Forked testnet successfully: ${result.vnet_id}\n`);
+    } catch (error: any) {
+      terminal.red(`✗ Error forking testnet: ${error.message}\n`);
+    }
   }
 
   // delete testnet
   if (action.selectedIndex == 1) {
-    console.log(
-      "Are you sure you want to delete this testnet (Y/N):",
-      testnet.selectedText
+    terminal(
+      "\nAre you sure you want to delete this testnet (Y/N): " + testnet.selectedText + "\n"
     );
     const confirmDelete = await terminal.yesOrNo().promise;
     if (confirmDelete?.valueOf()) {
-      await VirtualTestNet.deleteVirtualTestNet(vnet?.vnet_id as string);
-      console.log("Deleted testnet");
+      try {
+        await VirtualTestNet.deleteVirtualTestNet(vnet?.vnet_id as string);
+        terminal.green("✓ Deleted testnet successfully\n");
+      } catch (error: any) {
+        terminal.red(`✗ Error deleting testnet: ${error.message}\n`);
+      }
     }
     //go back to start,
     goto: await start();
@@ -142,35 +159,44 @@ export async function start() {
     const output = execSync(`npm run save:vnet-snapshot`, {
       stdio: "pipe",
     }).toString();
-    console.log(output);
+    terminal(output + "\n");
   }
 
   // activate testnet
   if (action.selectedIndex == 3) {
-    // get vnet details
-    const testNet = await VirtualTestNet.getTestnet(testnet.selectedText);
+    try {
+      // get vnet details
+      const testNet = await VirtualTestNet.getTestnet(testnet.selectedText);
 
-    // // overwrite RPC, Testnet UUID and Fork ID in .env
-    VirtualTestNet.addToEnvFile(
-      "VIRTUAL_MAINNET_RPC",
-      testNet?.admin_rpc ?? ""
-    );
-    VirtualTestNet.addToEnvFile(
-      "TENDERLY_TESTNET_UUID",
-      testNet?.vnet_id ?? ""
-    );
-    VirtualTestNet.addToEnvFile(
-      "TENDERLY_FORK_ID",
-      testNet?.network_id?.toString() ?? "1"
-    );
+      if (!testNet) {
+        terminal.red(`✗ Could not find testnet: ${testnet.selectedText}\n`);
+        return;
+      }
 
-    // overwrite Snapshot in .env
-    const output = execSync(`npm run save:vnet-snapshot`, {
-      stdio: "pipe",
-    }).toString();
-    console.log(output);
+      // overwrite RPC, Testnet UUID and Fork ID in .env
+      await VirtualTestNet.addToEnvFile(
+        "VIRTUAL_MAINNET_RPC",
+        testNet.admin_rpc ?? ""
+      );
+      await VirtualTestNet.addToEnvFile(
+        "TENDERLY_TESTNET_UUID",
+        testNet.vnet_id ?? ""
+      );
+      await VirtualTestNet.addToEnvFile(
+        "TENDERLY_FORK_ID",
+        testNet.network_id?.toString() ?? "1"
+      );
 
-    console.log(`Testnet ${testnet.selectedText} activated successfully`);
+      // overwrite Snapshot in .env
+      const output = execSync(`npm run save:vnet-snapshot`, {
+        stdio: "pipe",
+      }).toString();
+      terminal(output + "\n");
+
+      terminal.green(`✓ Testnet ${testnet.selectedText} activated successfully\n`);
+    } catch (error: any) {
+      terminal.red(`✗ Error activating testnet: ${error.message}\n`);
+    }
   }
 
   // deploy safes
@@ -179,18 +205,17 @@ export async function start() {
     await selectRolesVersion(terminal);
 
     // confirmation
-    console.log(
-      "Are you sure you want to deploy default safes to this testnet (Y/N):",
-      testnet.selectedText
+    terminal(
+      "\nAre you sure you want to deploy default safes to this testnet (Y/N): " + testnet.selectedText + "\n"
     );
     const confirmDeploy = await terminal.yesOrNo().promise;
     if (confirmDeploy?.valueOf()) {
-      console.log("\nDeploying default safes...");
+      terminal("\nDeploying default safes...\n");
       const output = execSync(`npm run deploy:safes`, {
         stdio: "pipe",
       }).toString();
-      console.log(output);
-      console.log("\nDeployed default safes successfully");
+      terminal(output + "\n");
+      terminal.green("\nDeployed default safes successfully\n");
     }
   }
 
@@ -202,19 +227,21 @@ export async function start() {
     let output: any;
 
     // show menu to select whitelisting options
+    terminal("\n");  // Add space after env file update message
+    terminal.cyan("Select whitelisting option:\n");
     const whitelistOptions = ["Whitelist all", "Whitelist one"];
     const whitelistSelection =
       await terminal.singleColumnMenu(whitelistOptions).promise;
 
     // whitelist all
     if (whitelistSelection.selectedIndex == 0) {
-      console.log(`\nWhitelisting all ${process.env.ROLES_VERSION}...`);
+      terminal(`\nWhitelisting all ${process.env.ROLES_VERSION}...\n`);
       output = executeWithLogs(
         `BYPASS_APPROVALS=true npm run deploy:whitelist && npm run save:vnet-snapshot`
       );
     } else if (whitelistSelection.selectedIndex == 1) {
       // whitelist one
-      console.log(`\nWhitelisting one ${process.env.ROLES_VERSION}...`);
+      terminal(`\nWhitelisting one ${process.env.ROLES_VERSION}...\n`);
       // @todo get a list of all whitelists
       const whiteLists = await getWhitelistsV1();
       // Extract class names and format them into readable sentences
@@ -243,7 +270,7 @@ export async function start() {
       );
 
       if (!selectedWhitelist) {
-        console.error("Could not find matching whitelist for selection");
+        terminal.red("Could not find matching whitelist for selection\n");
         return;
       } else {
         // feed the selected whitelist to the execute whitelist v1 function
@@ -256,11 +283,11 @@ export async function start() {
 
     if (output) {
       if (!output?.success) {
-        console.error("Error details:", output?.error);
-        console.error("Error output:", output?.output);
+        terminal.red("Error details: " + JSON.stringify(output?.error) + "\n");
+        terminal.red("Error output: " + output?.output + "\n");
       } else {
-        console.log(output);
-        console.log("\nApplied whitelist successfully");
+        terminal(output + "\n");
+        terminal.green("\nApplied whitelist successfully\n");
       }
     }
   }
@@ -326,32 +353,42 @@ async function createNewTestnet(terminal: Terminal) {
   // select roles version
   await selectRolesVersion(terminal);
 
-  console.log(`create testnet: ${newTestnet}`);
-  const result = await VirtualTestNet.createVirtualTestNet(
-    newTestnet as string,
-    chain
-  );
+  terminal(`\nCreating testnet: ${newTestnet}\n`);
 
-  // set env variables
-  await VirtualTestNet.addToEnvFile("TENDERLY_FORK_ID", chain.toString());
+  try {
+    const result = await VirtualTestNet.createVirtualTestNet(
+      newTestnet as string,
+      chain
+    );
 
-  // get snapshot
-  const outputSnapshot = execSync(`npm run save:vnet-snapshot`, {
-    stdio: "pipe",
-  }).toString();
-  console.log(outputSnapshot);
+    terminal.green(`✓ Testnet created successfully\n`);
 
-  return {
-    testnetName: newTestnet as string,
-    result,
-  };
+    // set env variables
+    await VirtualTestNet.addToEnvFile("TENDERLY_FORK_ID", chain.toString(), true);
+
+    // get snapshot
+    const outputSnapshot = execSync(`npm run save:vnet-snapshot`, {
+      stdio: "pipe",
+    }).toString();
+    terminal(outputSnapshot + "\n");
+
+    return {
+      testnetName: newTestnet as string,
+      result,
+    };
+  } catch (error: any) {
+    terminal.red(`✗ Error creating testnet: ${error.message}\n`);
+    terminal("Press any key to continue...\n");
+    await terminal.inputField().promise;
+    throw error;
+  }
 }
 
 async function selectRolesVersion(terminal: Terminal): Promise<string> {
   const rolesVersion = "v1";
 
-  // Update .env file
-  await VirtualTestNet.addToEnvFile("ROLES_VERSION", rolesVersion);
+  // Update .env file silently to avoid console.log output
+  await VirtualTestNet.addToEnvFile("ROLES_VERSION", rolesVersion, true);
   return rolesVersion;
 }
 
@@ -363,13 +400,14 @@ async function getWhitelistsV1() {
     callerDir,
     whitelistDirectory
   );
-  console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory);
+  // Debug log - commented out to avoid terminal display issues
+  // console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory);
 
   let whitelists: { path: string; className: string }[] = [];
   try {
     whitelists = findWhitelistClasses(whitelistDirectory);
   } catch (error) {
-    console.error("Error finding permissions files:", error);
+    terminal.red("Error finding permissions files: " + error + "\n");
     process.exit(1);
   }
 

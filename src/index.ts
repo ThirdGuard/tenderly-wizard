@@ -1,18 +1,15 @@
 const VirtualTestNet = require("./scripts/virtual-test-net").default;
-// import { start as wizardStart } from './wizard';
 const wizardStart = require("./wizard").start;
+const { terminal } = require("terminal-kit");
 
-// export {
-//     VirtualTestNet,
-//     wizardStart
-// };
-
-// If this file is run directly (e.g., with ts-node), start the wizard
-// if (require.main === module) {
-//     wizardStart().catch(error => {
-//         console.error('An error occurred:', error);
-//         process.exit(1);
-//     });
-// }
-
-wizardStart();
+// Start the wizard with proper error handling
+wizardStart().catch((error: any) => {
+  terminal.red(`\n✗ Fatal error: ${error.message}\n`);
+  if (error.stack) {
+    terminal.dim(`${error.stack}\n`);
+  }
+  terminal("\nPress any key to exit...\n");
+  terminal.on('key', () => {
+    process.exit(1);
+  });
+});
