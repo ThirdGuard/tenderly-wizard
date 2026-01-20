@@ -49,8 +49,30 @@ async function main() {
 
   const { className, path: whitelistPath } = whitelist;
 
+  console.log(`\n📋 Executing whitelist: ${className}`);
+  console.log(`   Path: ${whitelistPath}`);
+
   // import the whitelist class
-  const whitelistClass = require(whitelistPath)[className];
+  const whitelistModule = require(whitelistPath);
+  const whitelistClass = whitelistModule[className];
+
+  // Check if the class was found
+  if (!whitelistClass) {
+    const availableExports = Object.keys(whitelistModule).join(", ");
+    throw new Error(
+      `Class "${className}" not found in module. ` +
+      `Available exports: [${availableExports}]. ` +
+      `This usually means the class is not exported or has a different name.`
+    );
+  }
+
+  // Check if it's actually a constructor
+  if (typeof whitelistClass !== "function") {
+    throw new Error(
+      `"${className}" is not a constructor (type: ${typeof whitelistClass}). ` +
+      `Make sure the class is properly exported.`
+    );
+  }
 
   // instantiate the whitelist class
   const whitelistClassInstance = new whitelistClass(
@@ -63,6 +85,8 @@ async function main() {
     ACCESS_CONTROL_ROLES_ADDRESS,
     INVESTMENT_SAFE_ADDRESS
   );
+
+  console.log(`   ✓ ${className} executed successfully`);
 }
 
 main();
