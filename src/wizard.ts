@@ -199,7 +199,6 @@ async function getTestnetList() {
   testnets.push("========================");
   testnets.push(colors.red("🛑 EXIT"));
   testnets.push("========================");
-  // terminal.reset("========================");
 
   let testnet: SingleColumnMenuResponse =
     await terminal.singleColumnMenu(testnets).promise;
@@ -294,7 +293,6 @@ async function getTestnetList() {
 
 export async function start() {
   // update target repo's package.json with scripts
-  let scripts;
   if (!process.env.IS_DEV) {
     updatePackageJson();
   }
@@ -355,8 +353,8 @@ export async function start() {
         terminal.red(`✗ Error deleting testnet: ${error.message}\n`);
       }
     }
-    //go back to start,
-    goto: await start();
+    //go back to start
+    await start();
   }
 
   // save snapshot
@@ -507,7 +505,7 @@ export async function start() {
   }
 
   if (action.selectedIndex == 6) {
-    goto: await start();
+    await start();
   }
 
   terminal.processExit(0);
@@ -608,14 +606,6 @@ async function selectRolesVersion(terminal: Terminal): Promise<string> {
 
 async function getWhitelistsV1() {
   const whitelistDirectory = "../access-control-safes/src/whitelist";
-
-  const callerDir = process.cwd();
-  const absoluteWhitelistDirectory = path.resolve(
-    callerDir,
-    whitelistDirectory
-  );
-  // Debug log - commented out to avoid terminal display issues
-  // console.log("absoluteWhitelistDirectory: ", absoluteWhitelistDirectory);
 
   let whitelists: { path: string; className: string }[] = [];
   try {
