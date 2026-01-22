@@ -140,6 +140,17 @@ To publish a new version of the package to npm:
   NODE_DEBUG=module tenderly-wizard
   ```
 
+### Gas Limit for Whitelist Execution
+
+Some whitelist transactions are very large (complex multisend bundles) and may fail gas estimation with an `UNPREDICTABLE_GAS_LIMIT` error. The wizard automatically handles this by:
+
+1. Catching gas estimation failures
+2. Retrying with a manual gas limit of 150M
+
+This high gas limit is safe for Tenderly virtual testnets since they are simulated environments. If you see `"(gas retry)"` in the output, it means the automatic retry mechanism was used and succeeded.
+
+The gas limit can be adjusted in `src/scripts/execute-whitelist-v1-one.ts` if needed.
+
 ## Gotchas
 
 - Creating or Forking a new testnet will activate it by default.
