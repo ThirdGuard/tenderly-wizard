@@ -7,6 +7,111 @@ import { stripAnsi, updatePackageJson } from "./utils/file-manipulation";
 import { findWhitelistClasses } from "./utils/util";
 import path from "path";
 
+interface WhitelistItem {
+  path: string;
+  className: string;
+}
+
+interface MultiSelectResult {
+  selectedItems: WhitelistItem[];
+  cancelled: boolean;
+}
+
+/**
+ * Multi-select menu for choosing whitelists
+ * Use spacebar to toggle selection, Enter to confirm, Escape to cancel
+ */
+async function multiSelectMenu(
+  term: Terminal,
+  items: WhitelistItem[],
+  title: string
+): Promise<MultiSelectResult> {
+  return new Promise((resolve) => {
+    const selected = new Set<number>();
+    let currentIndex = 0;
+
+    // Format class name for display
+    const formatClassName = (className: string): string => {
+      return className
+        .replace(/([A-Z])/g, " $1")
+        .trim()
+        .split(" ")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    };
+
+    const render = () => {
+      term.reset();
+      term.cyan(`${title}\n\n`);
+      term.gray("  [SPACE] Toggle selection  [ENTER] Confirm  [A] Select All  [N] Select None  [ESC] Cancel\n\n");
+
+      items.forEach((item, index) => {
+        const isSelected = selected.has(index);
+        const isCurrent = index === currentIndex;
+        const checkbox = isSelected ? "☑" : "☐";
+        const prefix = isCurrent ? " → " : "   ";
+        const displayName = formatClassName(item.className);
+
+        if (isCurrent) {
+          term.bold.white(`${prefix}${checkbox} ${displayName}\n`);
+        } else if (isSelected) {
+          term.green(`${prefix}${checkbox} ${displayName}\n`);
+        } else {
+          term(`${prefix}${checkbox} ${displayName}\n`);
+        }
+      });
+
+      term(`\n   Selected: ${selected.size} of ${items.length}\n`);
+    };
+
+    render();
+
+    const onKey = (key: string) => {
+      switch (key) {
+        case "UP":
+          currentIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+          render();
+          break;
+        case "DOWN":
+          currentIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+          render();
+          break;
+        case " ": // Spacebar
+          if (selected.has(currentIndex)) {
+            selected.delete(currentIndex);
+          } else {
+            selected.add(currentIndex);
+          }
+          render();
+          break;
+        case "a":
+        case "A":
+          // Select all
+          items.forEach((_, index) => selected.add(index));
+          render();
+          break;
+        case "n":
+        case "N":
+          // Select none
+          selected.clear();
+          render();
+          break;
+        case "ENTER":
+          term.removeListener("key", onKey);
+          const selectedItems = Array.from(selected).map(index => items[index]);
+          resolve({ selectedItems, cancelled: false });
+          break;
+        case "ESCAPE":
+          term.removeListener("key", onKey);
+          resolve({ selectedItems: [], cancelled: true });
+          break;
+      }
+    };
+
+    term.on("key", onKey);
+  });
+}
+
 async function getTestnetList() {
   terminal.reset("========================\n");
   terminal.black(" 🧙 TENDERLY WIZARD 🧙\n");
@@ -68,13 +173,49 @@ async function getTestnetList() {
     }).toString();
     terminal(outputSafes + "\n");
 
-    // apply whitelist
-    const outputWhitelist = execSync(`npm run deploy:whitelist`, {
-      stdio: "pipe",
-    }).toString();
-    terminal(outputWhitelist + "\n");
+    // select whitelists to apply
+    const whitelists = await getWhitelistsV1();
+
+    if (whitelists.length === 0) {
+      terminal.yellow("\nNo whitelists found. Skipping whitelist application.\n");
+    } else {
+      const selection = await multiSelectMenu(
+        terminal,
+        whitelists,
+        "Select whitelists to apply:"
+      );
+
+      if (selection.cancelled) {
+        terminal.yellow("\nWhitelist selection cancelled.\n");
+      } else if (selection.selectedItems.length === 0) {
+        terminal.yellow("\nNo whitelists selected. Skipping whitelist application.\n");
+      } else {
+        terminal.reset();
+        terminal.green(`\nApplying ${selection.selectedItems.length} whitelist(s)...\n\n`);
+
+        // Execute each selected whitelist
+        for (const whitelist of selection.selectedItems) {
+          const displayName = whitelist.className
+            .replace(/([A-Z])/g, " $1")
+            .trim();
+          terminal(`  Applying: ${displayName}...\n`);
+
+          process.env.SELECTED_WHITELIST = JSON.stringify(whitelist);
+          const output = executeWithLogs(
+            `BYPASS_APPROVALS=true npm run execute:whitelist`
+          );
+
+          if (!output?.success) {
+            terminal.red(`    ✗ Failed: ${output?.error?.message || 'Unknown error'}\n`);
+          } else {
+            terminal.green(`    ✓ Applied successfully\n`);
+          }
+        }
+      }
+    }
 
     // save snapshot
+    terminal("\nSaving snapshot...\n");
     const outputSnapshot = execSync(`npm run save:vnet-snapshot`, {
       stdio: "pipe",
     }).toString();
