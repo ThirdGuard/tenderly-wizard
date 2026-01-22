@@ -44,10 +44,11 @@ function writeErrorLog(
     .replace(/:/g, "-")
     .replace(/\..+/, "");
 
-  // Sanitize testnet name for filename
+  // Sanitize names for filename
   const sanitizedTestnetName = testnetName.replace(/[^a-zA-Z0-9-_]/g, "_");
+  const sanitizedWhitelistName = whitelistName.replace(/[^a-zA-Z0-9-_]/g, "_");
 
-  const filename = `${sanitizedTestnetName}-${datetime}.json`;
+  const filename = `${sanitizedTestnetName}-${sanitizedWhitelistName}-${datetime}.json`;
   const filepath = path.join(logsDir, filename);
 
   const logData = {
