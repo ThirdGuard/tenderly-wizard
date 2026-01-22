@@ -6,6 +6,7 @@ import { SingleColumnMenuResponse } from "terminal-kit/Terminal";
 import { stripAnsi, updatePackageJson } from "./utils/file-manipulation";
 import { findWhitelistClasses } from "./utils/util";
 import path from "path";
+import fs from "fs";
 
 interface WhitelistItem {
   path: string;
@@ -15,6 +16,50 @@ interface WhitelistItem {
 interface MultiSelectResult {
   selectedItems: WhitelistItem[];
   cancelled: boolean;
+}
+
+/**
+ * Write error details to a log file in the logs directory
+ * @param testnetName - Name of the testnet for the log filename
+ * @param whitelistName - Name of the whitelist that failed
+ * @param error - Error details object from executeWithLogs
+ * @returns Path to the created log file
+ */
+function writeErrorLog(
+  testnetName: string,
+  whitelistName: string,
+  error: { message?: string; status?: number; signal?: string; stderr?: string; stdout?: string; command?: string } | null,
+  output?: string | null
+): string {
+  // Ensure logs directory exists
+  const logsDir = path.join(process.cwd(), "logs");
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+
+  // Create human-readable datetime: YYYY-MM-DD_HH-MM-SS
+  const now = new Date();
+  const datetime = now.toISOString()
+    .replace(/T/, "_")
+    .replace(/:/g, "-")
+    .replace(/\..+/, "");
+
+  // Sanitize testnet name for filename
+  const sanitizedTestnetName = testnetName.replace(/[^a-zA-Z0-9-_]/g, "_");
+
+  const filename = `${sanitizedTestnetName}-${datetime}.json`;
+  const filepath = path.join(logsDir, filename);
+
+  const logData = {
+    timestamp: now.toISOString(),
+    testnet: testnetName,
+    whitelist: whitelistName,
+    error: error,
+    output: output,
+  };
+
+  fs.writeFileSync(filepath, JSON.stringify(logData, null, 2));
+  return filepath;
 }
 
 /**
@@ -206,7 +251,13 @@ async function getTestnetList() {
           );
 
           if (!output?.success) {
-            terminal.red(`    ✗ Failed: ${output?.error?.message || 'Unknown error'}\n`);
+            const logPath = writeErrorLog(
+              testnet.selectedText,
+              whitelist.className,
+              output?.error,
+              output?.output
+            );
+            terminal.red(`    ✗ Failed - see ${logPath}\n`);
           } else {
             terminal.green(`    ✓ Applied successfully\n`);
           }
@@ -221,6 +272,8 @@ async function getTestnetList() {
     }).toString();
     terminal(outputSnapshot + "\n");
 
+    terminal.green("\n✓ Setup complete. Press any key to exit...\n");
+    await terminal.inputField({ echo: false }).promise;
     terminal.processExit(0);
   }
   return testnet;
@@ -366,6 +419,7 @@ export async function start() {
     await selectRolesVersion(terminal);
 
     let output: any;
+    let selectedWhitelistName: string = "all";
 
     // show menu to select whitelisting options
     terminal("\n");  // Add space after env file update message
@@ -414,6 +468,7 @@ export async function start() {
         terminal.red("Could not find matching whitelist for selection\n");
         return;
       } else {
+        selectedWhitelistName = selectedWhitelist.className;
         // feed the selected whitelist to the execute whitelist v1 function
         process.env.SELECTED_WHITELIST = JSON.stringify(selectedWhitelist);
         output = executeWithLogs(
@@ -424,12 +479,18 @@ export async function start() {
 
     if (output) {
       if (!output?.success) {
-        terminal.red("Error details: " + JSON.stringify(output?.error) + "\n");
-        terminal.red("Error output: " + output?.output + "\n");
+        const logPath = writeErrorLog(
+          testnet.selectedText,
+          selectedWhitelistName,
+          output?.error,
+          output?.output
+        );
+        terminal.red(`\n✗ Whitelist failed - see ${logPath}\n`);
       } else {
-        terminal(output + "\n");
-        terminal.green("\nApplied whitelist successfully\n");
+        terminal.green("\n✓ Applied whitelist successfully\n");
       }
+      terminal("\nPress any key to continue...\n");
+      await terminal.inputField({ echo: false }).promise;
     }
   }
 
