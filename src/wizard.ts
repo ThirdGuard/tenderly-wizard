@@ -8,6 +8,19 @@ import { findWhitelistClasses } from "./utils/util";
 import path from "path";
 import fs from "fs";
 
+/**
+ * Wait for any key press (not just Enter)
+ * @param term - Terminal instance to use
+ * @returns Promise that resolves when any key is pressed
+ */
+function waitForAnyKey(term: Terminal): Promise<void> {
+  return new Promise((resolve) => {
+    term.once("key", () => {
+      resolve();
+    });
+  });
+}
+
 interface WhitelistItem {
   path: string;
   className: string;
@@ -87,7 +100,7 @@ async function multiSelectMenu(
     };
 
     const render = () => {
-      term.reset();
+      term.clear();
       term.cyan(`${title}\n\n`);
       term.gray("  [SPACE] Toggle selection  [ENTER] Confirm  [A] Select All  [N] Select None  [ESC] Cancel\n\n");
 
@@ -159,7 +172,7 @@ async function multiSelectMenu(
 }
 
 async function getTestnetList() {
-  terminal.reset("========================\n");
+  terminal("\n========================\n");
   terminal.black(" 🧙 TENDERLY WIZARD 🧙\n");
   terminal.yellow("  Roles v1 / Ethers v5\n");
   terminal.black("========================\n");
@@ -170,7 +183,7 @@ async function getTestnetList() {
   } catch (error: any) {
     terminal.red(`\n✗ Error fetching testnets: ${error.message}\n`);
     terminal("Press any key to exit...\n");
-    await terminal.inputField().promise;
+    await waitForAnyKey(terminal);
     terminal.processExit(1);
     return { selectedText: "" } as SingleColumnMenuResponse;
   }
@@ -236,7 +249,6 @@ async function getTestnetList() {
       } else if (selection.selectedItems.length === 0) {
         terminal.yellow("\nNo whitelists selected. Skipping whitelist application.\n");
       } else {
-        terminal.reset();
         terminal.green(`\nApplying ${selection.selectedItems.length} whitelist(s)...\n\n`);
 
         // Execute each selected whitelist
@@ -274,7 +286,7 @@ async function getTestnetList() {
     terminal(outputSnapshot + "\n");
 
     terminal.green("\n✓ Setup complete. Press any key to exit...\n");
-    await terminal.inputField({ echo: false }).promise;
+    await waitForAnyKey(terminal);
     terminal.processExit(0);
   }
   return testnet;
@@ -299,8 +311,7 @@ export async function start() {
   const vnets = await VirtualTestNet.listVirtualTestnets();
   const vnet = vnets.find(vnet => vnet.displayName == testnet.selectedText);
 
-  terminal.reset();
-  terminal(`VIRTUAL_MAINNET_RPC=${vnet?.admin_rpc}\n`);
+  terminal(`\nVIRTUAL_MAINNET_RPC=${vnet?.admin_rpc}\n`);
   terminal(`TENDERLY_TESTNET_UUID=${vnet?.vnet_id}\n`);
   terminal.green(`\nSelect Action for ${testnet.selectedText}:\n`);
 
@@ -316,7 +327,7 @@ export async function start() {
 
   // fork testnet
   if (action.selectedIndex == 0) {
-    terminal.reset("Enter the name of the fork name: ");
+    terminal("\nEnter the name of the fork: ");
     const newTestnet = await terminal.inputField().promise;
     terminal(`\nForking testnet: ${newTestnet}\n`);
     try {
@@ -491,7 +502,7 @@ export async function start() {
         terminal.green("\n✓ Applied whitelist successfully\n");
       }
       terminal("\nPress any key to continue...\n");
-      await terminal.inputField({ echo: false }).promise;
+      await waitForAnyKey(terminal);
     }
   }
 
@@ -537,7 +548,7 @@ function executeWithLogs(command: string, options = {}) {
 }
 
 async function createNewTestnet(terminal: Terminal) {
-  terminal.reset("Enter the name of the new testnet: ");
+  terminal("\nEnter the name of the new testnet: ");
   const newTestnet = await terminal.inputField().promise;
 
   // select chain
@@ -582,7 +593,7 @@ async function createNewTestnet(terminal: Terminal) {
   } catch (error: any) {
     terminal.red(`✗ Error creating testnet: ${error.message}\n`);
     terminal("Press any key to continue...\n");
-    await terminal.inputField().promise;
+    await waitForAnyKey(terminal);
     throw error;
   }
 }
