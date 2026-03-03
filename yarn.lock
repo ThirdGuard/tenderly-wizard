@@ -3122,15 +3122,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@thirdguard/config@npm:1.1.22":
-  version: 1.1.22
-  resolution: "@thirdguard/config@npm:1.1.22"
+"@thirdguard/config@npm:1.1.21":
+  version: 1.1.21
+  resolution: "@thirdguard/config@npm:1.1.21"
   dependencies:
     "@aws-sdk/client-ssm": "npm:3.590.0"
     dotenv: "npm:^16.4.5"
     terminal-kit: "npm:^3.1.1"
     zod: "npm:^3.23.8"
-  checksum: 10c0/cfc951df8a96aeb606ef3a64c66e9dea03afdcaa18e91b8f1831cd8c2f3bd5e01840137032fe04ecdd1144d313052e15e97723da639b4e7f9537623c54260be0
+  checksum: 10c0/59ee61ac85727debd0e83dca8701e876a50967e6e88b18009e91814486f890c7f9d2a488bfb52a0f8011ebbec830d65ed10a8bb135e24b773f87de6055c12e53
   languageName: node
   linkType: hard
 
@@ -10756,7 +10756,7 @@ __metadata:
     "@nomiclabs/hardhat-ethers": "npm:2.2.3"
     "@tenderly/api-client": "npm:1.1.0"
     "@tenderly/hardhat-tenderly": "npm:1.11.0"
-    "@thirdguard/config": "npm:1.1.22"
+    "@thirdguard/config": "npm:1.1.21"
     "@typechain/ethers-v5": "npm:10.0.0"
     "@typechain/hardhat": "npm:6.1.6"
     "@types/chai": "npm:4.2.14"

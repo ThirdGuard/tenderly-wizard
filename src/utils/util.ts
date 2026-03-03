@@ -291,9 +291,13 @@ export function findPermissionsFiles(whitelistDir: string): string[] {
 }
 
 /**
- * Finds all classes that extend Whitelist in a directory
+ * Finds all EXPORTED classes that extend Whitelist in a directory
  * @param {string} whitelistDir - Directory to search
  * @returns {{ path: string, className: string }[]} Array of objects containing path and class name
+ * 
+ * NOTE: Only exported classes are included. Non-exported internal classes 
+ * (like helper classes that extend Whitelist but aren't meant for direct use)
+ * are excluded to prevent "whitelistClass is not a constructor" errors.
  */
 export function findWhitelistClasses(
   whitelistDir: string
@@ -313,24 +317,43 @@ export function findWhitelistClasses(
       SyntaxKind.ClassDeclaration
     );
 
+    // Get the default export identifier if it exists
+    const defaultExportSymbol = sourceFile.getDefaultExportSymbol();
+    const defaultExportName = defaultExportSymbol?.getName();
+
     classes.forEach((classDeclaration: ClassDeclaration) => {
+      const className = classDeclaration.getName() ?? "";
       const heritage = classDeclaration.getHeritageClauses();
 
-      if (
-        heritage.some(clause =>
-          clause.getTypeNodes().some(node => {
-            const text = node.getText();
-            return (
-              text.includes("Whitelist") ||
-              text.includes("AbstractPendleWhitelist")
-            );
-          })
-        )
-      ) {
+      // Check if class extends Whitelist or AbstractPendleWhitelist
+      const extendsWhitelist = heritage.some(clause =>
+        clause.getTypeNodes().some(node => {
+          const text = node.getText();
+          return (
+            text.includes("Whitelist") ||
+            text.includes("AbstractPendleWhitelist")
+          );
+        })
+      );
+
+      if (!extendsWhitelist) {
+        return;
+      }
+
+      // Check if the class is exported (either directly or as default export)
+      const isExported = classDeclaration.isExported();
+      const isDefaultExport = defaultExportName === className || 
+                              defaultExportName === "default" && 
+                              sourceFile.getDefaultExportSymbol()?.getDeclarations()?.some(
+                                d => d === classDeclaration
+                              );
+
+      // Only include classes that are exported
+      if (isExported || isDefaultExport) {
         const absolutePath = sourceFile.getFilePath();
         whitelistExtensions.push({
           path: absolutePath,
-          className: classDeclaration.getName() ?? "",
+          className,
         });
       }
     });
